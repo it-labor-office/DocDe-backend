@@ -26,8 +26,11 @@ public class CheckInController {
         return ResponseEntity.ok(checkInService.saveCheckIn(userDetails, hospitalId, checkInRequest));
     }
 
-    // 접수에 의사 배치 혹은 변경
     // 자신의 접수 상태 확인(사용자)
+    @GetMapping("/checkIn")
+    public ResponseEntity<CheckInResponse> getMyCheckIn(@AuthenticationPrincipal UserDetailsImpl userDetails){
+        return ResponseEntity.ok(checkInService.getMyCheckIn(userDetails));
+    }
     // 접수 상태 확인(병원)
     // 접수 상태 변경
     // 접수 기록 영구 삭제
