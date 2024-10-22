@@ -1,16 +1,13 @@
 package com.docde.config;
 
-import com.docde.common.entity.ApiResponse;
-import com.docde.common.entity.ReasonDto;
+import com.docde.common.Apiresponse.ApiResponse;
+import com.docde.common.Apiresponse.ReasonDto;
 import com.docde.common.exceptions.ApiException;
 import jakarta.validation.constraints.Null;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-
-import java.util.HashMap;
-import java.util.Map;
 
 @RestControllerAdvice
 public class GlobalExceptionHandler {

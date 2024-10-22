@@ -21,7 +21,7 @@ public class HospitalPostRequestDto {
     @JsonFormat(pattern = "HH:mm") //시간 형식 지정
     private LocalTime openTime;
     @JsonFormat(pattern = "HH:mm") //시간 형식 지정
-    private LocalTime closeTime;
+    private LocalTime closingTime;
 
     private String announcement;
 

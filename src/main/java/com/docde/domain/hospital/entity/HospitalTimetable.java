@@ -14,15 +14,21 @@ public class HospitalTimetable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Enumerated
+    @Enumerated(EnumType.STRING)
     private DayOfTheWeek dayOfTheWeek;
     //SUN,MON,TUE,WED,THU,FRI,SAT,HOLIDAY
     @Column(nullable = false)
     private LocalTime openTime;
     @Column(nullable = false)
     private LocalTime closeTime;
+    @ManyToOne
+    @JoinColumn(name="week_timetable_id")
+    private WeekTimetable weekTimetable;
 
-    @OneToOne
-    @JoinColumn(name="hospital_id")
-    private Hospital hospital;
+    public HospitalTimetable(DayOfTheWeek dayOfTheWeek, LocalTime openTime, LocalTime closeTime, WeekTimetable weekTimetable) {
+        this.dayOfTheWeek = dayOfTheWeek;
+        this.openTime = openTime;
+        this.closeTime = closeTime;
+        this.weekTimetable = weekTimetable;
+    }
 }
