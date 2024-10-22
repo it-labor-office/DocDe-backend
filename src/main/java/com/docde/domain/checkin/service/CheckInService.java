@@ -83,7 +83,8 @@ public class CheckInService {
     // 접수 상태 확인(병원)
     public List<CheckInResponse> getAllCheckIns(UserDetailsImpl userDetails, Long hospitalId) {
 
-        // 로그인된 유저 정보로 해당 병원 관계자인지 확인하기
+        // 로그인된 유저 정보로 해당 병원 관계자인지 확인하기(예외 처리 하기!!)
+        Doctor doctor = doctorRepository.findById(userDetails.getUser().getDoctor().getId()).orElseThrow();
         // 유저의 의사를 병원이 가지고 있는지 확인하기
         // 해당 병원의 모든 접수 반환
         // 해당 접수 리스트를 접수 응답 dto 리스트로 바꿔 리턴
