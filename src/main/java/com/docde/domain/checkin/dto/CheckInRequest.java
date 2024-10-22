@@ -4,5 +4,5 @@ import lombok.Getter;
 
 @Getter
 public class CheckInRequest {
-    private String status;
+    private Long doctorId;
 }
