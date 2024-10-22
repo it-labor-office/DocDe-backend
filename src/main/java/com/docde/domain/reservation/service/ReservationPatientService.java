@@ -12,10 +12,13 @@ import com.docde.domain.reservation.entity.Reservation;
 import com.docde.domain.reservation.entity.ReservationStatus;
 import com.docde.domain.reservation.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ReservationPatientService {
 
     private final ReservationRepository reservationRepository;
@@ -24,7 +27,9 @@ public class ReservationPatientService {
 
     private final ReservationStatus WAITING_RESERVATION = ReservationStatus.WAITING_RESERVATION;
     private final ReservationStatus RESERVATION_CANCELED = ReservationStatus.RESERVATION_CANCELED;
+    private final ReservationStatus DONE = ReservationStatus.DONE;
 
+    @Transactional
     public ReservationResponseDto createReservation(Long doctorId, Long patientId, ReservationRequestDto reservationRequestDto) {
 
         if(reservationRequestDto.getReservationReason() == null){
@@ -42,12 +47,19 @@ public class ReservationPatientService {
         return ReservationResponseDto.of(savedReservation.getId(), savedReservation.getReservationStatus());
     }
 
+    @Transactional
     public ReservationResponseDto cancelReservation(Long doctorId, Long patientId, Long reservationId) {
         Doctor doctor = getDoctor(doctorId);
 
         Patient patient = getPatient(patientId);
 
         Reservation reservation = getReservationDoctorPatient(doctor, patient, reservationId);
+
+        if(reservation.getReservationStatus() == RESERVATION_CANCELED){
+            throw new ApiException(ErrorStatus._ALREADY_CANCEL_RESERVATION);
+        }else if(reservation.getReservationStatus() == DONE){
+            throw new ApiException(ErrorStatus._ALREADY_DONE_RESERVATION);
+        }
 
         reservation.cancelReservation(RESERVATION_CANCELED);
 
@@ -63,7 +75,7 @@ public class ReservationPatientService {
 
         Reservation reservation = getReservationDoctorPatient(doctor, patient, reservationId);
 
-        return null;
+        return ReservationResponseDto.of(reservation.getId(), reservation.getReservationStatus());
     }
 
 
@@ -81,4 +93,5 @@ public class ReservationPatientService {
                 new ApiException(ErrorStatus._NOT_FOUND_RESERVATION)
         );
     }
+
 }
