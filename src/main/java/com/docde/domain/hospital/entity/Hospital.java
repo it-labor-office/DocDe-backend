@@ -1,10 +1,10 @@
 package com.docde.domain.hospital.entity;
 
+import com.docde.domain.hospital.dto.request.HospitalPostRequestDto;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.sql.Time;
+import java.time.LocalTime;
 
 @Getter
 @Entity
@@ -24,11 +24,20 @@ public class Hospital {
     private String contact;
 
     @Column(nullable = false)
-    private Time open_time;
+    private LocalTime open_time;
 
     @Column(nullable = false)
-    private Time closing_time;
+    private LocalTime closing_time;
 
     @Column(nullable = false)
     private String announcement;
+
+    public Hospital(HospitalPostRequestDto requestDto) {
+        this.name=requestDto.getHospitalName();
+        this.address=requestDto.getHospitalAddress();
+        this.contact=requestDto.getHospitalContact();
+        this.open_time=requestDto.getOpenTime();
+        this.closing_time=requestDto.getCloseTime();
+        this.announcement=requestDto.getAnnouncement();
+    }
 }
