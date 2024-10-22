@@ -1,5 +1,7 @@
 package com.docde.domain.hospital.service;
 
+import com.docde.common.entity.ErrorStatus;
+import com.docde.common.exceptions.ApiException;
 import com.docde.domain.hospital.dto.request.HospitalPostRequestDto;
 import com.docde.domain.hospital.dto.response.HospitalPostResponseDto;
 import com.docde.domain.hospital.entity.Hospital;
@@ -20,7 +22,9 @@ public class HospitalService {
         //받은 정보를 바탕으로 병원데이터생성
         Hospital hospital = new Hospital(requestDto);
         hospitalRepository.save(hospital);
-
+        if(true) {
+            throw new ApiException(ErrorStatus._TEST_ERROR);
+        }
         return new HospitalPostResponseDto(hospital);
     }
 }
