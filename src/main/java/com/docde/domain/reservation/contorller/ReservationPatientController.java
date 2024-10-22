@@ -35,10 +35,11 @@ public class ReservationPatientController {
     }
 
 
-    @GetMapping("/reservations")
+    @GetMapping("/reservations/{reservationId}")
     public ResponseEntity<ResponseDto<ReservationResponseDto>> getReservation(@PathVariable Long doctorId,
-                                                                              @PathVariable Long patientId){
-        ReservationResponseDto reservationResponseDto = reservationPatientService.getReservation(doctorId, patientId);
+                                                                              @PathVariable Long patientId,
+                                                                              @PathVariable Long reservationId){
+        ReservationResponseDto reservationResponseDto = reservationPatientService.getReservation(doctorId, patientId,reservationId);
         return ResponseEntity.status(HttpStatus.OK).body(ResponseDto.of(HttpStatus.OK.value(), HttpStatus.OK.toString(), reservationResponseDto));
     }
 

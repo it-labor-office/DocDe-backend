@@ -5,9 +5,11 @@ import com.docde.domain.patient.entity.Patient;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@NoArgsConstructor
 public class Reservation extends Timestamped {
 
 
@@ -44,6 +46,12 @@ public class Reservation extends Timestamped {
                 .reservationStatus(reservationStatus)
                 .doctor(doctor)
                 .patient(patient)
+                .build();
+    }
+
+    public void cancelReservation(ReservationStatus reservationStatus){
+        Reservation.builder()
+                .reservationStatus(reservationStatus)
                 .build();
     }
 
