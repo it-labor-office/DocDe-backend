@@ -1,5 +1,7 @@
 package com.docde.domain.reservation.service;
 
+import com.docde.common.Apiresponse.ErrorStatus;
+import com.docde.common.exceptions.ApiException;
 import com.docde.domain.doctor.entity.Doctor;
 import com.docde.domain.doctor.repository.DoctorRepository;
 import com.docde.domain.patient.entity.Patient;
@@ -8,8 +10,6 @@ import com.docde.domain.reservation.dto.request.ReservationRequestDto;
 import com.docde.domain.reservation.dto.response.ReservationResponseDto;
 import com.docde.domain.reservation.entity.Reservation;
 import com.docde.domain.reservation.entity.ReservationStatus;
-import com.docde.domain.reservation.exception.ReservationNotFoundException;
-import com.docde.domain.reservation.exception.ReservationReasonNullPointerException;
 import com.docde.domain.reservation.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -28,7 +28,7 @@ public class ReservationPatientService {
     public ReservationResponseDto createReservation(Long doctorId, Long patientId, ReservationRequestDto reservationRequestDto) {
 
         if(reservationRequestDto.getReservationReason() == null){
-            throw new ReservationReasonNullPointerException("예약 사유는 없으면 안 됩니다.");
+            throw new ApiException(ErrorStatus._BAD_REQUEST_RESERVATION_REASON);
         }
 
         Doctor doctor = getDoctor(doctorId);
@@ -69,16 +69,16 @@ public class ReservationPatientService {
 
 
     private Doctor getDoctor(Long doctorId) {
-        return doctorRepository.findById(doctorId).orElseThrow(() -> new RuntimeException("Doctor not found"));
+        return doctorRepository.findById(doctorId).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
     }
 
     private Patient getPatient(Long patientId) {
-        return patientRepository.findById(patientId).orElseThrow(() -> new RuntimeException("Patient not found"));
+        return patientRepository.findById(patientId).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
     }
 
     private Reservation getReservationDoctorPatient(Doctor doctor, Patient patient, Long reservationId) {
         return reservationRepository.findByIdAndDoctorAndPatient(reservationId, doctor, patient).orElseThrow(() ->
-                new ReservationNotFoundException("Reservation not found")
+                new ApiException(ErrorStatus._NOT_FOUND_RESERVATION)
         );
     }
 }

@@ -34,7 +34,15 @@ public enum ErrorStatus implements BaseCode{
     _INVALID_USER_NAME(HttpStatus.BAD_REQUEST,400 ,"유저이름은 최소 3자 이상,20자 이하여야 하며, 대소문자 포함 영문,숫자만 사용가능합니다." ),
     _FORBIDDEN(HttpStatus.FORBIDDEN,403 ,"권한이 없습니다."),
     //병원 관련 코드
-    _NOT_FOUND_HOSPITAL(HttpStatus.BAD_REQUEST,400 ,"병원을 찾을 수 없습니다");
+    _NOT_FOUND_HOSPITAL(HttpStatus.BAD_REQUEST,400 ,"병원을 찾을 수 없습니다"),
+
+    //예약 관련 코드
+    _NOT_FOUND_RESERVATION(HttpStatus.NOT_FOUND, 404, "예약을 찾을 수 없습니다."),
+    _BAD_REQUEST_RESERVATION_REASON(HttpStatus.BAD_REQUEST, 400, "예약 사유가 없으면 안됩니다."),
+    //의사 관련 코드
+    _NOT_FOUND_DOCTOR(HttpStatus.NOT_FOUND,404,"의사를 찾을 수 없습니다."),
+    //환자 관련 코드
+    _NOT_FOUND_PATIENT(HttpStatus.NOT_FOUND, 404, "환자를 찾을 수 없습니다.");
 
     private final HttpStatus httpStatus;
     private final Integer statusCode;
