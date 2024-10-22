@@ -32,6 +32,11 @@ public class CheckInService {
             CheckInRequest checkInRequest
     ) {
 
+        // 이미 진행중인 접수가 있으면 예외처리
+        // userId로 접수 찾기
+        if(checkInRepository.findPatientId().contains(hospitalId)){
+            throw new RuntimeException("커스텀오류로바꾸기, 이미 진행중인 접수가 있습니다.");
+        }
         // 레포지토리에서 병원 찾기
         // 커스텀 예외 만들면 넣기
         Hospital hospital = hospitalRepository.findById(hospitalId)
@@ -64,6 +69,20 @@ public class CheckInService {
     }
 
     // 자신의 접수 상태 확인(사용자)
+    public CheckInResponse getMyCheckIn(UserDetailsImpl userDetails) {
+
+        // 로그인된 유저 id로 접수 찾기. 예외처리필요
+        CheckIn checkIn = checkInRepository.findByPatientId(userDetails.getUser().getPatient().getId())
+                .orElseThrow();
+
+        // 순서 구현되면 순서도 응답에 넣기
+        return checkInResponseFromCheckIn(checkIn);
+    }
+
+
+
+
+
     // 접수 상태 확인(병원)
     // 접수 상태 변경
     // 접수 기록 영구 삭제
