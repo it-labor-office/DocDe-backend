@@ -14,7 +14,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -85,10 +87,22 @@ public class CheckInService {
 
         // 로그인된 유저 정보로 해당 병원 관계자인지 확인하기(예외 처리 하기!!)
         Doctor doctor = doctorRepository.findById(userDetails.getUser().getDoctor().getId()).orElseThrow();
-        // 유저의 의사를 병원이 가지고 있는지 확인하기
+        if(
+                doctor.getHospital().getId().equals(hospitalId)
+        ){
+            throw new RuntimeException("예외 처리 완성하기!!!");
+        }
+
         // 해당 병원의 모든 접수 반환
+        List<CheckIn> checkInList = checkInRepository.findAllByHospitalId(hospitalId);
+
         // 해당 접수 리스트를 접수 응답 dto 리스트로 바꿔 리턴
-        // 병원, 의사 쪽 진행되면 하기
+        List<CheckInResponse> checkInResponseList = new ArrayList<>();
+        for (CheckIn checkIn : checkInList){
+            checkInResponseList.add(checkInResponseFromCheckIn(checkIn));
+        }
+
+        return checkInResponseList;
     }
 
 

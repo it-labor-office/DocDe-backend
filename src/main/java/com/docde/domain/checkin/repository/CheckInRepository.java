@@ -12,4 +12,7 @@ public interface CheckInRepository extends JpaRepository<CheckIn, Long> {
     List<Long> findPatientId();
 
     Optional<CheckIn> findByPatientId(Long patientId);
+
+    @Query("SELECT c FROM CheckIn c WHERE c.doctor.hospital.id = :hospitalId")
+    List<CheckIn> findAllByHospitalId(Long hospitalId);
 }
