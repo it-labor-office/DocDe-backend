@@ -1,4 +1,4 @@
-package com.docde.common.entity;
+package com.docde.common.Apiresponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,6 +22,9 @@ public class ApiResponse<T> {
 
     public static <T> ApiResponse<T> onSuccess(T result) {
         return new ApiResponse<>("Ok", 200, result);
+    }
+    public static <T> ApiResponse<T> onCreated(T result) {
+        return new ApiResponse<>("Created", 201, result);
     }
 
     public static ApiResponse<String> onFailure(ErrorStatus errorStatus) {

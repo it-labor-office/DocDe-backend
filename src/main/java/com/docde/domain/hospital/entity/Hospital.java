@@ -29,6 +29,11 @@ public class Hospital {
     @Column(nullable = false)
     private LocalTime closing_time;
 
+    @OneToOne(cascade = CascadeType.ALL)
+    private WeekTimetable weekTimetable;
+//    //병원은 승인을 받아야 한다.
+//    private boolean isApprove=false;
+
     @Column(nullable = false)
     private String announcement;
 
@@ -37,7 +42,11 @@ public class Hospital {
         this.address=requestDto.getHospitalAddress();
         this.contact=requestDto.getHospitalContact();
         this.open_time=requestDto.getOpenTime();
-        this.closing_time=requestDto.getCloseTime();
+        this.closing_time=requestDto.getClosingTime();
         this.announcement=requestDto.getAnnouncement();
+    }
+
+    public void addWeekTimetable(WeekTimetable weekTimetable) {
+        this.weekTimetable = weekTimetable;
     }
 }

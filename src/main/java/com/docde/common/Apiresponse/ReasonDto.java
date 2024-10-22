@@ -1,4 +1,4 @@
-package com.docde.common.entity;
+package com.docde.common.Apiresponse;
 
 import lombok.Builder;
 import lombok.Getter;

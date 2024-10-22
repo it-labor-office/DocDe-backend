@@ -1,4 +1,4 @@
-package com.docde.common.entity;
+package com.docde.common.Apiresponse;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -31,7 +31,10 @@ public enum ErrorStatus implements BaseCode{
     _PASSWORD_IS_DUPLICATED(HttpStatus.BAD_REQUEST,400,"이미 사용중인 비밀번호로 변경할 수 없습니다."),
     _INVALID_USER_ROLE(HttpStatus.BAD_REQUEST,400,"잘못된 유저권한 입니다."),
     _USER_ROLE_IS_NULL(HttpStatus.BAD_REQUEST,400,"유저 권한이 없습니다."),
-    _INVALID_USER_NAME(HttpStatus.BAD_REQUEST,400 ,"유저이름은 최소 3자 이상,20자 이하여야 하며, 대소문자 포함 영문,숫자만 사용가능합니다." );
+    _INVALID_USER_NAME(HttpStatus.BAD_REQUEST,400 ,"유저이름은 최소 3자 이상,20자 이하여야 하며, 대소문자 포함 영문,숫자만 사용가능합니다." ),
+    _FORBIDDEN(HttpStatus.FORBIDDEN,403 ,"권한이 없습니다."),
+    //병원 관련 코드
+    _NOT_FOUND_HOSPITAL(HttpStatus.BAD_REQUEST,400 ,"병원을 찾을 수 없습니다");
 
     private final HttpStatus httpStatus;
     private final Integer statusCode;
