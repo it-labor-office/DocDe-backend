@@ -10,10 +10,11 @@ import com.docde.domain.doctor.entity.Doctor;
 import com.docde.domain.doctor.repository.DoctorRepository;
 import com.docde.domain.hospital.entity.Hospital;
 import com.docde.domain.hospital.repository.HospitalRepository;
-import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -79,11 +80,18 @@ public class CheckInService {
         return checkInResponseFromCheckIn(checkIn);
     }
 
-
-
-
-
     // 접수 상태 확인(병원)
+    public List<CheckInResponse> getAllCheckIns(UserDetailsImpl userDetails, Long hospitalId) {
+
+        // 로그인된 유저 정보로 해당 병원 관계자인지 확인하기
+
+        // 해당 병원의 모든 접수 반환
+    }
+
+
+
+
+
     // 접수 상태 변경
     // 접수 기록 영구 삭제
 
