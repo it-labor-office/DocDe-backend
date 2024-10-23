@@ -7,6 +7,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Entity
 @Getter
 @NoArgsConstructor
@@ -30,7 +32,6 @@ public class Reservation extends Timestamped {
     @JoinColumn(name = "patient_id")
     private Patient patient;
 
-
     @Builder
     private Reservation(String reservation_reason, ReservationStatus reservationStatus, Doctor doctor, Patient patient){
         this.reservation_reason = reservation_reason;
@@ -50,6 +51,18 @@ public class Reservation extends Timestamped {
     }
 
     public void cancelReservation(ReservationStatus reservationStatus){
+        Reservation.builder()
+                .reservationStatus(reservationStatus)
+                .build();
+    }
+
+    public void approveReservation(ReservationStatus reservationStatus){
+        Reservation.builder()
+                .reservationStatus(reservationStatus)
+                .build();
+    }
+
+    public void rejectReservation(ReservationStatus reservationStatus){
         Reservation.builder()
                 .reservationStatus(reservationStatus)
                 .build();
