@@ -1,5 +1,7 @@
 package com.docde.domain.checkin.service;
 
+import com.docde.common.Apiresponse.ErrorStatus;
+import com.docde.common.exceptions.ApiException;
 import com.docde.domain.auth.entity.UserDetailsImpl;
 import com.docde.domain.checkin.dto.CheckInRequest;
 import com.docde.domain.checkin.dto.CheckInResponse;
@@ -35,20 +37,24 @@ public class CheckInService {
             CheckInRequest checkInRequest
     ) {
 
-        // 이미 진행중인 접수가 있으면 예외처리
-        // userId로 접수 찾기
-        if(checkInRepository.findPatientId().contains(hospitalId)){
-            throw new RuntimeException("커스텀오류로바꾸기, 이미 진행중인 접수가 있습니다.");
-        }
-        // 레포지토리에서 병원 찾기
-        // 커스텀 예외 만들면 넣기
+        // 존재하는 병원인지 확인
         Hospital hospital = hospitalRepository.findById(hospitalId)
-                .orElseThrow();
+                .orElseThrow(()->new ApiException(ErrorStatus._NOT_FOUND_HOSPITAL));
+
+        // 이미 진행중인 접수가 있으면 예외처리
+        if(checkInRepository.findPatientId().contains(hospitalId)){
+            throw new ApiException(ErrorStatus._BAD_REQUEST_ALREADY_CHECKED_IN);
+        }
 
         // 요청의 의사가 null이 아닐 경우, null일 경우
         if(checkInRequest.getDoctorId() != null){
             Doctor doctor = doctorRepository.findById(checkInRequest.getDoctorId())
-                    .orElseThrow();
+                    .orElseThrow(()->new ApiException(ErrorStatus._BAD_REQUEST_DOCTOR_NOT_BELONG_TO_HOSPITAL));
+
+            // 해당 병원 소속 의사가 맞는지 확인
+            if(!doctor.getHospital().equals(hospital)){
+                throw new ApiException(ErrorStatus._BAD_REQUEST_DOCTOR_NOT_BELONG_TO_HOSPITAL);
+            }
 
             CheckIn checkIn = CheckIn.builder()
                     .checkinStatus(CheckinStatus.WAITING)
@@ -76,7 +82,7 @@ public class CheckInService {
 
         // 로그인된 유저 id로 접수 찾기. 예외처리필요
         CheckIn checkIn = checkInRepository.findByPatientId(userDetails.getUser().getPatient().getId())
-                .orElseThrow();
+                .orElseThrow(()-> new ApiException(ErrorStatus._NOT_FOUND_CHECK_IN));
 
         // 순서 구현되면 순서도 응답에 넣기
         return checkInResponseFromCheckIn(checkIn);
@@ -86,11 +92,11 @@ public class CheckInService {
     public List<CheckInResponse> getAllCheckIns(UserDetailsImpl userDetails, Long hospitalId) {
 
         // 로그인된 유저 정보로 해당 병원 관계자인지 확인하기(예외 처리 하기!!)
-        Doctor doctor = doctorRepository.findById(userDetails.getUser().getDoctor().getId()).orElseThrow();
-        if(
-                doctor.getHospital().getId().equals(hospitalId)
-        ){
-            throw new RuntimeException("예외 처리 완성하기!!!");
+        Doctor doctor = doctorRepository.findById(userDetails.getUser().getDoctor().getId())
+                .orElseThrow(()-> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
+
+        if(doctor.getHospital().getId().equals(hospitalId)){
+            throw new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL);
         }
 
         // 해당 병원의 모든 접수 반환
@@ -104,10 +110,6 @@ public class CheckInService {
 
         return checkInResponseList;
     }
-
-
-
-
 
     // 접수 상태 변경
     // 접수 기록 영구 삭제
