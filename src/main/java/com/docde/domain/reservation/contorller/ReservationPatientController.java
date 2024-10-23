@@ -27,8 +27,8 @@ public class ReservationPatientController {
      */
     @PostMapping("/reservations")
     public ApiResponse<ReservationResponseDto> createReservation(@PathVariable Long doctorId,
-                                                                                 @PathVariable Long patientId,
-                                                                                 @RequestBody ReservationRequestDto reservationRequestDto){
+                                                                 @PathVariable Long patientId,
+                                                                 @RequestBody ReservationRequestDto reservationRequestDto){
         ReservationResponseDto reservationResponseDto = reservationPatientService.createReservation(doctorId, patientId, reservationRequestDto);
         return ApiResponse.onSuccess(reservationResponseDto);
     }
@@ -42,8 +42,8 @@ public class ReservationPatientController {
      */
     @PutMapping("/reservations/{reservationId}/cancel")
     public ApiResponse<ReservationResponseDto> cancelReservation(@PathVariable Long doctorId,
-                                                                                 @PathVariable Long patientId,
-                                                                                 @PathVariable Long reservationId){
+                                                                 @PathVariable Long patientId,
+                                                                 @PathVariable Long reservationId){
         ReservationResponseDto reservationResponseDto = reservationPatientService.cancelReservation(doctorId,patientId,reservationId);
         return ApiResponse.onSuccess(reservationResponseDto);
     }
@@ -58,8 +58,8 @@ public class ReservationPatientController {
      */
     @GetMapping("/reservations/{reservationId}")
     public ApiResponse<ReservationResponseDto> getReservation(@PathVariable Long doctorId,
-                                                                              @PathVariable Long patientId,
-                                                                              @PathVariable Long reservationId){
+                                                              @PathVariable Long patientId,
+                                                              @PathVariable Long reservationId){
         ReservationResponseDto reservationResponseDto = reservationPatientService.getReservation(doctorId, patientId,reservationId);
         return ApiResponse.onSuccess(reservationResponseDto);
     }
