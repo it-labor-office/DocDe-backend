@@ -17,6 +17,7 @@ public enum ErrorStatus implements BaseCode {
     _NOT_FOUND_TOKEN(HttpStatus.NOT_FOUND, 404, "JWT 토큰이 필요합니다."),
     _NOT_REFRESH_TOKEN(HttpStatus.BAD_REQUEST, 400, "리프레쉬 토큰이 아닙니다."),
     _NOT_ACCESS_TOKEN(HttpStatus.BAD_REQUEST, 400, "엑세스 토큰이 아닙니다."),
+    _EMAIL_MUST_BE_AUTHENTICATED(HttpStatus.BAD_REQUEST, 400, "이메일 인증되어야합니다."),
     _NO_MORE_STORE(HttpStatus.BAD_REQUEST, 400, "최대 3개 운영가능"),
     _TEST_ERROR(HttpStatus.BAD_REQUEST, 400, "ApiException 예외 처리 테스트"),
 
@@ -37,6 +38,8 @@ public enum ErrorStatus implements BaseCode {
     _USER_ROLE_IS_NULL(HttpStatus.BAD_REQUEST, 400, "유저 권한이 없습니다."),
     _INVALID_USER_NAME(HttpStatus.BAD_REQUEST, 400, "유저이름은 최소 3자 이상,20자 이하여야 하며, 대소문자 포함 영문,숫자만 사용가능합니다."),
     _FORBIDDEN(HttpStatus.FORBIDDEN, 403, "권한이 없습니다."),
+    _ERROR_WHILE_SENDING_EMAIL(HttpStatus.FORBIDDEN, 500, "이메일을 보내는 중 오류가 발생하였습니다."),
+
     //병원 관련 코드
     _NOT_FOUND_HOSPITAL(HttpStatus.BAD_REQUEST, 400, "병원을 찾을 수 없습니다"),
 
