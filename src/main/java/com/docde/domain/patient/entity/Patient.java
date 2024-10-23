@@ -1,5 +1,6 @@
 package com.docde.domain.patient.entity;
 
+import com.docde.common.entity.Timestamped;
 import com.docde.common.enums.Gender;
 import com.docde.domain.medicalRecord.entity.MedicalRecord;
 import jakarta.persistence.*;
@@ -12,7 +13,7 @@ import java.util.List;
 @Getter
 @Entity
 @NoArgsConstructor
-public class Patient {
+public class Patient extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
