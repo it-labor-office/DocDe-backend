@@ -2,7 +2,6 @@ package com.docde.domain.reservation.dto.response;
 
 import com.docde.domain.reservation.entity.ReservationStatus;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Builder;
 import lombok.Data;
 
 @Data
@@ -17,34 +16,31 @@ public class ReservationResponseDto {
     private ReservationStatus reservationStatus;
 
 
-    @Builder
-    private ReservationResponseDto(Long reservationId, String reservationReason, String rejectionReason, ReservationStatus reservationStatus){
+    public ReservationResponseDto(Long reservationId, String reservationReason, String rejectionReason, ReservationStatus reservationStatus) {
         this.reservationId = reservationId;
-        this.reservationReason = reservationReason;
-        this.rejectionReason = rejectionReason;
+        if(reservationReason != null){
+            this.reservationReason = reservationReason;
+        }else if(rejectionReason != null){
+            this.rejectionReason = rejectionReason;
+        }
         this.reservationStatus = reservationStatus;
     }
 
-    public static ReservationResponseDto of(Long reservationId, ReservationStatus reservationStatus){
-        return ReservationResponseDto.builder()
-                .reservationId(reservationId)
-                .reservationStatus(reservationStatus)
-                .build();
+    public ReservationResponseDto(Long reservationId, ReservationStatus reservationStatus) {
+        this.reservationId = reservationId;
+        this.reservationStatus = reservationStatus;
     }
 
-    public static ReservationResponseDto of(Long reservationId, ReservationStatus reservationStatus, String reservationReason){
-        return ReservationResponseDto.builder()
-                .reservationId(reservationId)
-                .reservationStatus(reservationStatus)
-                .reservationReason(reservationReason)
-                .build();
+
+    public static ReservationResponseDto reservationReason(Long reservationId, ReservationStatus reservationStatus){
+        return new ReservationResponseDto(reservationId, reservationStatus);
+    }
+
+    public static ReservationResponseDto reservationReason(Long reservationId, ReservationStatus reservationStatus, String reservationReason){
+        return new ReservationResponseDto(reservationId, reservationReason,null, reservationStatus);
     }
 
     public static ReservationResponseDto rejectReservation(Long reservationId, ReservationStatus reservationStatus, String rejectionReason){
-        return ReservationResponseDto.builder()
-                .reservationId(reservationId)
-                .reservationStatus(reservationStatus)
-                .rejectionReason(rejectionReason)
-                .build();
+        return new ReservationResponseDto(reservationId, null, rejectionReason, reservationStatus);
     }
 }
