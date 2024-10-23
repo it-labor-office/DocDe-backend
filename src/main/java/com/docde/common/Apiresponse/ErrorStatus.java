@@ -46,7 +46,13 @@ public enum ErrorStatus implements BaseCode {
     //의사 관련 코드
     _NOT_FOUND_DOCTOR(HttpStatus.NOT_FOUND, 404, "의사를 찾을 수 없습니다."),
     //환자 관련 코드
-    _NOT_FOUND_PATIENT(HttpStatus.NOT_FOUND, 404, "환자를 찾을 수 없습니다.");
+    _NOT_FOUND_PATIENT(HttpStatus.NOT_FOUND, 404, "환자를 찾을 수 없습니다."),
+
+    //접수 관련 코드
+    _BAD_REQUEST_ALREADY_CHECKED_IN(HttpStatus.BAD_REQUEST, 400, "이미 진행중인 접수가 있습니다."),
+    _BAD_REQUEST_DOCTOR_NOT_BELONG_TO_HOSPITAL(HttpStatus.BAD_REQUEST, 400, "해당 병원에 소속된 의사가 아닙니다."),
+    _NOT_FOUND_CHECK_IN(HttpStatus.BAD_REQUEST, 400, "진행 중인 진료 접수가 없습니다."),
+    _FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL(HttpStatus.FORBIDDEN, 403, "해당 병원에 소속된 의사가 아닙니다.");
 
     private final HttpStatus httpStatus;
     private final Integer statusCode;
