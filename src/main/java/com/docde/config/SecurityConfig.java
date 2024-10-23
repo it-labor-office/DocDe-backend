@@ -15,6 +15,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 @Configuration
 @EnableWebSecurity
@@ -23,20 +24,21 @@ public class SecurityConfig {
     private final UserDetailsServiceImpl userDetailsService;
     private final JwtDecodeFilter jwtDecodeFilter;
     private final JwtUtil jwtUtil;
+    private final HandlerExceptionResolver handlerExceptionResolver;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
         authenticationManagerBuilder.userDetailsService(userDetailsService);
         AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
-        AuthenticationFilter authenticationFilter = new AuthenticationFilter(jwtUtil, authenticationManager);
+        AuthenticationFilter authenticationFilter = new AuthenticationFilter(jwtUtil, authenticationManager, handlerExceptionResolver);
 
         http.csrf(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .formLogin(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/docde/auth/signin", "/docde/auth/signup/patient", "/docde/auth/signup/doctor", "/error").permitAll()
+                        .requestMatchers("/auth/signin", "/auth/signup/patient", "/auth/signup/doctor", "/auth/refresh", "/error").permitAll()
                         .anyRequest().authenticated()
                 )
                 .logout(LogoutConfigurer::permitAll)
