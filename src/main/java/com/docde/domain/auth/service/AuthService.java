@@ -51,7 +51,6 @@ public class AuthService {
         if (!isValidPassword(password)) throw new ApiException(ErrorStatus._INVALID_PASSWORD_FORM);
         if (!phone.matches("^[0-9]{11}$")) throw new ApiException(ErrorStatus._INVALID_PHONE_FORM);
         if (!isAuthenticatedEmail(email, code)) throw new ApiException(ErrorStatus._EMAIL_MUST_BE_AUTHENTICATED);
-        deleteAuthenticationCodeOnEmail(email);
 
         String encodedPassword = passwordEncoder.encode(password);
         Patient patient = Patient.builder().name(name).address(address).phone(phone).gender(gender).build();
@@ -64,7 +63,6 @@ public class AuthService {
         if (userRepository.existsByEmail(email)) throw new ApiException(ErrorStatus._DUPLICATED_EMAIL);
         if (!isValidPassword(password)) throw new ApiException(ErrorStatus._INVALID_PASSWORD_FORM);
         if (!isAuthenticatedEmail(email, code)) throw new ApiException(ErrorStatus._EMAIL_MUST_BE_AUTHENTICATED);
-        deleteAuthenticationCodeOnEmail(email);
 
         String encodedPassword = passwordEncoder.encode(password);
         Doctor doctor = Doctor.builder().name(name).description(description).build();
@@ -110,11 +108,6 @@ public class AuthService {
         String codeInRedis = (String) redisTemplate.opsForValue().get(redisKey);
         if (codeInRedis == null) return false;
         return codeInRedis.equals(code);
-    }
-
-    void deleteAuthenticationCodeOnEmail(String email) {
-        String redisKey = String.format("%s_%s", AUTHENTICATION_CODE_FOR_EMAIL_REDIS_KEY, email);
-        redisTemplate.delete(redisKey);
     }
 
     // 인증 코드 생성 메서드
