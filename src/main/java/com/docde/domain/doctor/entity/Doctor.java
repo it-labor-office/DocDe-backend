@@ -1,10 +1,13 @@
 package com.docde.domain.doctor.entity;
 
 import com.docde.domain.hospital.entity.Hospital;
+import com.docde.domain.medicalRecord.entity.MedicalRecord;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Getter
 @Entity
@@ -23,6 +26,9 @@ public class Doctor {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(nullable = false, name = "hospital_id")
     private Hospital hospital;
+
+    @OneToMany(mappedBy = "doctor")
+    private List<MedicalRecord> medicalRecords;
 
     @Builder
     public Doctor(String name, String description, Hospital hospital) {
