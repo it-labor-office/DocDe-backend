@@ -8,6 +8,8 @@ import com.docde.domain.reservation.service.ReservationPatientService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -28,8 +30,9 @@ public class ReservationPatientController {
     @PostMapping("/reservations")
     public ApiResponse<ReservationResponseDto> createReservation(@PathVariable Long doctorId,
                                                                  @PathVariable Long patientId,
-                                                                 @RequestBody ReservationRequestDto reservationRequestDto){
-        ReservationResponseDto reservationResponseDto = reservationPatientService.createReservation(doctorId, patientId, reservationRequestDto);
+                                                                 @RequestBody ReservationRequestDto reservationRequestDto,
+                                                                 @AuthenticationPrincipal UserDetails userDetails) {
+        ReservationResponseDto reservationResponseDto = reservationPatientService.createReservation(doctorId, patientId, reservationRequestDto, userDetails);
         return ApiResponse.onSuccess(reservationResponseDto);
     }
 
@@ -43,8 +46,9 @@ public class ReservationPatientController {
     @PutMapping("/reservations/{reservationId}/cancel")
     public ApiResponse<ReservationResponseDto> cancelReservation(@PathVariable Long doctorId,
                                                                  @PathVariable Long patientId,
-                                                                 @PathVariable Long reservationId){
-        ReservationResponseDto reservationResponseDto = reservationPatientService.cancelReservation(doctorId,patientId,reservationId);
+                                                                 @PathVariable Long reservationId,
+                                                                 @AuthenticationPrincipal UserDetails userDetails){
+        ReservationResponseDto reservationResponseDto = reservationPatientService.cancelReservation(doctorId,patientId,reservationId, userDetails);
         return ApiResponse.onSuccess(reservationResponseDto);
     }
 
