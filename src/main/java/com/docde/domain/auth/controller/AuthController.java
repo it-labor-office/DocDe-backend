@@ -1,5 +1,6 @@
 package com.docde.domain.auth.controller;
 
+import com.docde.common.Apiresponse.ApiResponse;
 import com.docde.domain.auth.dto.AuthRequest;
 import com.docde.domain.auth.dto.AuthResponse;
 import com.docde.domain.auth.service.AuthService;
@@ -8,8 +9,6 @@ import com.docde.domain.patient.dto.PatientResponse;
 import com.docde.domain.user.entity.User;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -20,19 +19,25 @@ public class AuthController {
     private final AuthService authService;
 
     @PostMapping("/auth/signup/patient")
-    public ResponseEntity<AuthResponse.PatientSignUp> patientSignUp(@RequestBody @Valid AuthRequest.PatientSignUp signUpRequestDto) {
-        User user = authService.patientSignUp(signUpRequestDto.email(), signUpRequestDto.password(), signUpRequestDto.name(), signUpRequestDto.address(), signUpRequestDto.phone(), signUpRequestDto.gender());
-        return ResponseEntity.status(HttpStatus.CREATED).body(new AuthResponse.PatientSignUp(user.getId(), user.getEmail(), user.getUserRole(), new PatientResponse(user.getPatient())));
+    public ApiResponse<AuthResponse.PatientSignUp> patientSignUp(@RequestBody @Valid AuthRequest.PatientSignUp signUpRequestDto) {
+        User user = authService.patientSignUp(signUpRequestDto.email(), signUpRequestDto.password(), signUpRequestDto.name(), signUpRequestDto.address(), signUpRequestDto.phone(), signUpRequestDto.gender(), signUpRequestDto.code());
+        return ApiResponse.onCreated(new AuthResponse.PatientSignUp(user.getId(), user.getEmail(), user.getUserRole(), new PatientResponse(user.getPatient())));
     }
 
     @PostMapping("/auth/signup/doctor")
-    public ResponseEntity<AuthResponse.DoctorSignUp> doctorSignUp(@RequestBody @Valid AuthRequest.DoctorSignUp signUpRequestDto) {
-        User user = authService.doctorSignUp(signUpRequestDto.email(), signUpRequestDto.password(), signUpRequestDto.name(), signUpRequestDto.description(), signUpRequestDto.isDoctorPresident());
-        return ResponseEntity.status(HttpStatus.CREATED).body(new AuthResponse.DoctorSignUp(user.getId(), user.getEmail(), user.getUserRole(), new DoctorResponse(user.getDoctor())));
+    public ApiResponse<AuthResponse.DoctorSignUp> doctorSignUp(@RequestBody @Valid AuthRequest.DoctorSignUp signUpRequestDto) {
+        User user = authService.doctorSignUp(signUpRequestDto.email(), signUpRequestDto.password(), signUpRequestDto.name(), signUpRequestDto.description(), signUpRequestDto.isDoctorPresident(), signUpRequestDto.code());
+        return ApiResponse.onCreated(new AuthResponse.DoctorSignUp(user.getId(), user.getEmail(), user.getUserRole(), new DoctorResponse(user.getDoctor())));
     }
 
     @PostMapping("/auth/refresh")
-    public ResponseEntity<AuthResponse.SignIn> reissueToken(@RequestBody @Valid AuthRequest.ReissueToken reissueTokenRequestDto) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(authService.reissueToken(reissueTokenRequestDto.refreshToken()));
+    public ApiResponse<AuthResponse.SignIn> reissueToken(@RequestBody @Valid AuthRequest.ReissueToken reissueTokenRequestDto) {
+        return ApiResponse.onCreated(authService.reissueToken(reissueTokenRequestDto.refreshToken()));
+    }
+
+    @PostMapping("/auth/email-authentication")
+    public ApiResponse authenticateEmail(@RequestBody @Valid AuthRequest.AuthenticateEmail authenticateEmailRequestDto) {
+        authService.authenticateEmail(authenticateEmailRequestDto.email());
+        return ApiResponse.onSuccess(null);
     }
 }
