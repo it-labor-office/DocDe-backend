@@ -19,7 +19,7 @@ public class CheckIn extends Timestamped {
     private CheckinStatus checkinStatus;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false, name = "dotcor_id")
+    @JoinColumn(name = "doctor_id")
     private Doctor doctor;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -31,5 +31,13 @@ public class CheckIn extends Timestamped {
         this.checkinStatus = checkinStatus;
         this.doctor = doctor;
         this.patient = patient;
+    }
+
+    public void updateStatus(CheckinStatus checkinStatus){
+        this.checkinStatus = checkinStatus;
+    }
+
+    public void updateDoctor(Doctor doctor){
+        this.doctor = doctor;
     }
 }

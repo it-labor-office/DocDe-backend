@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
 @Service
 @RequiredArgsConstructor
@@ -91,11 +90,11 @@ public class CheckInService {
     // 접수 상태 확인(병원)
     public List<CheckInResponse> getAllCheckIns(UserDetailsImpl userDetails, Long hospitalId) {
 
-        // 로그인된 유저 정보로 해당 병원 관계자인지 확인하기(예외 처리 하기!!)
+        // 로그인된 유저 정보로 해당 병원 관계자인지 확인하기
         Doctor doctor = doctorRepository.findById(userDetails.getUser().getDoctor().getId())
                 .orElseThrow(()-> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
 
-        if(doctor.getHospital().getId().equals(hospitalId)){
+        if(!doctor.getHospital().getId().equals(hospitalId)){
             throw new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL);
         }
 
@@ -112,7 +111,54 @@ public class CheckInService {
     }
 
     // 접수 상태 변경
+    @Transactional
+    public CheckInResponse updateCheckIn(UserDetailsImpl userDetails, Long hospitalId, Long checkInId, CheckInRequest checkInRequest) {
+
+        // 로그인된 유저 정보로 해당 병원 관계자인지 확인하기
+        Doctor doctor = doctorRepository.findById(userDetails.getUser().getDoctor().getId())
+                .orElseThrow(()-> new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL));
+
+        if(!doctor.getHospital().getId().equals(hospitalId)){
+            throw new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL);
+        }
+
+        CheckIn checkIn = checkInRepository.findById(checkInId)
+                .orElseThrow(()-> new ApiException(ErrorStatus._NOT_FOUND_CHECK_IN));
+
+        // 요청에 의사 아이디가 존재할 때
+        if(checkInRequest.getDoctorId() != null){
+            Doctor addedDoctor = doctorRepository.findById(checkInRequest.getDoctorId())
+                    .orElseThrow(()-> new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL));
+
+            if(!addedDoctor.getHospital().getId().equals(hospitalId)){
+                throw new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL);
+            }
+
+            checkIn.updateDoctor(addedDoctor);
+        }
+
+        // 요청에 접수 상태가 존재할 때
+        if(checkInRequest.getStatus() != null){
+            checkIn.updateStatus(CheckinStatus.valueOf(checkInRequest.getStatus()));
+        }
+
+        return checkInResponseFromCheckIn(checkIn);
+    }
+
     // 접수 기록 영구 삭제
+    @Transactional
+    public void deleteCheckIn(UserDetailsImpl userDetails, Long checkInId) {
+
+        CheckIn checkIn = checkInRepository.findById(checkInId)
+                .orElseThrow(()-> new ApiException(ErrorStatus._NOT_FOUND_CHECK_IN));
+
+        // 로그인된 유저의 소속 병원이 접수의 병원과 같은지 확인
+        if(userDetails.getUser().getDoctor().getHospital().equals(checkIn.getDoctor().getHospital())){
+            throw new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL);
+        }
+
+        checkInRepository.delete(checkIn);
+    }
 
     // CheckInResponse 만들기
     private CheckInResponse checkInResponseFromCheckIn(CheckIn checkIn){
@@ -123,7 +169,4 @@ public class CheckInService {
                 checkIn.getCreatedAt()
         );
     }
-
-
-
 }
