@@ -1,6 +1,7 @@
 package com.docde.config;
 
-import com.docde.common.exceptions.AuthException;
+import com.docde.common.Apiresponse.ErrorStatus;
+import com.docde.common.exceptions.ApiException;
 import com.docde.domain.auth.dto.AuthRequest;
 import com.docde.domain.auth.dto.AuthResponse;
 import com.docde.domain.auth.entity.UserDetailsImpl;
@@ -14,16 +15,19 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
 
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final JwtUtil jwtUtil;
+    private final HandlerExceptionResolver handlerExceptionResolver;
 
-    public AuthenticationFilter(JwtUtil jwtUtil, AuthenticationManager authenticationManager) {
+    public AuthenticationFilter(JwtUtil jwtUtil, AuthenticationManager authenticationManager, HandlerExceptionResolver handlerExceptionResolver) {
         super(authenticationManager);
         this.jwtUtil = jwtUtil;
-        setFilterProcessesUrl("/docde/auth/signin");
+        this.handlerExceptionResolver = handlerExceptionResolver;
+        setFilterProcessesUrl("/auth/signin");
         setUsernameParameter("email");
         setPasswordParameter("password");
     }
@@ -50,7 +54,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
         if (refreshToken == null) {
             response.setHeader("Content-Type", "text/plain; charset=utf-8");
-            throw new AuthException("토큰 생성 실패");
+            throw new ApiException(ErrorStatus._ERROR_WHILE_CREATE_TOKEN);
         }
 
         AuthResponse.SignIn signinResponse = new AuthResponse.SignIn(accessToken, refreshToken);
@@ -61,6 +65,6 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) {
-        throw new AuthException("로그인 실패");
+        handlerExceptionResolver.resolveException(request, response, null, new ApiException(ErrorStatus._EMAIL_OR_PASSWORD_NOT_MATCHES));
     }
 }
