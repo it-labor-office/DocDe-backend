@@ -46,7 +46,7 @@ public class ReservationPatientService {
 
         Reservation savedReservation = reservationRepository.save(reservation);
 
-        return ReservationResponseDto.of(savedReservation.getId(),
+        return ReservationResponseDto.reservationReason(savedReservation.getId(),
                 savedReservation.getReservationStatus(),
                 reservationRequestDto.getReservationReason());
     }
@@ -67,9 +67,9 @@ public class ReservationPatientService {
             throw new ApiException(ErrorStatus._DENIED_RESERVATION);
         }
 
-        reservation.cancelReservation(RESERVATION_CANCELED);
+        reservation.changeReservationStatus(RESERVATION_CANCELED);
 
-        return ReservationResponseDto.of(reservation.getId(), reservation.getReservationStatus());
+        return ReservationResponseDto.reservationReason(reservation.getId(), reservation.getReservationStatus());
     }
 
 
@@ -81,7 +81,7 @@ public class ReservationPatientService {
 
         Reservation reservation = getReservationDoctorPatient(doctor, patient, reservationId);
 
-        return ReservationResponseDto.of(reservation.getId(), reservation.getReservationStatus());
+        return ReservationResponseDto.reservationReason(reservation.getId(), reservation.getReservationStatus());
     }
 
 

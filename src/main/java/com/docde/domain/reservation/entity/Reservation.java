@@ -6,12 +6,12 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.List;
+import lombok.Setter;
 
 @Entity
 @Getter
 @NoArgsConstructor
+@Setter
 public class Reservation extends Timestamped {
 
 
@@ -32,8 +32,7 @@ public class Reservation extends Timestamped {
     @JoinColumn(name = "patient_id", nullable = false)
     private Patient patient;
 
-    @Builder
-    private Reservation(String reservation_reason, ReservationStatus reservationStatus, Doctor doctor, Patient patient){
+    public Reservation(String reservation_reason, ReservationStatus reservationStatus, Doctor doctor, Patient patient) {
         this.reservation_reason = reservation_reason;
         this.reservationStatus = reservationStatus;
         this.doctor = doctor;
@@ -42,30 +41,12 @@ public class Reservation extends Timestamped {
 
 
     public static Reservation createReservation(String reservation_reason, ReservationStatus reservationStatus, Doctor doctor, Patient patient){
-        return Reservation.builder()
-                .reservation_reason(reservation_reason)
-                .reservationStatus(reservationStatus)
-                .doctor(doctor)
-                .patient(patient)
-                .build();
+        return new Reservation(reservation_reason, reservationStatus, doctor, patient);
     }
 
-    public void cancelReservation(ReservationStatus reservationStatus){
-        Reservation.builder()
-                .reservationStatus(reservationStatus)
-                .build();
+    public void changeReservationStatus(ReservationStatus reservationStatus){
+        this.reservationStatus = reservationStatus;
     }
 
-    public void approveReservation(ReservationStatus reservationStatus){
-        Reservation.builder()
-                .reservationStatus(reservationStatus)
-                .build();
-    }
-
-    public void rejectReservation(ReservationStatus reservationStatus){
-        Reservation.builder()
-                .reservationStatus(reservationStatus)
-                .build();
-    }
 
 }

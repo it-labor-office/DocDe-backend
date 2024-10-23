@@ -48,9 +48,9 @@ public class ReservationDoctorService {
             throw new ApiException(ErrorStatus._ALREADY_CANCEL_RESERVATION);
         }
 
-        reservation.approveReservation(RESERVED);
+        reservation.changeReservationStatus(RESERVED);
 
-        return ReservationResponseDto.of(reservation.getId(), reservation.getReservationStatus());
+        return ReservationResponseDto.reservationReason(reservation.getId(), reservation.getReservationStatus());
     }
 
     @Transactional
@@ -66,12 +66,12 @@ public class ReservationDoctorService {
         log.info("reservationStatus ::: {}", reservation.getReservationStatus());
 
         if(reservation.getReservationStatus() == RESERVATION_DENIED){
-            throw new ApiException(ErrorStatus._ALREADY_RESERVED_RESERVATION);
+            throw new ApiException(ErrorStatus._DENIED_RESERVATION);
         }else if(reservation.getReservationStatus() == RESERVATION_CANCELED){
-            throw new ApiException(ErrorStatus._ALREADY_RESERVED_RESERVATION);
+            throw new ApiException(ErrorStatus._ALREADY_CANCEL_RESERVATION);
         }
 
-        reservation.rejectReservation(RESERVATION_DENIED);
+        reservation.changeReservationStatus(RESERVATION_DENIED);
 
         return ReservationResponseDto.rejectReservation(reservation.getId(),
                 reservation.getReservationStatus(), reservationRequestDto.getRejectionReason());
