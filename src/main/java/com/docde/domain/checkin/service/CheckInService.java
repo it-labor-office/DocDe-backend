@@ -67,7 +67,7 @@ public class CheckInService {
             return checkInResponseFromCheckIn(checkIn);
         }else{
             CheckIn checkIn = CheckIn.builder()
-                    .checkinStatus(CheckinStatus.WAITING)
+                    .checkinStatus(CheckinStatus.PENDING)
                     .patient(userDetails.getUser().getPatient())
                     .build();
 
