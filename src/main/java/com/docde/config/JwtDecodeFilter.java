@@ -39,7 +39,7 @@ public class JwtDecodeFilter extends OncePerRequestFilter {
                 String authorization = request.getHeader("Authorization");
 
                 if (authorization == null) throw new ApiException(ErrorStatus._NOT_FOUND_TOKEN);
-                
+
                 String token = jwtUtil.substringToken(authorization);
                 TokenType tokenType = jwtUtil.getTokenType(token);
                 if (!tokenType.equals(TokenType.ACCESS)) throw new ApiException(ErrorStatus._NOT_ACCESS_TOKEN);
@@ -47,7 +47,6 @@ public class JwtDecodeFilter extends OncePerRequestFilter {
                 Claims claims = jwtUtil.extractClaims(token);
 
                 if (claims == null) throw new ApiException(ErrorStatus._BAD_REQUEST_ILLEGAL_TOKEN);
-
 
                 String email = claims.get("email", String.class);
                 UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(email);
@@ -70,7 +69,7 @@ public class JwtDecodeFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
-        String[] excludePath = {"/auth/signin", "/auth/signup/patient", "/auth/signup/doctor", "/auth/refresh", "/error"};
+        String[] excludePath = {"/auth", "/error"};
         String path = request.getRequestURI();
         return Arrays.stream(excludePath).anyMatch(path::startsWith);
     }
