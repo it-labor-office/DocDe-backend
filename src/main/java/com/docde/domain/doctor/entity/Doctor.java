@@ -1,5 +1,6 @@
 package com.docde.domain.doctor.entity;
 
+import com.docde.common.entity.Timestamped;
 import com.docde.domain.hospital.entity.Hospital;
 import com.docde.domain.medicalRecord.entity.MedicalRecord;
 import jakarta.persistence.*;
@@ -12,7 +13,7 @@ import java.util.List;
 @Getter
 @Entity
 @NoArgsConstructor
-public class Doctor {
+public class Doctor extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -24,7 +25,7 @@ public class Doctor {
     String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = false, name = "hospital_id")
+    @JoinColumn(nullable = true, name = "hospital_id")
     private Hospital hospital;
 
     @OneToMany(mappedBy = "doctor")

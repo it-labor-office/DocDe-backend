@@ -14,8 +14,6 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Getter
 public class MedicalRecord extends Timestamped {
-
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long patientRecordId;
@@ -37,10 +35,10 @@ public class MedicalRecord extends Timestamped {
     public MedicalRecord(String description, LocalDateTime consultation,
                          Patient patient, Doctor doctor, String treatmentPlan) {
 
-         this.description = description;
-         this.consultation = consultation;
-         this.patient = patient;
-         this.doctor = doctor;
-         this.treatmentPlan = treatmentPlan;
+        this.description = description;
+        this.consultation = consultation;
+        this.patient = patient;
+        this.doctor = doctor;
+        this.treatmentPlan = treatmentPlan;
     }
 }

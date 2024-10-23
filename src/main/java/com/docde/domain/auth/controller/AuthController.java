@@ -38,6 +38,6 @@ public class AuthController {
     @PostMapping("/auth/email-authentication")
     public ApiResponse authenticateEmail(@RequestBody @Valid AuthRequest.AuthenticateEmail authenticateEmailRequestDto) {
         authService.authenticateEmail(authenticateEmailRequestDto.email());
-        return ApiResponse.onSuccess(null);
+        return ApiResponse.onCreated(null);
     }
 }
