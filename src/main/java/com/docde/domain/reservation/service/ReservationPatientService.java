@@ -12,10 +12,15 @@ import com.docde.domain.reservation.entity.Reservation;
 import com.docde.domain.reservation.entity.ReservationStatus;
 import com.docde.domain.reservation.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
+@Transactional(readOnly = true)
 public class ReservationPatientService {
 
     private final ReservationRepository reservationRepository;
@@ -24,8 +29,15 @@ public class ReservationPatientService {
 
     private final ReservationStatus WAITING_RESERVATION = ReservationStatus.WAITING_RESERVATION;
     private final ReservationStatus RESERVATION_CANCELED = ReservationStatus.RESERVATION_CANCELED;
+    private final ReservationStatus DONE = ReservationStatus.DONE;
+    private final ReservationStatus RESERVATION_DENIED = ReservationStatus.RESERVATION_DENIED;
 
-    public ReservationResponseDto createReservation(Long doctorId, Long patientId, ReservationRequestDto reservationRequestDto) {
+    @Transactional
+    public ReservationResponseDto createReservation(Long doctorId, Long patientId, ReservationRequestDto reservationRequestDto, UserDetails userDetails) {
+
+        if(!checkRole(userDetails)){
+            throw new ApiException(ErrorStatus._FORBIDDEN);
+        }
 
         if(reservationRequestDto.getReservationReason() == null){
             throw new ApiException(ErrorStatus._BAD_REQUEST_RESERVATION_REASON);
@@ -39,19 +51,34 @@ public class ReservationPatientService {
 
         Reservation savedReservation = reservationRepository.save(reservation);
 
-        return ReservationResponseDto.of(savedReservation.getId(), savedReservation.getReservationStatus());
+        return ReservationResponseDto.reservationReason(savedReservation.getId(),
+                savedReservation.getReservationStatus(),
+                reservationRequestDto.getReservationReason());
     }
 
-    public ReservationResponseDto cancelReservation(Long doctorId, Long patientId, Long reservationId) {
+    @Transactional
+    public ReservationResponseDto cancelReservation(Long doctorId, Long patientId, Long reservationId, UserDetails userDetails) {
+
+        if(!checkRole(userDetails)){
+            throw new ApiException(ErrorStatus._FORBIDDEN);
+        }
         Doctor doctor = getDoctor(doctorId);
 
         Patient patient = getPatient(patientId);
 
         Reservation reservation = getReservationDoctorPatient(doctor, patient, reservationId);
 
-        reservation.cancelReservation(RESERVATION_CANCELED);
+        if(reservation.getReservationStatus() == RESERVATION_CANCELED){
+            throw new ApiException(ErrorStatus._ALREADY_CANCEL_RESERVATION);
+        }else if(reservation.getReservationStatus() == DONE){
+            throw new ApiException(ErrorStatus._ALREADY_DONE_RESERVATION);
+        }else if(reservation.getReservationStatus() == RESERVATION_DENIED){
+            throw new ApiException(ErrorStatus._DENIED_RESERVATION);
+        }
 
-        return ReservationResponseDto.of(reservation.getId(), reservation.getReservationStatus());
+        reservation.changeReservationStatus(RESERVATION_CANCELED);
+
+        return ReservationResponseDto.reservationReason(reservation.getId(), reservation.getReservationStatus());
     }
 
 
@@ -63,7 +90,7 @@ public class ReservationPatientService {
 
         Reservation reservation = getReservationDoctorPatient(doctor, patient, reservationId);
 
-        return null;
+        return ReservationResponseDto.reservationReason(reservation.getId(), reservation.getReservationStatus());
     }
 
 
@@ -81,4 +108,10 @@ public class ReservationPatientService {
                 new ApiException(ErrorStatus._NOT_FOUND_RESERVATION)
         );
     }
+    private boolean checkRole(UserDetails userDetails){
+        return userDetails.getAuthorities().stream().anyMatch(authority ->
+                authority.getAuthority().equals("ROLE_PATIENT"));
+    }
+
+
 }
