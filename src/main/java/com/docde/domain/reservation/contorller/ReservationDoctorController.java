@@ -7,7 +7,9 @@ import com.docde.domain.reservation.service.ReservationDoctorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.parameters.P;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -28,9 +30,10 @@ public class ReservationDoctorController {
      */
     @PutMapping("/reservations/{reservationId}/approval")
     public ApiResponse<ReservationResponseDto> approvalReservation(@PathVariable Long doctorId,
-                                                                                   @PathVariable Long patientId,
-                                                                                   @PathVariable Long reservationId){
-        ReservationResponseDto reservationResponseDto = reservationDoctorService.approvalReservation(doctorId, patientId, reservationId);
+                                                                   @PathVariable Long patientId,
+                                                                   @PathVariable Long reservationId,
+                                                                   @AuthenticationPrincipal UserDetails userDetails){
+        ReservationResponseDto reservationResponseDto = reservationDoctorService.approvalReservation(doctorId, patientId, reservationId, userDetails);
         return ApiResponse.onCreated(reservationResponseDto);
     }
 
@@ -44,10 +47,11 @@ public class ReservationDoctorController {
      */
     @PutMapping("/reservations/{reservationId}/refusal")
     public ApiResponse<ReservationResponseDto> refusalReservation(@PathVariable Long doctorId,
-                                                                                  @PathVariable Long patientId,
-                                                                                  @PathVariable Long reservationId,
-                                                                                  @RequestBody ReservationRequestDto reservationRequestDto){
-        ReservationResponseDto reservationResponseDto = reservationDoctorService.refusalReservation(doctorId, patientId, reservationId, reservationRequestDto);
+                                                                  @PathVariable Long patientId,
+                                                                  @PathVariable Long reservationId,
+                                                                  @RequestBody ReservationRequestDto reservationRequestDto,
+                                                                  @AuthenticationPrincipal UserDetails userDetails){
+        ReservationResponseDto reservationResponseDto = reservationDoctorService.refusalReservation(doctorId, patientId, reservationId, reservationRequestDto, userDetails);
         return ApiResponse.onCreated(reservationResponseDto);
     }
 
@@ -62,8 +66,9 @@ public class ReservationDoctorController {
     @PutMapping("/reservations/{reservationId}/done")
     public ApiResponse<ReservationResponseDto> doneReservation(@PathVariable Long doctorId,
                                                                @PathVariable Long patientId,
-                                                               @PathVariable Long reservationId){
-        ReservationResponseDto reservationResponseDto = reservationDoctorService.doneReservation(doctorId,patientId,reservationId);
+                                                               @PathVariable Long reservationId,
+                                                               @AuthenticationPrincipal UserDetails userDetails){
+        ReservationResponseDto reservationResponseDto = reservationDoctorService.doneReservation(doctorId,patientId,reservationId,userDetails);
         return ApiResponse.onCreated(reservationResponseDto);
     }
 }

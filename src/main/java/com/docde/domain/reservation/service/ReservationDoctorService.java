@@ -13,6 +13,7 @@ import com.docde.domain.reservation.entity.ReservationStatus;
 import com.docde.domain.reservation.repository.ReservationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -34,7 +35,12 @@ public class ReservationDoctorService {
     private final ReservationStatus RESERVED = ReservationStatus.RESERVED;
 
     @Transactional
-    public ReservationResponseDto approvalReservation(Long doctorId, Long patientId, Long reservationId) {
+    public ReservationResponseDto approvalReservation(Long doctorId, Long patientId, Long reservationId, UserDetails userDetails) {
+
+        if(!checkRole(userDetails)){
+            throw new ApiException(ErrorStatus._FORBIDDEN);
+        }
+
         Doctor doctor = getDoctor(doctorId);
         Patient patient = getPatient(patientId);
         Reservation reservation = getReservationDoctorPatient(doctor, patient, reservationId);
@@ -54,7 +60,11 @@ public class ReservationDoctorService {
     }
 
     @Transactional
-    public ReservationResponseDto refusalReservation(Long doctorId, Long patientId, Long reservationId, ReservationRequestDto reservationRequestDto) {
+    public ReservationResponseDto refusalReservation(Long doctorId, Long patientId, Long reservationId, ReservationRequestDto reservationRequestDto, UserDetails userDetails) {
+
+        if(!checkRole(userDetails)){
+            throw new ApiException(ErrorStatus._FORBIDDEN);
+        }
 
         if(reservationRequestDto.getRejectionReason() == null){
             throw new ApiException(ErrorStatus._BAD_REQUEST_RESERVATION_REJECT_REASON);
@@ -77,7 +87,7 @@ public class ReservationDoctorService {
                 reservation.getReservationStatus(), reservationRequestDto.getRejectionReason());
     }
 
-    public ReservationResponseDto doneReservation(Long doctorId, Long patientId, Long reservationId) {
+    public ReservationResponseDto doneReservation(Long doctorId, Long patientId, Long reservationId, UserDetails userDetails) {
         return null;
     }
 
@@ -93,5 +103,10 @@ public class ReservationDoctorService {
         return reservationRepository.findByIdAndDoctorAndPatient(reservationId, doctor, patient).orElseThrow(() ->
                 new ApiException(ErrorStatus._NOT_FOUND_RESERVATION)
         );
+    }
+
+    private boolean checkRole(UserDetails userDetails){
+        return userDetails.getAuthorities().stream().anyMatch(authority ->
+                authority.getAuthority().equals("ROLE_DOCTOR_PRESIDENT") || authority.getAuthority().equals("ROLE_DOCTOR"));
     }
 }
