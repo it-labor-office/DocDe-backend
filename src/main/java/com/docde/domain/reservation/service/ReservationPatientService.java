@@ -19,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @RequiredArgsConstructor
 @Slf4j
+@Transactional(readOnly = true)
 public class ReservationPatientService {
 
     private final ReservationRepository reservationRepository;
@@ -28,6 +29,7 @@ public class ReservationPatientService {
     private final ReservationStatus WAITING_RESERVATION = ReservationStatus.WAITING_RESERVATION;
     private final ReservationStatus RESERVATION_CANCELED = ReservationStatus.RESERVATION_CANCELED;
     private final ReservationStatus DONE = ReservationStatus.DONE;
+    private final ReservationStatus RESERVATION_DENIED = ReservationStatus.RESERVATION_DENIED;
 
     @Transactional
     public ReservationResponseDto createReservation(Long doctorId, Long patientId, ReservationRequestDto reservationRequestDto) {
@@ -44,7 +46,9 @@ public class ReservationPatientService {
 
         Reservation savedReservation = reservationRepository.save(reservation);
 
-        return ReservationResponseDto.of(savedReservation.getId(), savedReservation.getReservationStatus());
+        return ReservationResponseDto.of(savedReservation.getId(),
+                savedReservation.getReservationStatus(),
+                reservationRequestDto.getReservationReason());
     }
 
     @Transactional
@@ -59,6 +63,8 @@ public class ReservationPatientService {
             throw new ApiException(ErrorStatus._ALREADY_CANCEL_RESERVATION);
         }else if(reservation.getReservationStatus() == DONE){
             throw new ApiException(ErrorStatus._ALREADY_DONE_RESERVATION);
+        }else if(reservation.getReservationStatus() == RESERVATION_DENIED){
+            throw new ApiException(ErrorStatus._DENIED_RESERVATION);
         }
 
         reservation.cancelReservation(RESERVATION_CANCELED);

@@ -6,13 +6,12 @@ import lombok.Builder;
 import lombok.Data;
 
 @Data
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class ReservationResponseDto {
     private Long reservationId;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String reservationReason;
 
-    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String rejectionReason;
 
     private ReservationStatus reservationStatus;
@@ -30,6 +29,22 @@ public class ReservationResponseDto {
         return ReservationResponseDto.builder()
                 .reservationId(reservationId)
                 .reservationStatus(reservationStatus)
+                .build();
+    }
+
+    public static ReservationResponseDto of(Long reservationId, ReservationStatus reservationStatus, String reservationReason){
+        return ReservationResponseDto.builder()
+                .reservationId(reservationId)
+                .reservationStatus(reservationStatus)
+                .reservationReason(reservationReason)
+                .build();
+    }
+
+    public static ReservationResponseDto rejectReservation(Long reservationId, ReservationStatus reservationStatus, String rejectionReason){
+        return ReservationResponseDto.builder()
+                .reservationId(reservationId)
+                .reservationStatus(reservationStatus)
+                .rejectionReason(rejectionReason)
                 .build();
     }
 }

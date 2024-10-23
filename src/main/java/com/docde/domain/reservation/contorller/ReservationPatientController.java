@@ -18,6 +18,13 @@ public class ReservationPatientController {
     private final ReservationPatientService reservationPatientService;
 
 
+    /**
+     * 예약 신청
+     * @param doctorId
+     * @param patientId
+     * @param reservationRequestDto
+     * @return 예약 아이디, 예약 사유, 예약 상태
+     */
     @PostMapping("/reservations")
     public ApiResponse<ReservationResponseDto> createReservation(@PathVariable Long doctorId,
                                                                                  @PathVariable Long patientId,
@@ -26,6 +33,13 @@ public class ReservationPatientController {
         return ApiResponse.onSuccess(reservationResponseDto);
     }
 
+    /**
+     * 예약 취소
+     * @param doctorId
+     * @param patientId
+     * @param reservationId
+     * @return 예약 아이디, 예약 상태
+     */
     @PutMapping("/reservations/{reservationId}/cancel")
     public ApiResponse<ReservationResponseDto> cancelReservation(@PathVariable Long doctorId,
                                                                                  @PathVariable Long patientId,
@@ -35,6 +49,13 @@ public class ReservationPatientController {
     }
 
 
+    /**
+     * 예약 현황 조회
+     * @param doctorId
+     * @param patientId
+     * @param reservationId
+     * @return 예약 아이디, 예약 상태
+     */
     @GetMapping("/reservations/{reservationId}")
     public ApiResponse<ReservationResponseDto> getReservation(@PathVariable Long doctorId,
                                                                               @PathVariable Long patientId,
