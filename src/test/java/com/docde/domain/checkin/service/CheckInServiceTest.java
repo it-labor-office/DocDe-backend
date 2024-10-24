@@ -1,6 +1,9 @@
 package com.docde.domain.checkin.service;
 
 import com.docde.common.enums.Gender;
+import com.docde.common.enums.UserRole;
+import com.docde.domain.auth.entity.UserDetailsImpl;
+import com.docde.domain.checkin.dto.CheckInRequest;
 import com.docde.domain.checkin.entity.CheckIn;
 import com.docde.domain.checkin.entity.CheckinStatus;
 import com.docde.domain.checkin.repository.CheckInRepository;
@@ -12,19 +15,25 @@ import com.docde.domain.hospital.entity.HospitalTimetable;
 import com.docde.domain.hospital.entity.WeekTimetable;
 import com.docde.domain.hospital.repository.HospitalRepository;
 import com.docde.domain.patient.entity.Patient;
+import com.docde.domain.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
-
+@ExtendWith(MockitoExtension.class)
 class CheckInServiceTest {
 
     @InjectMocks
@@ -47,10 +56,16 @@ class CheckInServiceTest {
 
     private Patient mokPatient;
 
+    private User mokUser;
+
     private WeekTimetable mokWeekTimetable;
 
     private HospitalTimetable mokHospitalTimetable;
     private List<HospitalTimetable> mokHospitalTimetableList;
+
+    private UserDetailsImpl mokUserDetails;
+
+    private CheckInRequest mokCheckInRequest;
 
 
     @BeforeEach
@@ -87,21 +102,53 @@ class CheckInServiceTest {
         setField(mokHospital, "weekTimetable", mokWeekTimetable);
         setField(mokHospital, "announcement", "병원안내");
 
+        setField(mokDoctor, "id", 1L);
         mokDoctor = Doctor.builder()
                 .name("의사이름")
                 .hospital(mokHospital)
                 .description("의사설명")
                 .build();
 
+        setField(mokPatient, "id", 1L);
+        mokPatient = Patient.builder()
+                .name("환자이름")
+                .address("환자주소")
+                .phone("123-1231-1231")
+                .gender(Gender.M)
+                .build();
+
+        setField(mokCheckIn, "id", 1L);
         mokCheckIn = CheckIn.builder()
                 .patient(mokPatient)
                 .doctor(mokDoctor)
                 .checkinStatus(CheckinStatus.WAITING)
                 .build();
+
+        setField(mokCheckInRequest, "doctorId", 3L);
+        setField(mokCheckInRequest, "status", null);
+
+        setField(mokUser, "id", 1L);
+        mokUser = User.builder()
+                .email("e@ma.il")
+                .password("1234")
+                .userRole(UserRole.ROLE_DOCTOR)
+                .patient(null)
+                .build();
+
+        setField(mokUserDetails, "user", mokUser);
     }
 
     @Test
-    void saveCheckIn() {
+    void saveCheckIn_의사를지목했을때() {
+        // g
+        CheckIn checkIn = new CheckIn();
+        when(hospitalRepository.findById(1L)).thenReturn(Optional.of(mokHospital));
+        when(doctorRepository.findById(1L)).thenReturn(Optional.of(mokDoctor));
+        when(checkInRepository.save(any(CheckIn.class))).thenReturn(checkIn);
+
+        // w
+        CheckIn savedCheckIn = checkInService.saveCheckIn()
+        // t
     }
 
     @Test
