@@ -13,7 +13,6 @@ import com.docde.domain.user.entity.User;
 import com.docde.domain.user.repository.UserRepository;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
@@ -37,23 +36,23 @@ public class AuthService {
     private final RedisTemplate redisTemplate;
 
     @Value("${GOOGLE_ACCOUNT_EMAIL}")
-    String googleAccountEmail;
+    private String googleAccountEmail;
 
     @Value("${SHOULD_AUTHENTICATE_EMAIL}")
-    String shouldAuthenticateEmail;
+    private String shouldAuthenticateEmail;
 
     private static final String AUTHENTICATION_CODE_FOR_EMAIL_REDIS_KEY = "AUTHENTICATION_CODE_FOR_EMAIL";
 
-    public boolean isValidPassword(String password) {
+    public boolean _isValidPassword(String password) {
         return password.matches("^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[!@#$%^&*(),.?\":{}|<>])[A-Za-z\\d!@#$%^&*(),.?\":{}|<>]{8,}$");
     }
 
     @Transactional
     public User patientSignUp(String email, String password, String name, String address, String phone, Gender gender, String code) {
         if (userRepository.existsByEmail(email)) throw new ApiException(ErrorStatus._DUPLICATED_EMAIL);
-        if (!isValidPassword(password)) throw new ApiException(ErrorStatus._INVALID_PASSWORD_FORM);
+        if (!_isValidPassword(password)) throw new ApiException(ErrorStatus._INVALID_PASSWORD_FORM);
         if (!phone.matches("^[0-9]{11}$")) throw new ApiException(ErrorStatus._INVALID_PHONE_FORM);
-        if (!isAuthenticatedEmail(email, code)) throw new ApiException(ErrorStatus._EMAIL_MUST_BE_AUTHENTICATED);
+        if (!_isAuthenticatedEmail(email, code)) throw new ApiException(ErrorStatus._EMAIL_MUST_BE_AUTHENTICATED);
 
         String encodedPassword = passwordEncoder.encode(password);
         Patient patient = Patient.builder().name(name).address(address).phone(phone).gender(gender).build();
@@ -64,8 +63,8 @@ public class AuthService {
     @Transactional
     public User doctorSignUp(String email, String password, String name, String description, Boolean isDoctorPresident, String code) {
         if (userRepository.existsByEmail(email)) throw new ApiException(ErrorStatus._DUPLICATED_EMAIL);
-        if (!isValidPassword(password)) throw new ApiException(ErrorStatus._INVALID_PASSWORD_FORM);
-        if (!isAuthenticatedEmail(email, code)) throw new ApiException(ErrorStatus._EMAIL_MUST_BE_AUTHENTICATED);
+        if (!_isValidPassword(password)) throw new ApiException(ErrorStatus._INVALID_PASSWORD_FORM);
+        if (!_isAuthenticatedEmail(email, code)) throw new ApiException(ErrorStatus._EMAIL_MUST_BE_AUTHENTICATED);
 
         String encodedPassword = passwordEncoder.encode(password);
         Doctor doctor = Doctor.builder().name(name).description(description).build();
@@ -78,7 +77,7 @@ public class AuthService {
         // 프론트에서 붙여준 Bearer prefix 제거
         try {
             refreshToken = jwtUtil.substringToken(refreshToken);
-        } catch (NullPointerException e) {
+        } catch (NullPointerException | IllegalArgumentException e) {
             throw new ApiException(ErrorStatus._BAD_REQUEST_ILLEGAL_TOKEN);
         }
 
@@ -106,8 +105,8 @@ public class AuthService {
         return new AuthResponse.SignIn(newAccessToken, newRefreshToken);
     }
 
-    boolean isAuthenticatedEmail(String email, String code) {
-        if (shouldAuthenticateEmail == null || !shouldAuthenticateEmail.equalsIgnoreCase("true")) return true;
+    public boolean _isAuthenticatedEmail(String email, String code) {
+        if (shouldAuthenticateEmail == null || shouldAuthenticateEmail.equalsIgnoreCase("false")) return true;
         String redisKey = String.format("%s_%s", AUTHENTICATION_CODE_FOR_EMAIL_REDIS_KEY, email);
         String codeInRedis = (String) redisTemplate.opsForValue().get(redisKey);
         if (codeInRedis == null) return false;
@@ -115,7 +114,7 @@ public class AuthService {
     }
 
     // 인증 코드 생성 메서드
-    String createAuthenticationCode() {
+    public String _createAuthenticationCode() {
         Random random = new Random();
         StringBuffer key = new StringBuffer();
 
@@ -150,7 +149,7 @@ public class AuthService {
             messageHelper.setFrom(googleAccountEmail);
             messageHelper.setTo(email);
             messageHelper.setSubject("[의사결정] 이메일 인증 번호 발송");
-            String code = createAuthenticationCode();
+            String code = _createAuthenticationCode();
 
             String body = "<html>" +
                     "<body>" +
@@ -164,8 +163,8 @@ public class AuthService {
 
             String redisKey = String.format("%s_%s", AUTHENTICATION_CODE_FOR_EMAIL_REDIS_KEY, email);
             redisTemplate.opsForValue().set(redisKey, code, 5, TimeUnit.MINUTES); // 5분동안 유효한 코드
-        } catch (MessagingException e) {
-            throw new ApiException(ErrorStatus._ERROR_WHILE_SENDING_EMAIL);
+        } catch (Exception e) {
+            throw new ApiException(ErrorStatus._ERROR_WHILE_SENDING_EMAIL, e);
         }
     }
 }
