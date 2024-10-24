@@ -165,7 +165,7 @@ public class CheckInService {
         return new CheckInResponse(
                 checkIn.getId(),
                 checkIn.getPatient().getName(),
-                checkIn.getDoctor().getName(),
+                checkIn.getDoctor() != null ? checkIn.getDoctor().getName() : "의사 배정 필요",
                 checkIn.getCreatedAt()
         );
     }
