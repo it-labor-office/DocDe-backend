@@ -4,6 +4,7 @@ import com.docde.common.enums.Gender;
 import com.docde.common.enums.UserRole;
 import com.docde.domain.auth.entity.UserDetailsImpl;
 import com.docde.domain.checkin.dto.CheckInRequest;
+import com.docde.domain.checkin.dto.CheckInResponse;
 import com.docde.domain.checkin.entity.CheckIn;
 import com.docde.domain.checkin.entity.CheckinStatus;
 import com.docde.domain.checkin.repository.CheckInRepository;
@@ -16,6 +17,7 @@ import com.docde.domain.hospital.entity.WeekTimetable;
 import com.docde.domain.hospital.repository.HospitalRepository;
 import com.docde.domain.patient.entity.Patient;
 import com.docde.domain.user.entity.User;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -48,24 +50,24 @@ class CheckInServiceTest {
     @Mock
     private DoctorRepository doctorRepository;
 
-    private CheckIn mokCheckIn;
+    private CheckIn mokCheckIn = new CheckIn();
 
-    private Hospital mokHospital;
+    private Hospital mokHospital = new Hospital();
 
-    private Doctor mokDoctor;
+    private Doctor mokDoctor = new Doctor();
 
-    private Patient mokPatient;
+    private Patient mokPatient = new Patient();
 
-    private User mokUser;
+    private User mokUser = new User();
 
-    private WeekTimetable mokWeekTimetable;
+    private WeekTimetable mokWeekTimetable = new WeekTimetable();
 
-    private HospitalTimetable mokHospitalTimetable;
+    private HospitalTimetable mokHospitalTimetable = new HospitalTimetable();
     private List<HospitalTimetable> mokHospitalTimetableList;
 
     private UserDetailsImpl mokUserDetails;
 
-    private CheckInRequest mokCheckInRequest;
+    private CheckInRequest mokCheckInRequest = new CheckInRequest();
 
 
     @BeforeEach
@@ -80,7 +82,7 @@ class CheckInServiceTest {
                 .address("주소")
                 .build();
 
-        setField(mokHospitalTimetable, "id", 1);
+        setField(mokHospitalTimetable, "id", 1L);
         setField(mokHospitalTimetable, "dayOfTheWeek", DayOfTheWeek.FRI);
         setField(mokHospitalTimetable, "openTime", LocalTime.of(9, 30));
         setField(mokHospitalTimetable, "closeTime", LocalTime.of(21, 30));
@@ -89,11 +91,11 @@ class CheckInServiceTest {
         mokHospitalTimetableList = new ArrayList<>();
         mokHospitalTimetableList.add(mokHospitalTimetable);
 
-        setField(mokWeekTimetable, "Id", 1);
+        setField(mokWeekTimetable, "Id", 1L);
         setField(mokWeekTimetable, "hospital", mokHospital);
         setField(mokWeekTimetable, "hospitalTimetables", mokHospitalTimetableList);
 
-        setField(mokHospital, "id", 1);
+        setField(mokHospital, "id", 1L);
         setField(mokHospital, "name", "병원이름");
         setField(mokHospital, "address", "병원주소");
         setField(mokHospital, "contact", "이게뭔지모르겠어요");
@@ -135,7 +137,7 @@ class CheckInServiceTest {
                 .patient(null)
                 .build();
 
-        setField(mokUserDetails, "user", mokUser);
+        mokUserDetails = new UserDetailsImpl(mokUser);
     }
 
     @Test
@@ -147,8 +149,10 @@ class CheckInServiceTest {
         when(checkInRepository.save(any(CheckIn.class))).thenReturn(checkIn);
 
         // w
-        CheckIn savedCheckIn = checkInService.saveCheckIn()
+        CheckInResponse checkInResponse = checkInService.saveCheckIn(mokUserDetails, 1L, mokCheckInRequest);
+
         // t
+        Assertions.assertNotNull(checkInResponse);
     }
 
     @Test
