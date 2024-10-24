@@ -39,6 +39,9 @@ public class AuthService {
     @Value("${GOOGLE_ACCOUNT_EMAIL}")
     String googleAccountEmail;
 
+    @Value("${SHOULD_AUTHENTICATE_EMAIL}")
+    String shouldAuthenticateEmail;
+
     private static final String AUTHENTICATION_CODE_FOR_EMAIL_REDIS_KEY = "AUTHENTICATION_CODE_FOR_EMAIL";
 
     public boolean isValidPassword(String password) {
@@ -104,6 +107,7 @@ public class AuthService {
     }
 
     boolean isAuthenticatedEmail(String email, String code) {
+        if (shouldAuthenticateEmail == null || !shouldAuthenticateEmail.equalsIgnoreCase("true")) return true;
         String redisKey = String.format("%s_%s", AUTHENTICATION_CODE_FOR_EMAIL_REDIS_KEY, email);
         String codeInRedis = (String) redisTemplate.opsForValue().get(redisKey);
         if (codeInRedis == null) return false;
