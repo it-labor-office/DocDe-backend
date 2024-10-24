@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -30,8 +31,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 @ExtendWith(MockitoExtension.class)
@@ -57,7 +56,8 @@ class CheckInServiceTest {
 
     private Patient mokPatient = new Patient();
 
-    private User mokUser = new User();
+    private User mokUserDoctor = new User();
+    private User mokUserPatient = new User();
 
     private WeekTimetable mokWeekTimetable = new WeekTimetable();
 
@@ -124,27 +124,34 @@ class CheckInServiceTest {
                 .checkinStatus(CheckinStatus.WAITING)
                 .build();
 
-        setField(mokCheckInRequest, "doctorId", 3L);
+        setField(mokCheckInRequest, "doctorId", 1L);
         setField(mokCheckInRequest, "status", null);
 
-        setField(mokUser, "id", 1L);
-        mokUser = User.builder()
+        setField(mokUserDoctor, "id", 1L);
+        mokUserDoctor = User.builder()
                 .email("e@ma.il")
                 .password("1234")
                 .userRole(UserRole.ROLE_DOCTOR)
                 .patient(null)
                 .build();
 
-        mokUserDetails = new UserDetailsImpl(mokUser);
+        setField(mokUserPatient, "id", 2L);
+        mokUserPatient = User.builder()
+                .email("2e@ma.il")
+                .password("1234")
+                .userRole(UserRole.ROLE_PATIENT)
+                .patient(mokPatient)
+                .doctor(null)
+                .build();
+
+        mokUserDetails = new UserDetailsImpl(mokUserPatient);
     }
 
     @Test
     void saveCheckIn_의사를지목했을때() {
         // g
-        CheckIn checkIn = new CheckIn();
-        when(hospitalRepository.findById(1L)).thenReturn(Optional.of(mokHospital));
-        when(doctorRepository.findById(1L)).thenReturn(Optional.of(mokDoctor));
-        when(checkInRepository.save(any(CheckIn.class))).thenReturn(checkIn);
+        BDDMockito.given(hospitalRepository.findById(1L)).willReturn(Optional.of(mokHospital));
+        BDDMockito.given(doctorRepository.findById(mokCheckInRequest.getDoctorId())).willReturn(Optional.of(mokDoctor));
 
         // w
         CheckInResponse checkInResponse = checkInService.saveCheckIn(mokUserDetails, 1L, mokCheckInRequest);
