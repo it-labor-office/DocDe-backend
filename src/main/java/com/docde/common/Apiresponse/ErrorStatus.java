@@ -35,6 +35,7 @@ public enum ErrorStatus implements BaseCode{
     _FORBIDDEN(HttpStatus.FORBIDDEN,403 ,"권한이 없습니다."),
     //병원 관련 코드
     _NOT_FOUND_HOSPITAL(HttpStatus.BAD_REQUEST,400 ,"병원을 찾을 수 없습니다");
+    //접수 관련 코드
 
     private final HttpStatus httpStatus;
     private final Integer statusCode;

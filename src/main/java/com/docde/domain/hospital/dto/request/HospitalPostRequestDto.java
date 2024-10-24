@@ -11,7 +11,6 @@ import java.time.LocalTime;
 
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
 public class HospitalPostRequestDto {
     private String hospitalName;
 
@@ -25,5 +24,12 @@ public class HospitalPostRequestDto {
 
     private String announcement;
 
-
+    public HospitalPostRequestDto(String hospitalName, String hospitalAddress, String hospitalContact, LocalTime openTime, LocalTime closingTime, String announcement) {
+        this.hospitalName = hospitalName;
+        this.hospitalAddress = hospitalAddress;
+        this.hospitalContact = hospitalContact;
+        this.openTime = openTime;
+        this.closingTime = closingTime;
+        this.announcement = announcement;
+    }
 }
