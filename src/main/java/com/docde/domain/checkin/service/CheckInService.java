@@ -79,11 +79,10 @@ public class CheckInService {
     // 자신의 접수 상태 확인(사용자)
     public CheckInResponse getMyCheckIn(UserDetailsImpl userDetails) {
 
-        // 로그인된 유저 id로 접수 찾기. 예외처리필요
+        // 로그인된 유저 id로 접수 찾기
         CheckIn checkIn = checkInRepository.findByPatientId(userDetails.getUser().getPatient().getId())
                 .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_CHECK_IN));
 
-        // 순서 구현되면 순서도 응답에 넣기
         return checkInResponseFromCheckIn(checkIn);
     }
 
