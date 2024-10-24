@@ -2,6 +2,7 @@ package com.docde.domain.checkin.service;
 
 import com.docde.common.enums.Gender;
 import com.docde.common.enums.UserRole;
+import com.docde.common.exceptions.ApiException;
 import com.docde.domain.auth.entity.UserDetailsImpl;
 import com.docde.domain.checkin.dto.CheckInRequest;
 import com.docde.domain.checkin.dto.CheckInResponse;
@@ -31,6 +32,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
 @ExtendWith(MockitoExtension.class)
@@ -158,6 +160,24 @@ class CheckInServiceTest {
 
         // t
         Assertions.assertNotNull(checkInResponse);
+    }
+
+    @Test
+    void saveCheckIn_이미접수중일때() {
+        // g
+        List<Long> patientIdList = new ArrayList<>();
+        patientIdList.add(1L);
+        patientIdList.add(2L);
+
+        BDDMockito.given(hospitalRepository.findById(1L)).willReturn(Optional.of(mokHospital));
+        BDDMockito.given(checkInRepository.findPatientId()).willReturn(patientIdList);
+
+        // w
+        ApiException exception = assertThrows(ApiException.class, () -> {
+            checkInService.saveCheckIn(mokUserDetails, 1L, mokCheckInRequest);
+        });
+        // t
+        Assertions.assertEquals("이미 진행중인 접수가 있습니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
     }
 
     @Test
