@@ -192,6 +192,34 @@ class CheckInServiceTest {
     }
 
     @Test
+    void saveCheckIn_해당병원의사가아닐때() {
+
+        // g
+        BDDMockito.given(hospitalRepository.findById(1L)).willReturn(Optional.of(mokHospital));
+
+        setField(mokCheckInRequest, "doctorId", 1L);
+        
+        Hospital mokHospital2 = new Hospital();
+        setField(mokHospital2, "id", 2L);
+        setField(mokHospital2, "name", "병원이름");
+        setField(mokHospital2, "address", "병원주소");
+        setField(mokHospital2, "contact", "이게뭔지모르겠어요");
+        setField(mokHospital2, "open_time", LocalTime.of(9, 30));
+        setField(mokHospital2, "closing_time", LocalTime.of(21, 30));
+        setField(mokHospital2, "weekTimetable", mokWeekTimetable);
+        setField(mokHospital2, "announcement", "병원안내");
+
+        Doctor doctor = new Doctor("의사이름2", "설명", mokHospital2);
+
+        // w
+        ApiException exception = assertThrows(ApiException.class, () -> {
+            checkInService.saveCheckIn(mokUserDetails, 1L, mokCheckInRequest);
+        });
+        // t
+        Assertions.assertEquals("해당 병원에 소속된 의사가 아닙니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
+    }
+
+    @Test
     void getMyCheckIn() {
     }
 
