@@ -126,9 +126,6 @@ class CheckInServiceTest {
                 .checkinStatus(CheckinStatus.WAITING)
                 .build();
 
-        setField(mokCheckInRequest, "doctorId", 1L);
-        setField(mokCheckInRequest, "status", null);
-
         setField(mokUserDoctor, "id", 1L);
         mokUserDoctor = User.builder()
                 .email("e@ma.il")
@@ -152,8 +149,22 @@ class CheckInServiceTest {
     @Test
     void saveCheckIn_의사를지목했을때() {
         // g
+        setField(mokCheckInRequest, "doctorId", 1L);
+        setField(mokCheckInRequest, "status", null);
         BDDMockito.given(hospitalRepository.findById(1L)).willReturn(Optional.of(mokHospital));
         BDDMockito.given(doctorRepository.findById(mokCheckInRequest.getDoctorId())).willReturn(Optional.of(mokDoctor));
+
+        // w
+        CheckInResponse checkInResponse = checkInService.saveCheckIn(mokUserDetails, 1L, mokCheckInRequest);
+
+        // t
+        Assertions.assertNotNull(checkInResponse);
+    }
+
+    @Test
+    void saveCheckIn_의사를지목하지않았을때() {
+        // g
+        BDDMockito.given(hospitalRepository.findById(1L)).willReturn(Optional.of(mokHospital));
 
         // w
         CheckInResponse checkInResponse = checkInService.saveCheckIn(mokUserDetails, 1L, mokCheckInRequest);
