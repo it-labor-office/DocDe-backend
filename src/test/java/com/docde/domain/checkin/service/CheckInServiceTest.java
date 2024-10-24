@@ -198,7 +198,7 @@ class CheckInServiceTest {
         BDDMockito.given(hospitalRepository.findById(1L)).willReturn(Optional.of(mokHospital));
 
         setField(mokCheckInRequest, "doctorId", 1L);
-        
+
         Hospital mokHospital2 = new Hospital();
         setField(mokHospital2, "id", 2L);
         setField(mokHospital2, "name", "병원이름");
@@ -221,6 +221,13 @@ class CheckInServiceTest {
 
     @Test
     void getMyCheckIn() {
+
+       /* // g
+        BDDMockito.given(checkInRepository.findByPatientId()).willReturn(Optional.of(mokCheckIn));
+        // w
+        CheckInResponse checkInResponse = checkInService.getMyCheckIn(mokUserDetails);
+        // t
+        Assertions.assertNotNull(checkInResponse);*/
     }
 
     @Test
