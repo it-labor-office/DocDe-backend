@@ -121,7 +121,6 @@ public class HospitalService {
                             dto.getOpenTime(),
                             dto.getClosingTime(),
                             hospital);
-
                 }).toList();
 
         List<HospitalTimetable> updateTimetables = oldTimetables.stream()

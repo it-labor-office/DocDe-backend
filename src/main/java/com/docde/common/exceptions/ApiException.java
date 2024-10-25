@@ -8,4 +8,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ApiException extends RuntimeException {
     private final BaseCode errorCode;
+
+    public ApiException(BaseCode errorCode, Throwable cause) {
+        super(cause);
+        this.errorCode = errorCode;
+    }
 }
