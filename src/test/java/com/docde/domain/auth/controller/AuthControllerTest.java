@@ -6,6 +6,7 @@ import com.docde.config.JwtUtil;
 import com.docde.domain.auth.dto.AuthRequest;
 import com.docde.domain.auth.service.AuthService;
 import com.docde.domain.auth.service.UserDetailsServiceImpl;
+import com.docde.domain.doctor.entity.Doctor;
 import com.docde.domain.patient.entity.Patient;
 import com.docde.domain.user.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -26,7 +27,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(value = AuthController.class)
+@WebMvcTest(AuthController.class)
 public class AuthControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -85,5 +86,44 @@ public class AuthControllerTest {
                 .andExpect(jsonPath("$.data.patient.address").value(address))
                 .andExpect(jsonPath("$.data.patient.phone").value(phone))
                 .andExpect(jsonPath("$.data.patient.gender").value("M"));
+    }
+
+
+    @Test
+    @DisplayName("/auth/signup/doctor")
+    @WithMockUser
+    void doctorSignUp() throws Exception {
+        // given
+        String email = "a@a.com";
+        String password = "Password1234@";
+        String name = "dlfma";
+        String description = "tkdtp";
+        String code = "code";
+        boolean isDoctorPresident = false;
+        Long doctorId = 1L;
+        Long userId = 1L;
+        AuthRequest.DoctorSignUp doctorSignUp = new AuthRequest.DoctorSignUp(email, password, name, description, isDoctorPresident, code);
+        Doctor doctor = Doctor.builder().name(name).description(description).build();
+        User user = User.builder().email(email).password(password).userRole(UserRole.ROLE_DOCTOR).doctor(doctor).build();
+        ReflectionTestUtils.setField(doctor, "id", doctorId);
+        ReflectionTestUtils.setField(user, "id", userId);
+        String content = objectMapper.writeValueAsString(doctorSignUp);
+
+        // when
+        when(authService.doctorSignUp(email, password, name, description, isDoctorPresident, code)).thenReturn(user);
+
+        // then
+        mockMvc.perform(post("/auth/signup/doctor")
+                        .content(content)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.csrf()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("Created"))
+                .andExpect(jsonPath("$.statusCode").value(201))
+                .andExpect(jsonPath("$.data.email").value(email))
+                .andExpect(jsonPath("$.data.userRole").value("ROLE_DOCTOR"))
+                .andExpect(jsonPath("$.data.doctor.name").value(name))
+                .andExpect(jsonPath("$.data.doctor.description").value(description));
     }
 }
