@@ -17,7 +17,14 @@ import java.util.Date;
 @Component
 public class JwtUtil {
 
-    private static final String BEARER_PREFIX = "Bearer ";
+    public static final String BEARER_PREFIX = "Bearer ";
+    public static final String CLAIM_EMAIL = "email";
+    public static final String CLAIM_USER_ROLE = "userRole";
+    public static final String CLAIM_PATIENT_ID = "patientId";
+    public static final String CLAIM_DOCTOR_ID = "doctorId";
+    public static final String CLAIM_HOSPITAL_ID = "hospitalId";
+    public static final String CLAIM_TOKEN_TYPE = "tokenType";
+
 
     @Value("${JWT_SECRET_TOKEN}")
     private String secretKey;
@@ -34,28 +41,34 @@ public class JwtUtil {
         return Keys.hmacShaKeyFor(Base64Coder.decode(base64));
     }
 
-    public String createAccessToken(Long userId, String email, UserRole userRole) {
+    public String createAccessToken(Long userId, String email, UserRole userRole, Long patientId, Long doctorId, Long hospitalId) {
         Date now = new Date();
 
         return BEARER_PREFIX + Jwts.builder()
                 .subject(String.valueOf(userId))
-                .claim("email", email)
-                .claim("userRole", userRole)
-                .claim("tokenType", TokenType.ACCESS)
+                .claim(CLAIM_EMAIL, email)
+                .claim(CLAIM_USER_ROLE, userRole)
+                .claim(CLAIM_PATIENT_ID, patientId)
+                .claim(CLAIM_DOCTOR_ID, doctorId)
+                .claim(CLAIM_HOSPITAL_ID, hospitalId)
+                .claim(CLAIM_TOKEN_TYPE, TokenType.ACCESS)
                 .expiration(new Date(now.getTime() + TokenType.ACCESS.getLifeTime()))
                 .issuedAt(now)
                 .signWith(key)
                 .compact();
     }
 
-    public String createRefreshToken(Long userId, String email, UserRole userRole) {
+    public String createRefreshToken(Long userId, String email, UserRole userRole, Long patientId, Long doctorId, Long hospitalId) {
         Date now = new Date();
 
         return BEARER_PREFIX + Jwts.builder()
                 .subject(String.valueOf(userId))
-                .claim("email", email)
-                .claim("userRole", userRole)
-                .claim("tokenType", TokenType.REFRESH)
+                .claim(CLAIM_EMAIL, email)
+                .claim(CLAIM_USER_ROLE, userRole)
+                .claim(CLAIM_PATIENT_ID, patientId)
+                .claim(CLAIM_DOCTOR_ID, doctorId)
+                .claim(CLAIM_HOSPITAL_ID, hospitalId)
+                .claim(CLAIM_TOKEN_TYPE, TokenType.REFRESH)
                 .expiration(new Date(now.getTime() + TokenType.REFRESH.getLifeTime()))
                 .issuedAt(now)
                 .signWith(key)
