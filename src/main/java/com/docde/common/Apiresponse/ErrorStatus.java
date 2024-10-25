@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 @Getter
 @AllArgsConstructor
 public enum ErrorStatus implements BaseCode {
+
     _BAD_REQUEST_UNSUPPORTED_TOKEN(HttpStatus.BAD_REQUEST, 400, "지원되지 않는 JWT 토큰입니다."),
     _BAD_REQUEST_ILLEGAL_TOKEN(HttpStatus.BAD_REQUEST, 400, "잘못된 JWT 토큰입니다."),
     _UNAUTHORIZED_INVALID_TOKEN(HttpStatus.UNAUTHORIZED, 401, "유효하지 않는 JWT 서명입니다."),
@@ -61,6 +62,12 @@ public enum ErrorStatus implements BaseCode {
 
     // 진료 관련 코드
     _NOT_FOUND_MEDICAL_RECORD(HttpStatus.NOT_FOUND, 404, "진료기록을 찾을 수 없습니다."),
+
+    // 리뷰 관련 코드
+    _NOT_FOUND_REVIEW(HttpStatus.NOT_FOUND,404, "해당 리뷰를 찾을 수 없습니다." ),
+    _FORBIDDEN_REVIEW_ACCESS(HttpStatus.FORBIDDEN, 403, "리뷰를 작성한 사용자가 아닙니다."),
+
+
 
     //접수 관련 코드
     _BAD_REQUEST_ALREADY_CHECKED_IN(HttpStatus.BAD_REQUEST, 400, "이미 진행중인 접수가 있습니다."),
