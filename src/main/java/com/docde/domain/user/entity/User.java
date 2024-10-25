@@ -8,10 +8,14 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 @Getter
 @Entity
 @NoArgsConstructor
+@SQLDelete(sql = "UPDATE user SET deleted = true WHERE id = ?")
+@SQLRestriction("deleted = false")
 public class User extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,6 +39,9 @@ public class User extends Timestamped {
     @JoinColumn
     Patient patient;
 
+    @Column(nullable = false)
+    Boolean deleted;
+
     @Builder
     public User(String email, String password, UserRole userRole, Doctor doctor, Patient patient) {
         this.email = email;
@@ -42,5 +49,6 @@ public class User extends Timestamped {
         this.userRole = userRole;
         this.doctor = doctor;
         this.patient = patient;
+        this.deleted = false;
     }
 }
