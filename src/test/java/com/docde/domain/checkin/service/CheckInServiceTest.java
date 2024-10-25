@@ -222,12 +222,12 @@ class CheckInServiceTest {
     @Test
     void getMyCheckIn() {
 
-       /* // g
-        BDDMockito.given(checkInRepository.findByPatientId()).willReturn(Optional.of(mokCheckIn));
+        // g
+        BDDMockito.given(checkInRepository.findByPatientId(mokUserDetails.getUser().getPatient().getId())).willReturn(Optional.of(mokCheckIn));
         // w
         CheckInResponse checkInResponse = checkInService.getMyCheckIn(mokUserDetails);
         // t
-        Assertions.assertNotNull(checkInResponse);*/
+        Assertions.assertNotNull(checkInResponse);
     }
 
     @Test
