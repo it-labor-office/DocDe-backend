@@ -42,4 +42,9 @@ public class Doctor extends Timestamped {
         this.hospital = hospital;
         this.user = user;
     }
+
+    //병원정보 업데이트하는 용도의 메서드
+    public void updateHospital(Hospital hospital) {
+        this.hospital = hospital;
+    }
 }

@@ -3,6 +3,8 @@ package com.docde.domain.hospital.service;
 import com.docde.common.Apiresponse.ErrorStatus;
 import com.docde.common.exceptions.ApiException;
 import com.docde.domain.auth.entity.AuthUser;
+import com.docde.domain.doctor.entity.Doctor;
+import com.docde.domain.doctor.repository.DoctorRepository;
 import com.docde.domain.hospital.dto.TimetableDto;
 import com.docde.domain.hospital.dto.request.HospitalPostRequestDto;
 import com.docde.domain.hospital.dto.request.HospitalUpdateRequestDto;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -26,6 +29,7 @@ import java.util.Optional;
 public class HospitalService {
     private final HospitalRepository hospitalRepository;
     private final HospitalTimetableRepository hospitalTimetableRepository;
+    private final DoctorRepository doctorRepository;
 
 //    @Transactional
 //    public void ModifyingTest() {
@@ -47,10 +51,15 @@ public class HospitalService {
     public HospitalPostResponseDto postHospital(HospitalPostRequestDto requestDto, AuthUser authUser) {
         //유저 권한 확인
         checkDoctorPresident(authUser);
-        //병원 갯수는 누구를 기준으로 할까??
-        //받은 정보를 바탕으로 병원데이터생성
+        //authUser의 아이디로 의사정보를 업데이트하기 위해 의사엔티티를 찾습니다.
+        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId()).orElseThrow(
+                () -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR)
+        );
+        //병원 생성 후 저장
         Hospital hospital = new Hospital(requestDto);
-        hospitalRepository.save(hospital);
+        Hospital savedHospital = hospitalRepository.save(hospital);
+        //해당의사(병원장)은 이제부터 저장된병원소속
+        doctor.updateHospital(savedHospital);
         return new HospitalPostResponseDto(hospital);
     }
 
@@ -63,12 +72,12 @@ public class HospitalService {
 
     @Transactional
     public HospitalWeeklyTimetablePostResponseDto postWeeklyTimetable(
-            HospitalWeeklyTimetablePostRequestDto requestDto,
-            AuthUser authUser, Long hospitalId) {
-        checkDoctorPresident(authUser);
-
-        Hospital hospital = findHospitalByHospitalId(hospitalId);
-
+            HospitalWeeklyTimetablePostRequestDto requestDto
+            , AuthUser authUser
+            , Long hospitalId) {
+        //병원장인지 확인
+        //권한이 병원장이면 본인 병원을 수정하려는 것인지확인
+        Hospital foundhospital = checkDoctorPresidentRoleAndHospitalIdByAuthUser(hospitalId, authUser);
         /*
         {
             "timetables":[
@@ -87,7 +96,7 @@ public class HospitalService {
                             dto.getDayOfTheWeek(),
                             dto.getOpenTime(),
                             dto.getClosingTime(),
-                            hospital);
+                            foundhospital);
 
                 }).toList();
         //delete문이 7번날아가는 문제는 해결완료
@@ -108,11 +117,9 @@ public class HospitalService {
     public HospitalWeeklyTimetableUpdateResponseDto updateWeeklyTimetable(HospitalWeeklyTimetableUpdateRequestDto requestDto,
                                                                           AuthUser authUser,
                                                                           Long hospitalId) {
-        checkDoctorPresident(authUser);
-
-        Hospital hospital = findHospitalByHospitalId(hospitalId);
+        Hospital foundHospital = checkDoctorPresidentRoleAndHospitalIdByAuthUser(hospitalId, authUser);
         //구 시간표
-        List<HospitalTimetable> oldTimetables = hospitalTimetableRepository.findAllByHospitalId(hospital.getId());
+        List<HospitalTimetable> oldTimetables = hospitalTimetableRepository.findAllByHospitalId(foundHospital.getId());
         //변경 하려는 시간표
         List<HospitalTimetable> timetables = requestDto.getTimetables().stream().
                 map(dto -> {
@@ -120,7 +127,7 @@ public class HospitalService {
                             dto.getDayOfTheWeek(),
                             dto.getOpenTime(),
                             dto.getClosingTime(),
-                            hospital);
+                            foundHospital);
                 }).toList();
 
         List<HospitalTimetable> updateTimetables = oldTimetables.stream()
@@ -155,24 +162,18 @@ public class HospitalService {
 
     @Transactional
     public HospitalUpdateResponseDto putHospital(HospitalUpdateRequestDto requestDto, AuthUser authUser) {
-        checkDoctorPresident(authUser);
+        Hospital foundHospital = checkDoctorPresidentRoleAndHospitalIdByAuthUser(authUser.getId(), authUser);
 
-        Hospital hospital = findHospitalByHospitalId(requestDto.getHospitalId());
+        foundHospital.updateAll(requestDto);
 
-        hospital.updateAll(requestDto);
-
-        return new HospitalUpdateResponseDto(hospital);
+        return new HospitalUpdateResponseDto(foundHospital);
     }
 
     @Transactional
-    public HospitalDeleteResponseDto deleteHospital(HospitalDeleteRequestDto requestDto, AuthUser authUser) {
-        checkDoctorPresident(authUser);
-
-        Hospital hospital = findHospitalByHospitalId(requestDto.getHospitalId());
-
-        hospitalRepository.delete(hospital);
-
-        return new HospitalDeleteResponseDto(hospital);
+    public HospitalDeleteResponseDto deleteHospital(AuthUser authUser) {
+        Hospital foundhospital = checkDoctorPresidentRoleAndHospitalIdByAuthUser(authUser.getHospitalId(), authUser);
+        hospitalRepository.delete(foundhospital);
+        return new HospitalDeleteResponseDto(foundhospital);
     }
 
     public void checkDoctorPresident(AuthUser authUser) {
@@ -183,34 +184,47 @@ public class HospitalService {
         }
     }
 
+    public Hospital checkDoctorPresidentRoleAndHospitalIdByAuthUser(Long hospitalId, AuthUser authUser) {
+        boolean check = authUser.getAuthorities().stream().anyMatch(authority ->
+                authority.getAuthority().equals("ROLE_DOCTOR_PRESIDENT"));
+        if (!check) {
+            throw new ApiException(ErrorStatus._FORBIDDEN);
+        }
+        Hospital hospital = findHospitalByHospitalId(hospitalId);
+        if (!Objects.equals(authUser.getHospitalId(), hospital.getId())) {
+            throw new ApiException(ErrorStatus._FORBIDDEN);
+        }
+        return hospital;
+    }
+
     public Hospital findHospitalByHospitalId(Long hospitalId) {
         return hospitalRepository.findById(hospitalId).orElseThrow(
                 () -> new ApiException(ErrorStatus._NOT_FOUND_HOSPITAL)
         );
     }
 
+    @Transactional
     public HospitalUpdateResponseDto patchHospital(HospitalUpdateRequestDto requestDto, AuthUser authUser) {
-        checkDoctorPresident(authUser);
-        Hospital hospital = findHospitalByHospitalId(requestDto.getHospitalId());
+        Hospital foundhospital = checkDoctorPresidentRoleAndHospitalIdByAuthUser(authUser.getHospitalId(), authUser);
 
         if (requestDto.getHospitalName() != null) {
-            hospital.updateName(requestDto.getHospitalName());
+            foundhospital.updateName(requestDto.getHospitalName());
         }
         if (requestDto.getHospitalAddress() != null) {
-            hospital.updateAddress(requestDto.getHospitalAddress());
+            foundhospital.updateAddress(requestDto.getHospitalAddress());
         }
         if (requestDto.getHospitalContact() != null) {
-            hospital.updateContact(requestDto.getHospitalContact());
+            foundhospital.updateContact(requestDto.getHospitalContact());
         }
         if (requestDto.getOpenTime() != null) {
-            hospital.updateOpenTime(requestDto.getOpenTime());
+            foundhospital.updateOpenTime(requestDto.getOpenTime());
         }
         if (requestDto.getClosingTime() != null) {
-            hospital.updateClosingTime(requestDto.getClosingTime());
+            foundhospital.updateClosingTime(requestDto.getClosingTime());
         }
         if (requestDto.getAnnouncement() != null) {
-            hospital.updateAnnouncement(requestDto.getAnnouncement());
+            foundhospital.updateAnnouncement(requestDto.getAnnouncement());
         }
-        return new HospitalUpdateResponseDto(hospital);
+        return new HospitalUpdateResponseDto(foundhospital);
     }
 }

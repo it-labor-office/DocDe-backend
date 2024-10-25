@@ -40,8 +40,8 @@ public class HospitalTest {
     @Mock
     private HospitalTimetableRepository timetableRepository;
 
+    AuthUser authUser = new AuthUser(1L, "testDoctor@gmail.com", UserRole.ROLE_DOCTOR_PRESIDENT, null, null, null);
 
-    AuthUser authUser = new AuthUser(1L, "testDoctor@gmail.com", UserRole.ROLE_DOCTOR_PRESIDENT);
     HospitalPostRequestDto requestDto = new HospitalPostRequestDto(
             "testHospitalName",
             "testHospitalAddress",
@@ -62,17 +62,17 @@ public class HospitalTest {
             assertEquals(responseDto.getHospitalName(), "testHospitalName");
         }
 
-//        @Test
-//        public void 권한이_없어_병원_생성_실패() {
-//            //권한을 수정해 병원장이 아닌 의사로 병원생성시도
-//            ReflectionTestUtils.setField(authUser.getAuthorities(), "authorities", UserRole.ROLE_DOCTOR);
-//
-//            ApiException exception = assertThrows(ApiException.class, () -> {
-//                hospitalService.postHospital(requestDto, authUser);
-//            });
-//
-//            assertEquals("권한이 없습니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
-//        }
+        @Test
+        public void 권한이_없어_병원_생성_실패() {
+            //권한을 수정해 병원장이 아닌 의사로 병원생성시도
+            ReflectionTestUtils.setField(authUser.getAuthorities(), "authorities", UserRole.ROLE_DOCTOR);
+
+            ApiException exception = assertThrows(ApiException.class, () -> {
+                hospitalService.postHospital(requestDto, authUser);
+            });
+
+            assertEquals("권한이 없습니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
+        }
 
     }
 
@@ -107,7 +107,6 @@ public class HospitalTest {
     @Nested
     class 병원수정 {
         HospitalUpdateRequestDto putRequestDto = new HospitalUpdateRequestDto(
-                1L,
                 "testputHospitalName",
                 "testputHospitalAddress",
                 "testputHospitalContact",
@@ -170,21 +169,19 @@ public class HospitalTest {
         @Test
         public void 병원삭제성공() {
             Hospital hospital = new Hospital(requestDto);
-            HospitalDeleteRequestDto deleteRequestDto = new HospitalDeleteRequestDto(1L);
             Mockito.when(hospitalRepository.findById(1L)).thenReturn(Optional.of(hospital));
 
-            HospitalDeleteResponseDto responseDto = hospitalService.deleteHospital(deleteRequestDto, authUser);
+            HospitalDeleteResponseDto responseDto = hospitalService.deleteHospital(authUser);
 
             assertEquals(responseDto.getId(), hospital.getId());
         }
 
         @Test
         public void 병원을_찾지_못해_병원_삭제_실패() {
-            HospitalDeleteRequestDto deleteRequestDto = new HospitalDeleteRequestDto(1L);
             Mockito.when(hospitalRepository.findById(1L)).thenReturn(Optional.empty());
 
             ApiException exception = assertThrows(ApiException.class, () -> {
-                hospitalService.deleteHospital(deleteRequestDto, authUser);
+                hospitalService.deleteHospital(authUser);
             });
 
             assertEquals("병원을 찾을 수 없습니다", exception.getErrorCode().getReasonHttpStatus().getMessage());
