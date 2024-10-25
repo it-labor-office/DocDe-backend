@@ -3,6 +3,7 @@ package com.docde.domain.hospital.entity;
 import com.docde.domain.hospital.dto.request.HospitalPostRequestDto;
 import com.docde.domain.hospital.dto.request.HospitalUpdateRequestDto;
 import jakarta.persistence.*;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -90,6 +91,15 @@ public class Hospital {
         this.announcement = requestDto.getAnnouncement();
     }
 
+    @Builder
+    public Hospital(String name, String address, String contact, LocalTime open_time, LocalTime closing_time, String announcement) {
+        this.name = name;
+        this.address = address;
+        this.contact = contact;
+        this.open_time = open_time;
+        this.closing_time = closing_time;
+        this.announcement = announcement;
+    }
 //    public void updateTimetables(List<HospitalTimetable> timetables) {
 //        this.timetables = timetables;
 //    }
