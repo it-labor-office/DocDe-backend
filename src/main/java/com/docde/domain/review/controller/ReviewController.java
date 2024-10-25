@@ -1,13 +1,11 @@
 package com.docde.domain.review.controller;
 
 import com.docde.common.Apiresponse.ApiResponse;
-import com.docde.domain.auth.entity.UserDetailsImpl;
+import com.docde.domain.auth.entity.AuthUser;
 import com.docde.domain.review.dto.request.ReviewRequestDto;
 import com.docde.domain.review.dto.request.ReviewUpdateRequestDto;
 import com.docde.domain.review.dto.response.ReviewResponseDto;
-import com.docde.domain.review.entity.Review;
 import com.docde.domain.review.service.ReviewService;
-import com.docde.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -21,10 +19,10 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping("/reviews")
-    public ApiResponse<ReviewResponseDto> createReview(@AuthenticationPrincipal UserDetailsImpl userDetails,
+    public ApiResponse<ReviewResponseDto> createReview(@AuthenticationPrincipal AuthUser authUser,
                                                        @RequestBody ReviewRequestDto reviewRequestDto) {
 
-        ReviewResponseDto responseDto = reviewService.createReview(userDetails, reviewRequestDto);
+        ReviewResponseDto responseDto = reviewService.createReview(authUser, reviewRequestDto);
 
         return ApiResponse.createSuccess("리뷰 작성이 성공적으로 생성되었습니다.", 200, responseDto);
 
@@ -54,9 +52,9 @@ public class ReviewController {
     public ApiResponse<ReviewResponseDto> updateReview(
             @PathVariable Long reviewId,
             @RequestBody ReviewUpdateRequestDto requestDto,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+            @AuthenticationPrincipal AuthUser authUser) {
 
-        ReviewResponseDto responseDto = reviewService.updateReview(reviewId, requestDto, userDetails);
+        ReviewResponseDto responseDto = reviewService.updateReview(reviewId, requestDto, authUser);
         return ApiResponse.onSuccess(responseDto);
     }
 
@@ -65,9 +63,9 @@ public class ReviewController {
     @DeleteMapping("/reviews/{reviewId}")
     public ApiResponse<Void> deleteReview(
             @PathVariable Long reviewId,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+            @AuthenticationPrincipal AuthUser authUser) {
 
-        reviewService.deleteReview(reviewId, userDetails);
+        reviewService.deleteReview(reviewId, authUser);
         return ApiResponse.onSuccess(null);
     }
 }
