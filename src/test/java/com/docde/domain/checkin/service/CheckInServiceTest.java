@@ -68,6 +68,8 @@ class CheckInServiceTest {
 
     private UserDetailsImpl mokUserDetails;
 
+    private UserDetailsImpl mokDoctorUserDetails;
+
     private CheckInRequest mokCheckInRequest = new CheckInRequest();
 
 
@@ -131,7 +133,7 @@ class CheckInServiceTest {
                 .email("e@ma.il")
                 .password("1234")
                 .userRole(UserRole.ROLE_DOCTOR)
-                .patient(null)
+                .doctor(mokDoctor)
                 .build();
 
         setField(mokUserPatient, "id", 2L);
@@ -144,6 +146,7 @@ class CheckInServiceTest {
                 .build();
 
         mokUserDetails = new UserDetailsImpl(mokUserPatient);
+        mokDoctorUserDetails = new UserDetailsImpl(mokUserDoctor);
     }
 
     @Test
@@ -232,6 +235,33 @@ class CheckInServiceTest {
 
     @Test
     void getAllCheckIns() {
+
+        // g
+        BDDMockito.given(doctorRepository.findById(mokDoctorUserDetails.getUser().getDoctor().getId())).willReturn(Optional.of(mokDoctor));
+        // w
+        List<CheckInResponse> checkInResponseList = checkInService.getAllCheckIns(mokDoctorUserDetails, 1L);
+        // t
+        Assertions.assertNotNull(checkInResponseList);
+    }
+
+    @Test
+    void getAllCheckIns_해당병원소속의사가아닐때() {
+
+        // g
+        Hospital otherHospital = new Hospital();
+        setField(otherHospital, "id", 2L);
+        
+        Doctor notMyDoctor = Doctor.builder()
+                .hospital(otherHospital)
+                .build();
+
+        BDDMockito.given(doctorRepository.findById(mokDoctorUserDetails.getUser().getDoctor().getId())).willReturn(Optional.of(notMyDoctor));
+        // w
+        ApiException exception = assertThrows(ApiException.class, () -> {
+            checkInService.getAllCheckIns(mokDoctorUserDetails, 1L);
+        });
+        // t
+        Assertions.assertEquals("해당 병원에 소속된 의사가 아닙니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
     }
 
     @Test
