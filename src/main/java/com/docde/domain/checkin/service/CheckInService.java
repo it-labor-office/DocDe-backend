@@ -152,7 +152,7 @@ public class CheckInService {
                 .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_CHECK_IN));
 
         // 로그인된 유저의 소속 병원이 접수의 병원과 같은지 확인
-        if (userDetails.getUser().getDoctor().getHospital().equals(checkIn.getDoctor().getHospital())) {
+        if (!userDetails.getUser().getDoctor().getHospital().equals(checkIn.getDoctor().getHospital())) {
             throw new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL);
         }
 
