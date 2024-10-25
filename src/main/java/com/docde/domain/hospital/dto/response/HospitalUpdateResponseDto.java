@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 import java.time.LocalTime;
 @Getter
 @NoArgsConstructor
-public class HospitalPutResponseDto {
+public class HospitalUpdateResponseDto {
     private String hospitalName;
 
     private String hospitalAddress;
@@ -20,7 +20,7 @@ public class HospitalPutResponseDto {
 
     private String announcement;
 
-    public HospitalPutResponseDto(Hospital hospital) {
+    public HospitalUpdateResponseDto(Hospital hospital) {
         this.hospitalName = hospital.getName();
         this.hospitalAddress = hospital.getAddress();
         this.hospitalContact = hospital.getContact();

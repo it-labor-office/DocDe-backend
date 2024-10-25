@@ -23,7 +23,7 @@ public class HospitalTimetable {
     private LocalTime closeTime;
 
     @ManyToOne
-    @JoinColumn(name="hospital_id")
+    @JoinColumn(name = "hospital_id")
     private Hospital hospital;
 
     public HospitalTimetable(DayOfTheWeek dayOfTheWeek, LocalTime openTime, LocalTime closeTime, Hospital hospital) {
@@ -31,5 +31,17 @@ public class HospitalTimetable {
         this.openTime = openTime;
         this.closeTime = closeTime;
         this.hospital = hospital;
+    }
+
+    public void updateDayOfTheWeek(DayOfTheWeek dayOfTheWeek) {
+        this.dayOfTheWeek = dayOfTheWeek;
+    }
+
+    public void updateOpenTime(LocalTime openTime) {
+        this.openTime = openTime;
+    }
+
+    public void updateCloseTime(LocalTime closeTime) {
+        this.closeTime = closeTime;
     }
 }
