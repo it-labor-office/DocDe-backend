@@ -14,6 +14,8 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
+        jdbc:
         format_sql: true
         show_sql: true
         use_sql_comments: true
+
