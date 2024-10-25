@@ -39,10 +39,11 @@ public class Patient extends Timestamped {
     private User user;
 
     @Builder
-    public Patient(String name, String address, String phone, Gender gender) {
+    public Patient(String name, String address, String phone, Gender gender, User user) {
         this.name = name;
         this.address = address;
         this.phone = phone;
         this.gender = gender;
+        this.user = user;
     }
 }

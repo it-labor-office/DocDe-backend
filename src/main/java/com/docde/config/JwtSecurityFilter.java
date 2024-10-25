@@ -46,10 +46,13 @@ public class JwtSecurityFilter extends OncePerRequestFilter {
 
                 if (claims == null) throw new ApiException(ErrorStatus._BAD_REQUEST_ILLEGAL_TOKEN);
 
-                String email = claims.get("email", String.class);
                 Long id = Long.parseLong(claims.getSubject());
-                UserRole userRole = UserRole.of(claims.get("userRole", String.class));
-                AuthUser authUser = AuthUser.builder().id(id).email(email).userRole(userRole).build();
+                String email = claims.get(JwtUtil.CLAIM_EMAIL, String.class);
+                Long patientId = claims.get(JwtUtil.CLAIM_PATIENT_ID, Long.class);
+                Long doctorId = claims.get(JwtUtil.CLAIM_DOCTOR_ID, Long.class);
+                Long hospitalId = claims.get(JwtUtil.CLAIM_HOSPITAL_ID, Long.class);
+                UserRole userRole = UserRole.of(claims.get(JwtUtil.CLAIM_USER_ROLE, String.class));
+                AuthUser authUser = AuthUser.builder().id(id).email(email).userRole(userRole).patientId(patientId).doctorId(doctorId).hospitalId(hospitalId).build();
                 JwtAuthenticationToken authenticationToken = new JwtAuthenticationToken(authUser);
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
