@@ -2,6 +2,7 @@ package com.docde.domain.hospital.service;
 
 import com.docde.common.Apiresponse.ErrorStatus;
 import com.docde.common.exceptions.ApiException;
+import com.docde.domain.auth.entity.AuthUser;
 import com.docde.domain.hospital.dto.TimetableDto;
 import com.docde.domain.hospital.dto.request.HospitalPostRequestDto;
 import com.docde.domain.hospital.dto.request.HospitalUpdateRequestDto;
@@ -13,7 +14,6 @@ import com.docde.domain.hospital.entity.HospitalTimetable;
 import com.docde.domain.hospital.repository.HospitalRepository;
 import com.docde.domain.hospital.repository.HospitalTimetableRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,9 +44,9 @@ public class HospitalService {
 //    }
 
     @Transactional
-    public HospitalPostResponseDto postHospital(HospitalPostRequestDto requestDto, UserDetails userDetails) {
+    public HospitalPostResponseDto postHospital(HospitalPostRequestDto requestDto, AuthUser authUser) {
         //유저 권한 확인
-        checkDoctorPresident(userDetails);
+        checkDoctorPresident(authUser);
         //병원 갯수는 누구를 기준으로 할까??
         //받은 정보를 바탕으로 병원데이터생성
         Hospital hospital = new Hospital(requestDto);
@@ -54,7 +54,7 @@ public class HospitalService {
         return new HospitalPostResponseDto(hospital);
     }
 
-    public HospitalGetResponseDto getHospital(Long hospitalId, UserDetails userDetails) {
+    public HospitalGetResponseDto getHospital(Long hospitalId, AuthUser authUser) {
 
         Hospital hospital = findHospitalByHospitalId(hospitalId);
 
@@ -64,8 +64,8 @@ public class HospitalService {
     @Transactional
     public HospitalWeeklyTimetablePostResponseDto postWeeklyTimetable(
             HospitalWeeklyTimetablePostRequestDto requestDto,
-            UserDetails userDetails, Long hospitalId) {
-        checkDoctorPresident(userDetails);
+            AuthUser authUser, Long hospitalId) {
+        checkDoctorPresident(authUser);
 
         Hospital hospital = findHospitalByHospitalId(hospitalId);
 
@@ -106,9 +106,9 @@ public class HospitalService {
 
     @Transactional
     public HospitalWeeklyTimetableUpdateResponseDto updateWeeklyTimetable(HospitalWeeklyTimetableUpdateRequestDto requestDto,
-                                                                          UserDetails userDetails,
+                                                                          AuthUser authUser,
                                                                           Long hospitalId) {
-        checkDoctorPresident(userDetails);
+        checkDoctorPresident(authUser);
 
         Hospital hospital = findHospitalByHospitalId(hospitalId);
         //구 시간표
@@ -154,8 +154,8 @@ public class HospitalService {
     }
 
     @Transactional
-    public HospitalUpdateResponseDto putHospital(HospitalUpdateRequestDto requestDto, UserDetails userDetails) {
-        checkDoctorPresident(userDetails);
+    public HospitalUpdateResponseDto putHospital(HospitalUpdateRequestDto requestDto, AuthUser authUser) {
+        checkDoctorPresident(authUser);
 
         Hospital hospital = findHospitalByHospitalId(requestDto.getHospitalId());
 
@@ -165,8 +165,8 @@ public class HospitalService {
     }
 
     @Transactional
-    public HospitalDeleteResponseDto deleteHospital(HospitalDeleteRequestDto requestDto, UserDetails userDetails) {
-        checkDoctorPresident(userDetails);
+    public HospitalDeleteResponseDto deleteHospital(HospitalDeleteRequestDto requestDto, AuthUser authUser) {
+        checkDoctorPresident(authUser);
 
         Hospital hospital = findHospitalByHospitalId(requestDto.getHospitalId());
 
@@ -175,8 +175,8 @@ public class HospitalService {
         return new HospitalDeleteResponseDto(hospital);
     }
 
-    public void checkDoctorPresident(UserDetails userDetails) {
-        boolean check = userDetails.getAuthorities().stream().anyMatch(authority ->
+    public void checkDoctorPresident(AuthUser authUser) {
+        boolean check = authUser.getAuthorities().stream().anyMatch(authority ->
                 authority.getAuthority().equals("ROLE_DOCTOR_PRESIDENT"));
         if (!check) {
             throw new ApiException(ErrorStatus._FORBIDDEN);
@@ -189,8 +189,8 @@ public class HospitalService {
         );
     }
 
-    public HospitalUpdateResponseDto patchHospital(HospitalUpdateRequestDto requestDto, UserDetails userDetails) {
-        checkDoctorPresident(userDetails);
+    public HospitalUpdateResponseDto patchHospital(HospitalUpdateRequestDto requestDto, AuthUser authUser) {
+        checkDoctorPresident(authUser);
         Hospital hospital = findHospitalByHospitalId(requestDto.getHospitalId());
 
         if (requestDto.getHospitalName() != null) {
