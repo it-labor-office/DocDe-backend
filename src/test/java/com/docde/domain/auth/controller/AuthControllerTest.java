@@ -5,7 +5,6 @@ import com.docde.common.enums.UserRole;
 import com.docde.config.JwtUtil;
 import com.docde.domain.auth.dto.AuthRequest;
 import com.docde.domain.auth.service.AuthService;
-import com.docde.domain.auth.service.UserDetailsServiceImpl;
 import com.docde.domain.doctor.entity.Doctor;
 import com.docde.domain.patient.entity.Patient;
 import com.docde.domain.user.entity.User;
@@ -35,8 +34,6 @@ public class AuthControllerTest {
     @MockBean
     private AuthService authService;
 
-    @MockBean
-    private UserDetailsServiceImpl userDetailsService;
 
     @MockBean
     private JwtUtil jwtUtil;
