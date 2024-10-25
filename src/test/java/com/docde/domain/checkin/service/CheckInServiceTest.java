@@ -14,7 +14,6 @@ import com.docde.domain.doctor.repository.DoctorRepository;
 import com.docde.domain.hospital.entity.DayOfTheWeek;
 import com.docde.domain.hospital.entity.Hospital;
 import com.docde.domain.hospital.entity.HospitalTimetable;
-import com.docde.domain.hospital.entity.WeekTimetable;
 import com.docde.domain.hospital.repository.HospitalRepository;
 import com.docde.domain.patient.entity.Patient;
 import com.docde.domain.user.entity.User;
