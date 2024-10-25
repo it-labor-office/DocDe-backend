@@ -1,7 +1,6 @@
 package com.docde.domain.hospital.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -10,8 +9,6 @@ import java.time.LocalTime;
 @Getter
 @NoArgsConstructor
 public class HospitalUpdateRequestDto {
-    @NotNull
-    private Long hospitalId;
 
     private String hospitalName;
 
@@ -25,8 +22,7 @@ public class HospitalUpdateRequestDto {
 
     private String announcement;
 
-    public HospitalUpdateRequestDto(Long hospitalId, String hospitalName, String hospitalAddress, String hospitalContact, LocalTime openTime, LocalTime closingTime, String announcement) {
-        this.hospitalId = hospitalId;
+    public HospitalUpdateRequestDto(String hospitalName, String hospitalAddress, String hospitalContact, LocalTime openTime, LocalTime closingTime, String announcement) {
         this.hospitalName = hospitalName;
         this.hospitalAddress = hospitalAddress;
         this.hospitalContact = hospitalContact;

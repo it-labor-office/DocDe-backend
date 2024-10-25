@@ -85,10 +85,8 @@ public class HospitalController {
 
 
     @DeleteMapping
-    public ApiResponse<HospitalDeleteResponseDto> deleteHospital(
-            @RequestBody HospitalDeleteRequestDto requestDto,
-            @AuthenticationPrincipal AuthUser authUser) {
-        HospitalDeleteResponseDto responseDto = hospitalService.deleteHospital(requestDto, authUser);
+    public ApiResponse<HospitalDeleteResponseDto> deleteHospital(@AuthenticationPrincipal AuthUser authUser) {
+        HospitalDeleteResponseDto responseDto = hospitalService.deleteHospital(authUser);
         return ApiResponse.onSuccess(responseDto);
     }
 }
