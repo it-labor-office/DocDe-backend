@@ -2,7 +2,7 @@ package com.docde.domain.checkin.service;
 
 import com.docde.common.Apiresponse.ErrorStatus;
 import com.docde.common.exceptions.ApiException;
-import com.docde.domain.auth.entity.UserDetailsImpl;
+import com.docde.domain.auth.entity.AuthUser;
 import com.docde.domain.checkin.dto.CheckInRequest;
 import com.docde.domain.checkin.dto.CheckInResponse;
 import com.docde.domain.checkin.entity.CheckIn;
@@ -12,6 +12,8 @@ import com.docde.domain.doctor.entity.Doctor;
 import com.docde.domain.doctor.repository.DoctorRepository;
 import com.docde.domain.hospital.entity.Hospital;
 import com.docde.domain.hospital.repository.HospitalRepository;
+import com.docde.domain.patient.entity.Patient;
+import com.docde.domain.patient.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,11 +29,12 @@ public class CheckInService {
     private final CheckInRepository checkInRepository;
     private final HospitalRepository hospitalRepository;
     private final DoctorRepository doctorRepository;
+    private final PatientRepository patientRepository;
 
     // 접수하기
     @Transactional
     public CheckInResponse saveCheckIn(
-            UserDetailsImpl userDetails,
+            AuthUser authUser,
             Long hospitalId,
             CheckInRequest checkInRequest
     ) {
@@ -55,19 +58,22 @@ public class CheckInService {
                 throw new ApiException(ErrorStatus._BAD_REQUEST_DOCTOR_NOT_BELONG_TO_HOSPITAL);
             }
 
+            Patient patient = patientRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
+
             CheckIn checkIn = CheckIn.builder()
                     .checkinStatus(CheckinStatus.PENDING)
                     .doctor(doctor)
-                    .patient(userDetails.getUser().getPatient())
+                    .patient(patient)
                     .build();
 
             checkInRepository.save(checkIn);
 
             return checkInResponseFromCheckIn(checkIn);
         } else {
+            Patient patient = patientRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
             CheckIn checkIn = CheckIn.builder()
                     .checkinStatus(CheckinStatus.PENDING)
-                    .patient(userDetails.getUser().getPatient())
+                    .patient(patient)
                     .build();
 
             checkInRepository.save(checkIn);
@@ -77,22 +83,20 @@ public class CheckInService {
     }
 
     // 자신의 접수 상태 확인(사용자)
-    public CheckInResponse getMyCheckIn(UserDetailsImpl userDetails) {
-
+    public CheckInResponse getMyCheckIn(AuthUser authUser) {
+        Patient patient = patientRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
         // 로그인된 유저 id로 접수 찾기
-        CheckIn checkIn = checkInRepository.findByPatientId(userDetails.getUser().getPatient().getId())
+        CheckIn checkIn = checkInRepository.findByPatientId(patient.getId())
                 .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_CHECK_IN));
 
         return checkInResponseFromCheckIn(checkIn);
     }
 
     // 접수 상태 확인(병원)
-    public List<CheckInResponse> getAllCheckIns(UserDetailsImpl userDetails, Long hospitalId) {
+    public List<CheckInResponse> getAllCheckIns(AuthUser authUser, Long hospitalId) {
 
         // 로그인된 유저 정보로 해당 병원 관계자인지 확인하기
-        Doctor doctor = doctorRepository.findById(userDetails.getUser().getDoctor().getId())
-                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
-
+        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
         if (!doctor.getHospital().getId().equals(hospitalId)) {
             throw new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL);
         }
@@ -111,12 +115,10 @@ public class CheckInService {
 
     // 접수 상태 변경
     @Transactional
-    public CheckInResponse updateCheckIn(UserDetailsImpl userDetails, Long hospitalId, Long checkInId, CheckInRequest checkInRequest) {
+    public CheckInResponse updateCheckIn(AuthUser authUser, Long hospitalId, Long checkInId, CheckInRequest checkInRequest) {
 
         // 로그인된 유저 정보로 해당 병원 관계자인지 확인하기
-        Doctor doctor = doctorRepository.findById(userDetails.getUser().getDoctor().getId())
-                .orElseThrow(() -> new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL));
-
+        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
         if (!doctor.getHospital().getId().equals(hospitalId)) {
             throw new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL);
         }
@@ -146,13 +148,14 @@ public class CheckInService {
 
     // 접수 기록 영구 삭제
     @Transactional
-    public void deleteCheckIn(UserDetailsImpl userDetails, Long checkInId) {
+    public void deleteCheckIn(AuthUser authUser, Long checkInId) {
 
         CheckIn checkIn = checkInRepository.findById(checkInId)
                 .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_CHECK_IN));
 
         // 로그인된 유저의 소속 병원이 접수의 병원과 같은지 확인
-        if (!userDetails.getUser().getDoctor().getHospital().equals(checkIn.getDoctor().getHospital())) {
+        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
+        if (!doctor.getHospital().equals(checkIn.getDoctor().getHospital())) {
             throw new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL);
         }
 

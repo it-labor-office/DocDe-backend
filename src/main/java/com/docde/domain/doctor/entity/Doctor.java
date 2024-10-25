@@ -3,6 +3,7 @@ package com.docde.domain.doctor.entity;
 import com.docde.common.entity.Timestamped;
 import com.docde.domain.hospital.entity.Hospital;
 import com.docde.domain.medicalRecord.entity.MedicalRecord;
+import com.docde.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,6 +31,9 @@ public class Doctor extends Timestamped {
 
     @OneToMany(mappedBy = "doctor")
     private List<MedicalRecord> medicalRecords;
+
+    @OneToOne(mappedBy = "doctor")
+    private User user;
 
     @Builder
     public Doctor(String name, String description, Hospital hospital) {
