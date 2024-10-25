@@ -1,7 +1,7 @@
 package com.docde.domain.medicalRecord.controller;
 
 import com.docde.common.Apiresponse.ApiResponse;
-import com.docde.domain.auth.entity.UserDetailsImpl;
+import com.docde.domain.auth.entity.AuthUser;
 import com.docde.domain.medicalRecord.dto.request.DoctorMedicalRecordRequestDto;
 import com.docde.domain.medicalRecord.dto.request.PatientMedicalRecordRequestDto;
 import com.docde.domain.medicalRecord.dto.response.DoctorMedicalRecordResponseDto;
@@ -25,10 +25,10 @@ public class MedicalRecordController {
     @PostMapping("/medical-records")
     public ApiResponse<MedicalRecordResponseDto> createMedicalRecord(
             @RequestBody DoctorMedicalRecordRequestDto requestDto,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+            @AuthenticationPrincipal AuthUser authUser) {
 
         // 진료 기록 생성
-        MedicalRecordResponseDto responseDto = medicalRecordService.createMedicalRecord(requestDto, userDetails);
+        MedicalRecordResponseDto responseDto = medicalRecordService.createMedicalRecord(requestDto, authUser);
 
         return ApiResponse.createSuccess("진료 기록이 성공적으로 생성되었습니다.", 200, responseDto);
     }
@@ -36,9 +36,9 @@ public class MedicalRecordController {
     // 의사가 의사용 진료 기록 조회
     @GetMapping("/doctors/medical-records")
     public ApiResponse<List<DoctorMedicalRecordResponseDto>> getDoctorMedicalRecord(
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+            @AuthenticationPrincipal AuthUser authUser) {
 
-        List<DoctorMedicalRecordResponseDto> responseDto = medicalRecordService.getDoctorMedicalRecord(userDetails);
+        List<DoctorMedicalRecordResponseDto> responseDto = medicalRecordService.getDoctorMedicalRecord(authUser);
         return ApiResponse.onSuccess(responseDto);
     }
 
@@ -46,9 +46,9 @@ public class MedicalRecordController {
     // 환자가 자신의 진료 기록 조회
     @GetMapping("/patients/medical-records")
     public ApiResponse<List<PatientMedicalRecordResponseDto>> getPatientMedicalRecord(
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+            @AuthenticationPrincipal AuthUser authUser) {
 
-        List<PatientMedicalRecordResponseDto> records = medicalRecordService.getPatientMedicalRecord(userDetails);
+        List<PatientMedicalRecordResponseDto> records = medicalRecordService.getPatientMedicalRecord(authUser);
         return ApiResponse.onSuccess(records);
     }
 
@@ -56,11 +56,11 @@ public class MedicalRecordController {
     // 의사용 진료기록 수정
     @PutMapping("/doctors/medical-records/{medicalRecordId}")
     public ApiResponse<DoctorMedicalRecordResponseDto> updateDoctorMedicalRecord(
-            @AuthenticationPrincipal UserDetailsImpl userDetails,
+            @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long medicalRecordId, @RequestBody DoctorMedicalRecordRequestDto requestDto) {
 
         DoctorMedicalRecordResponseDto responseDto = medicalRecordService.updateDoctorMedicalRecord(
-                userDetails,
+                authUser,
                 medicalRecordId,
                 requestDto);
 
@@ -73,12 +73,12 @@ public class MedicalRecordController {
     public ApiResponse<PatientMedicalRecordResponseDto> updatePatientMedicalRecord(
             @PathVariable Long medicalRecordId,
             @RequestBody PatientMedicalRecordRequestDto requestDto,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+            @AuthenticationPrincipal AuthUser authUser) {
 
         PatientMedicalRecordResponseDto responseDto = medicalRecordService.updatePatientMedicalRecord(
                 medicalRecordId,
                 requestDto,
-                userDetails
+                authUser
         );
 
         return ApiResponse.onSuccess(responseDto);
@@ -89,9 +89,9 @@ public class MedicalRecordController {
     @DeleteMapping("/medical-records/{medicalRecordId}")
     public ApiResponse<Void> deleteMedicalRecord(
             @PathVariable Long medicalRecordId,
-            @AuthenticationPrincipal UserDetailsImpl userDetails) {
+            @AuthenticationPrincipal AuthUser authUser) {
 
-        medicalRecordService.deleteMedicalRecord(medicalRecordId, userDetails);
+        medicalRecordService.deleteMedicalRecord(medicalRecordId, authUser);
         return ApiResponse.onSuccess(null);
 
     }

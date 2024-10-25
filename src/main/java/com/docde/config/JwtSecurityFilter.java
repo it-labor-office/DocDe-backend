@@ -2,9 +2,9 @@ package com.docde.config;
 
 import com.docde.common.Apiresponse.ErrorStatus;
 import com.docde.common.enums.TokenType;
+import com.docde.common.enums.UserRole;
 import com.docde.common.exceptions.ApiException;
-import com.docde.domain.auth.entity.UserDetailsImpl;
-import com.docde.domain.auth.service.UserDetailsServiceImpl;
+import com.docde.domain.auth.entity.AuthUser;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -14,9 +14,8 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 import org.springframework.web.servlet.HandlerExceptionResolver;
@@ -26,8 +25,7 @@ import java.util.Arrays;
 
 @Component
 @RequiredArgsConstructor
-public class JwtDecodeFilter extends OncePerRequestFilter {
-    private final UserDetailsServiceImpl userDetailsService;
+public class JwtSecurityFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final HandlerExceptionResolver handlerExceptionResolver;
 
@@ -49,9 +47,12 @@ public class JwtDecodeFilter extends OncePerRequestFilter {
                 if (claims == null) throw new ApiException(ErrorStatus._BAD_REQUEST_ILLEGAL_TOKEN);
 
                 String email = claims.get("email", String.class);
-                UserDetailsImpl userDetails = (UserDetailsImpl) userDetailsService.loadUserByUsername(email);
-                Authentication authentication = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                Long id = Long.parseLong(claims.getSubject());
+                UserRole userRole = UserRole.of(claims.get("userRole", String.class));
+                AuthUser authUser = AuthUser.builder().id(id).email(email).userRole(userRole).build();
+                JwtAuthenticationToken authenticationToken = new JwtAuthenticationToken(authUser);
+                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
                 filterChain.doFilter(request, response);
             } catch (SecurityException | MalformedJwtException e) {
                 throw new ApiException(ErrorStatus._UNAUTHORIZED_INVALID_TOKEN, e);
