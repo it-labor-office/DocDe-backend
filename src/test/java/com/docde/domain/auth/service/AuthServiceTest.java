@@ -7,6 +7,9 @@ import com.docde.common.enums.UserRole;
 import com.docde.common.exceptions.ApiException;
 import com.docde.config.JwtUtil;
 import com.docde.domain.auth.dto.AuthResponse;
+import com.docde.domain.doctor.entity.Doctor;
+import com.docde.domain.hospital.entity.Hospital;
+import com.docde.domain.patient.entity.Patient;
 import com.docde.domain.user.entity.User;
 import com.docde.domain.user.repository.UserRepository;
 import io.jsonwebtoken.Claims;
@@ -27,6 +30,8 @@ import org.springframework.mail.MailException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -367,6 +372,9 @@ public class AuthServiceTest {
             Long userId = Long.parseLong(idStr);
             String email = "a@a.com";
             UserRole userRole = UserRole.ROLE_PATIENT;
+            Long patientId = 1L;
+            Long doctorId = null;
+            Long hospitalId = null;
             String token = "Bearer wowow";
             String tokenWithoutBearer = "wowow";
             String accessToken = "accessToken";
@@ -374,13 +382,16 @@ public class AuthServiceTest {
 
             Claims claims = mock(Claims.class);
             when(claims.getSubject()).thenReturn(idStr);
-            when(claims.get("email", String.class)).thenReturn(email);
-            when(claims.get("userRole", UserRole.class)).thenReturn(UserRole.ROLE_PATIENT);
+            when(claims.get(JwtUtil.CLAIM_EMAIL, String.class)).thenReturn(email);
+            when(claims.get(JwtUtil.CLAIM_PATIENT_ID, Long.class)).thenReturn(patientId);
+            when(claims.get(JwtUtil.CLAIM_DOCTOR_ID, Long.class)).thenReturn(doctorId);
+            when(claims.get(JwtUtil.CLAIM_HOSPITAL_ID, Long.class)).thenReturn(hospitalId);
+            when(claims.get(JwtUtil.CLAIM_USER_ROLE, String.class)).thenReturn(UserRole.ROLE_PATIENT.name());
 
             doReturn(TokenType.REFRESH).when(jwtUtil).getTokenType(tokenWithoutBearer);
             doReturn(claims).when(jwtUtil).extractClaims(tokenWithoutBearer);
-            doReturn(accessToken).when(jwtUtil).createAccessToken(userId, email, userRole);
-            doReturn(refreshToken).when(jwtUtil).createRefreshToken(userId, email, userRole);
+            doReturn(accessToken).when(jwtUtil).createAccessToken(userId, email, userRole, patientId, doctorId, hospitalId);
+            doReturn(refreshToken).when(jwtUtil).createRefreshToken(userId, email, userRole, patientId, doctorId, hospitalId);
             doReturn(false).when(jwtUtil).isExpired(tokenWithoutBearer);
 
             // when
@@ -436,6 +447,91 @@ public class AuthServiceTest {
             // when & then
             ApiException apiException = assertThrows(ApiException.class, () -> authService.authenticateEmail(email));
             assertEquals(apiException.getErrorCode(), ErrorStatus._ERROR_WHILE_SENDING_EMAIL);
+        }
+    }
+
+    @Nested
+    @DisplayName("AuthService::signIn")
+    class Test8 {
+        @Test
+        @DisplayName("이메일이 일치하지 않으면 예외 발생")
+        void test1() {
+            // given
+            String email = "a@a.com";
+            String password = "Password1234!";
+            when(userRepository.findByEmail(email)).thenReturn(Optional.empty());
+
+            // when & then
+            ApiException apiException = assertThrows(ApiException.class, () -> authService.signIn(email, password));
+            assertEquals(apiException.getErrorCode(), ErrorStatus._EMAIL_OR_PASSWORD_NOT_MATCHES);
+        }
+
+        @Test
+        @DisplayName("비밀번호가 일치하지 않으면 예외 발생")
+        void test2() {
+            // given
+            String email = "a@a.com";
+            String password = "Password1234!";
+            String encodePassword = "qweqwqe";
+            User user = User.builder().email(email).password(encodePassword).build();
+            when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+
+            // when & then
+            ApiException apiException = assertThrows(ApiException.class, () -> authService.signIn(email, password));
+            assertEquals(apiException.getErrorCode(), ErrorStatus._EMAIL_OR_PASSWORD_NOT_MATCHES);
+        }
+
+        @Test
+        @DisplayName("로그인 정상 작동")
+        void test3() {
+            // given
+            Long userId = 1L;
+            String email = "a@a.com";
+            String password = "Password1234!";
+            UserRole userRole = UserRole.ROLE_PATIENT;
+            String encodePassword = "Password1234!";
+            doReturn(true).when(passwordEncoder).matches(password, encodePassword);
+            Patient patient = Patient.builder().build();
+            Hospital hospital = Hospital.builder().build();
+            Doctor doctor = Doctor.builder().hospital(hospital).build();
+            Long patientId = 1L;
+            Long doctorId = 1L;
+            Long hospitalId = 1L;
+            User user = User.builder().email(email).password(encodePassword).userRole(userRole).patient(patient).doctor(doctor).build();
+            ReflectionTestUtils.setField(user, "id", userId);
+            ReflectionTestUtils.setField(patient, "id", patientId);
+            ReflectionTestUtils.setField(doctor, "id", doctorId);
+            ReflectionTestUtils.setField(hospital, "id", hospitalId);
+            when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+            String accessToken = "accessToken";
+            String refreshToken = "refreshToken";
+            doReturn(accessToken).when(jwtUtil).createAccessToken(userId, email, userRole, patientId, doctorId, hospitalId);
+            doReturn(refreshToken).when(jwtUtil).createRefreshToken(userId, email, userRole, patientId, doctorId, hospitalId);
+
+            // when & then
+            assertDoesNotThrow(() -> authService.signIn(email, password));
+        }
+
+        @Test
+        @DisplayName("로그인 정상 작동")
+        void test4() {
+            // given
+            Long userId = 1L;
+            String email = "a@a.com";
+            String password = "Password1234!";
+            UserRole userRole = UserRole.ROLE_PATIENT;
+            String encodePassword = "Password1234!";
+            doReturn(true).when(passwordEncoder).matches(password, encodePassword);
+            User user = User.builder().email(email).password(encodePassword).userRole(userRole).build();
+            ReflectionTestUtils.setField(user, "id", userId);
+            when(userRepository.findByEmail(email)).thenReturn(Optional.of(user));
+            String accessToken = "accessToken";
+            String refreshToken = "refreshToken";
+            doReturn(accessToken).when(jwtUtil).createAccessToken(userId, email, userRole, null, null, null);
+            doReturn(refreshToken).when(jwtUtil).createRefreshToken(userId, email, userRole, null, null, null);
+
+            // when & then
+            assertDoesNotThrow(() -> authService.signIn(email, password));
         }
     }
 }
