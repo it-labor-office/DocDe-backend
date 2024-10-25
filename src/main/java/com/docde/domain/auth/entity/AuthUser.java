@@ -1,6 +1,10 @@
 package com.docde.domain.auth.entity;
 
 import com.docde.common.enums.UserRole;
+import com.docde.domain.doctor.entity.Doctor;
+import com.docde.domain.hospital.entity.Hospital;
+import com.docde.domain.patient.entity.Patient;
+import com.docde.domain.user.entity.User;
 import lombok.Builder;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,5 +30,17 @@ public class AuthUser {
         this.doctorId = doctorId;
         this.patientId = patientId;
         this.hospitalId = hospitalId;
+    }
+
+    public AuthUser(User user) {
+        this.id = user.getId();
+        this.email = user.getEmail();
+        this.authorities = List.of(new SimpleGrantedAuthority(user.getUserRole().name()));
+        Doctor doctor = user.getDoctor();
+        Patient patient = user.getPatient();
+        Hospital hospital = doctor == null ? null : doctor.getHospital();
+        this.doctorId = doctor == null ? null : doctor.getId();
+        this.patientId = patient == null ? null : patient.getId();
+        this.hospitalId = hospital == null ? null : hospital.getId();
     }
 }
