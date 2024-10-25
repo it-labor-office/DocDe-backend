@@ -12,7 +12,7 @@ import java.time.LocalTime;
 public class HospitalTimetable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long Id;
 
     @Enumerated(EnumType.STRING)
     private DayOfTheWeek dayOfTheWeek;
@@ -21,14 +21,27 @@ public class HospitalTimetable {
     private LocalTime openTime;
     @Column(nullable = false)
     private LocalTime closeTime;
-    @ManyToOne
-    @JoinColumn(name="week_timetable_id")
-    private WeekTimetable weekTimetable;
 
-    public HospitalTimetable(DayOfTheWeek dayOfTheWeek, LocalTime openTime, LocalTime closeTime, WeekTimetable weekTimetable) {
+    @ManyToOne
+    @JoinColumn(name = "hospital_id")
+    private Hospital hospital;
+
+    public HospitalTimetable(DayOfTheWeek dayOfTheWeek, LocalTime openTime, LocalTime closeTime, Hospital hospital) {
         this.dayOfTheWeek = dayOfTheWeek;
         this.openTime = openTime;
         this.closeTime = closeTime;
-        this.weekTimetable = weekTimetable;
+        this.hospital = hospital;
+    }
+
+    public void updateDayOfTheWeek(DayOfTheWeek dayOfTheWeek) {
+        this.dayOfTheWeek = dayOfTheWeek;
+    }
+
+    public void updateOpenTime(LocalTime openTime) {
+        this.openTime = openTime;
+    }
+
+    public void updateCloseTime(LocalTime closeTime) {
+        this.closeTime = closeTime;
     }
 }

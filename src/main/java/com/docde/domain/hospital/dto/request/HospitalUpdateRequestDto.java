@@ -1,17 +1,18 @@
 package com.docde.domain.hospital.dto.request;
 
-import com.docde.domain.hospital.entity.Hospital;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import lombok.AllArgsConstructor;
+import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.cglib.core.Local;
 
 import java.time.LocalTime;
 
 @Getter
 @NoArgsConstructor
-public class HospitalPostRequestDto {
+public class HospitalUpdateRequestDto {
+    @NotNull
+    private Long hospitalId;
+
     private String hospitalName;
 
     private String hospitalAddress;
@@ -24,7 +25,8 @@ public class HospitalPostRequestDto {
 
     private String announcement;
 
-    public HospitalPostRequestDto(String hospitalName, String hospitalAddress, String hospitalContact, LocalTime openTime, LocalTime closingTime, String announcement) {
+    public HospitalUpdateRequestDto(Long hospitalId, String hospitalName, String hospitalAddress, String hospitalContact, LocalTime openTime, LocalTime closingTime, String announcement) {
+        this.hospitalId = hospitalId;
         this.hospitalName = hospitalName;
         this.hospitalAddress = hospitalAddress;
         this.hospitalContact = hospitalContact;
