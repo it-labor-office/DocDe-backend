@@ -34,7 +34,7 @@ public class MedicalRecordController {
     }
 
     // 의사가 의사용 진료 기록 조회
-    @GetMapping("/doctors")
+    @GetMapping("/doctors/medical-records")
     public ApiResponse<List<DoctorMedicalRecordResponseDto>> getDoctorMedicalRecord(
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
@@ -44,7 +44,7 @@ public class MedicalRecordController {
 
 
     // 환자가 자신의 진료 기록 조회
-    @GetMapping("/patients")
+    @GetMapping("/patients/medical-records")
     public ApiResponse<List<PatientMedicalRecordResponseDto>> getPatientMedicalRecord(
             @AuthenticationPrincipal UserDetailsImpl userDetails) {
 
@@ -54,7 +54,7 @@ public class MedicalRecordController {
 
 
     // 의사용 진료기록 수정
-    @PutMapping("doctors/medical-records/{medicalRecordId}")
+    @PutMapping("/doctors/medical-records/{medicalRecordId}")
     public ApiResponse<DoctorMedicalRecordResponseDto> updateDoctorMedicalRecord(
             @AuthenticationPrincipal UserDetailsImpl userDetails,
             @PathVariable Long medicalRecordId, @RequestBody DoctorMedicalRecordRequestDto requestDto) {
