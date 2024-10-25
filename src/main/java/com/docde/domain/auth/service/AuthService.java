@@ -8,6 +8,7 @@ import com.docde.common.exceptions.ApiException;
 import com.docde.config.JwtUtil;
 import com.docde.domain.auth.dto.AuthResponse;
 import com.docde.domain.doctor.entity.Doctor;
+import com.docde.domain.hospital.entity.Hospital;
 import com.docde.domain.patient.entity.Patient;
 import com.docde.domain.user.entity.User;
 import com.docde.domain.user.repository.UserRepository;
@@ -95,13 +96,16 @@ public class AuthService {
         }
 
         Claims claims = jwtUtil.extractClaims(refreshToken);
-        Long userId = Long.parseLong(claims.getSubject());
-        String email = claims.get("email", String.class);
-        UserRole userRole = claims.get("userRole", UserRole.class);
+        Long id = Long.parseLong(claims.getSubject());
+        String email = claims.get(JwtUtil.CLAIM_EMAIL, String.class);
+        Long patientId = claims.get(JwtUtil.CLAIM_PATIENT_ID, Long.class);
+        Long doctorId = claims.get(JwtUtil.CLAIM_DOCTOR_ID, Long.class);
+        Long hospitalId = claims.get(JwtUtil.CLAIM_HOSPITAL_ID, Long.class);
+        UserRole userRole = UserRole.of(claims.get(JwtUtil.CLAIM_USER_ROLE, String.class));
 
         // 새 토큰 발급
-        String newAccessToken = jwtUtil.createAccessToken(userId, email, userRole);
-        String newRefreshToken = jwtUtil.createRefreshToken(userId, email, userRole);
+        String newAccessToken = jwtUtil.createAccessToken(id, email, userRole, patientId, doctorId, hospitalId);
+        String newRefreshToken = jwtUtil.createRefreshToken(id, email, userRole, patientId, doctorId, hospitalId);
         return new AuthResponse.SignIn(newAccessToken, newRefreshToken);
     }
 
@@ -174,8 +178,15 @@ public class AuthService {
         if (!passwordEncoder.matches(password, user.getPassword()))
             throw new ApiException(ErrorStatus._EMAIL_OR_PASSWORD_NOT_MATCHES);
 
-        String accessToken = jwtUtil.createAccessToken(user.getId(), user.getEmail(), user.getUserRole());
-        String refreshToken = jwtUtil.createRefreshToken(user.getId(), user.getEmail(), user.getUserRole());
+        Patient patient = user.getPatient();
+        Doctor doctor = user.getDoctor();
+        Hospital hospital = doctor == null ? null : doctor.getHospital();
+        Long patientId = patient == null ? null : patient.getId();
+        Long doctorId = doctor == null ? null : doctor.getId();
+        Long hospitalId = hospital == null ? null : hospital.getId();
+
+        String accessToken = jwtUtil.createAccessToken(user.getId(), user.getEmail(), user.getUserRole(), patientId, doctorId, hospitalId);
+        String refreshToken = jwtUtil.createRefreshToken(user.getId(), user.getEmail(), user.getUserRole(), patientId, doctorId, hospitalId);
         return new AuthResponse.SignIn(accessToken, refreshToken);
     }
 }
