@@ -16,6 +16,7 @@ import com.docde.domain.hospital.entity.Hospital;
 import com.docde.domain.hospital.entity.HospitalTimetable;
 import com.docde.domain.hospital.repository.HospitalRepository;
 import com.docde.domain.patient.entity.Patient;
+import com.docde.domain.patient.repository.PatientRepository;
 import com.docde.domain.user.entity.User;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -49,6 +50,9 @@ class CheckInServiceTest {
     @Mock
     private DoctorRepository doctorRepository;
 
+    @Mock
+    private PatientRepository patientRepository;
+
     private CheckIn mokCheckIn = new CheckIn();
 
     private Hospital mokHospital = new Hospital();
@@ -60,14 +64,11 @@ class CheckInServiceTest {
     private User mokUserDoctor = new User();
     private User mokUserPatient = new User();
 
-    private WeekTimetable mokWeekTimetable = new WeekTimetable();
-
     private HospitalTimetable mokHospitalTimetable = new HospitalTimetable();
     private List<HospitalTimetable> mokHospitalTimetableList;
 
-    private AuthUser mockPatientAuthUser;
-
-    private AuthUser mockDoctorAuthUser;
+    private AuthUser mockPatientAuthUser = new AuthUser(2L, "asdf@asdf.asdf", UserRole.ROLE_PATIENT, null, 1L, null);
+    private AuthUser mockDoctorAuthUser = new AuthUser(1L, "zxcv@zxcv.zxcv", UserRole.ROLE_DOCTOR, 1L, null, 1L);
 
     private CheckInRequest mokCheckInRequest = new CheckInRequest();
 
@@ -83,26 +84,20 @@ class CheckInServiceTest {
                 .address("주소")
                 .build();
 
-        setField(mokHospitalTimetable, "id", 1L);
+        setField(mokHospitalTimetable, "Id", 1L);
         setField(mokHospitalTimetable, "dayOfTheWeek", DayOfTheWeek.FRI);
         setField(mokHospitalTimetable, "openTime", LocalTime.of(9, 30));
         setField(mokHospitalTimetable, "closeTime", LocalTime.of(21, 30));
-        setField(mokHospitalTimetable, "weekTimetable", mokWeekTimetable);
 
         mokHospitalTimetableList = new ArrayList<>();
         mokHospitalTimetableList.add(mokHospitalTimetable);
 
-        setField(mokWeekTimetable, "Id", 1L);
-        setField(mokWeekTimetable, "hospital", mokHospital);
-        setField(mokWeekTimetable, "hospitalTimetables", mokHospitalTimetableList);
-
-        setField(mokHospital, "id", 1L);
+        setField(mokHospital, "Id", 1L);
         setField(mokHospital, "name", "병원이름");
         setField(mokHospital, "address", "병원주소");
         setField(mokHospital, "contact", "이게뭔지모르겠어요");
         setField(mokHospital, "open_time", LocalTime.of(9, 30));
         setField(mokHospital, "closing_time", LocalTime.of(21, 30));
-        setField(mokHospital, "weekTimetable", mokWeekTimetable);
         setField(mokHospital, "announcement", "병원안내");
 
         setField(mokDoctor, "id", 1L);
@@ -143,9 +138,6 @@ class CheckInServiceTest {
                 .patient(mokPatient)
                 .doctor(null)
                 .build();
-
-        mockPatientAuthUser = new AuthUser(mokUserPatient);
-        mockDoctorAuthUser = new AuthUser(mokUserDoctor);
     }
 
     @Test
@@ -153,6 +145,8 @@ class CheckInServiceTest {
         // g
         setField(mokCheckInRequest, "doctorId", 1L);
         setField(mokCheckInRequest, "status", null);
+
+        BDDMockito.given(patientRepository.findByUser_Id(mockPatientAuthUser.getId())).willReturn(Optional.of(mokPatient));
         BDDMockito.given(hospitalRepository.findById(1L)).willReturn(Optional.of(mokHospital));
         BDDMockito.given(doctorRepository.findById(mokCheckInRequest.getDoctorId())).willReturn(Optional.of(mokDoctor));
 
@@ -167,6 +161,7 @@ class CheckInServiceTest {
     void saveCheckIn_의사를지목하지않았을때() {
         // g
         BDDMockito.given(hospitalRepository.findById(1L)).willReturn(Optional.of(mokHospital));
+        BDDMockito.given(patientRepository.findByUser_Id(mockPatientAuthUser.getId())).willReturn(Optional.of(mokPatient));
 
         // w
         CheckInResponse checkInResponse = checkInService.saveCheckIn(mockPatientAuthUser, 1L, mokCheckInRequest);
@@ -202,13 +197,12 @@ class CheckInServiceTest {
         setField(mokCheckInRequest, "doctorId", 1L);
 
         Hospital mokHospital2 = new Hospital();
-        setField(mokHospital2, "id", 2L);
+        setField(mokHospital2, "Id", 2L);
         setField(mokHospital2, "name", "병원이름");
         setField(mokHospital2, "address", "병원주소");
         setField(mokHospital2, "contact", "이게뭔지모르겠어요");
         setField(mokHospital2, "open_time", LocalTime.of(9, 30));
         setField(mokHospital2, "closing_time", LocalTime.of(21, 30));
-        setField(mokHospital2, "weekTimetable", mokWeekTimetable);
         setField(mokHospital2, "announcement", "병원안내");
 
         Doctor doctor = Doctor.builder().name("의사이름2").description("설명").hospital(mokHospital2).build();
@@ -225,7 +219,9 @@ class CheckInServiceTest {
     void getMyCheckIn() {
 
         // g
-        BDDMockito.given(checkInRepository.findByPatientId(mockPatientAuthUser.getPatientId())).willReturn(Optional.of(mokCheckIn));
+        BDDMockito.given(patientRepository.findByUser_Id(mockPatientAuthUser.getId())).willReturn(Optional.of(mokPatient));
+        BDDMockito.given(checkInRepository.findByPatientId(mokPatient.getId())).willReturn(Optional.of(mokCheckIn));
+
         // w
         CheckInResponse checkInResponse = checkInService.getMyCheckIn(mockPatientAuthUser);
         // t
@@ -236,7 +232,7 @@ class CheckInServiceTest {
     void getAllCheckIns() {
 
         // g
-        BDDMockito.given(doctorRepository.findById(mockDoctorAuthUser.getDoctorId())).willReturn(Optional.of(mokDoctor));
+        BDDMockito.given(doctorRepository.findByUser_Id(mockDoctorAuthUser.getId())).willReturn(Optional.of(mokDoctor));
         // w
         List<CheckInResponse> checkInResponseList = checkInService.getAllCheckIns(mockDoctorAuthUser, 1L);
         // t
@@ -248,19 +244,14 @@ class CheckInServiceTest {
 
         // g
         Hospital otherHospital = new Hospital();
-        setField(otherHospital, "id", 2L);
+        setField(otherHospital, "Id", 2L);
 
-        Doctor notMyDoctor = Doctor.builder()
-                .hospital(otherHospital)
-                .build();
-
-        BDDMockito.given(doctorRepository.findById(mockDoctorAuthUser.getDoctorId())).willReturn(Optional.of(notMyDoctor));
         // w
         ApiException exception = assertThrows(ApiException.class, () -> {
             checkInService.getAllCheckIns(mockDoctorAuthUser, 1L);
         });
         // t
-        Assertions.assertEquals("해당 병원에 소속된 의사가 아닙니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
+        Assertions.assertEquals("의사를 찾을 수 없습니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
     }
 
     @Test
@@ -269,7 +260,7 @@ class CheckInServiceTest {
         // g
         setField(mokCheckInRequest, "doctorId", 1L);
         setField(mokCheckInRequest, "status", null);
-        BDDMockito.given(doctorRepository.findById(mockDoctorAuthUser.getDoctorId())).willReturn(Optional.of(mokDoctor));
+        BDDMockito.given(doctorRepository.findByUser_Id(mockDoctorAuthUser.getId())).willReturn(Optional.of(mokDoctor));
         BDDMockito.given(checkInRepository.findById(1L)).willReturn(Optional.of(mokCheckIn));
         BDDMockito.given(doctorRepository.findById(mokCheckInRequest.getDoctorId())).willReturn(Optional.of(mokDoctor));
 
@@ -286,7 +277,7 @@ class CheckInServiceTest {
         // g
         setField(mokCheckInRequest, "doctorId", null);
         setField(mokCheckInRequest, "status", "WAITING");
-        BDDMockito.given(doctorRepository.findById(mockDoctorAuthUser.getDoctorId())).willReturn(Optional.of(mokDoctor));
+        BDDMockito.given(doctorRepository.findByUser_Id(mockDoctorAuthUser.getDoctorId())).willReturn(Optional.of(mokDoctor));
         BDDMockito.given(checkInRepository.findById(1L)).willReturn(Optional.of(mokCheckIn));
 
         // w
@@ -301,6 +292,7 @@ class CheckInServiceTest {
 
         // g
         checkInRepository.save(mokCheckIn);
+        BDDMockito.given(doctorRepository.findByUser_Id(mockDoctorAuthUser.getId())).willReturn(Optional.of(mokDoctor));
         BDDMockito.given(checkInRepository.findById(1L)).willReturn(Optional.of(mokCheckIn));
 
         // w
