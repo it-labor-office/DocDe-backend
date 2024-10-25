@@ -3,7 +3,7 @@ package com.docde.domain.review.service;
 
 import com.docde.common.Apiresponse.ErrorStatus;
 import com.docde.common.exceptions.ApiException;
-import com.docde.domain.auth.entity.UserDetailsImpl;
+import com.docde.domain.auth.entity.AuthUser;
 import com.docde.domain.medicalRecord.entity.MedicalRecord;
 import com.docde.domain.medicalRecord.repository.MedicalRecordRepository;
 import com.docde.domain.review.dto.request.ReviewRequestDto;
@@ -32,9 +32,9 @@ public class ReviewService {
 
     // 리뷰 생성
     @Transactional
-    public ReviewResponseDto createReview(UserDetailsImpl userDetails, ReviewRequestDto requestDto) {
+    public ReviewResponseDto createReview(AuthUser authUser, ReviewRequestDto requestDto) {
 
-        User user = userRepository.findById(userDetails.getUser().getId()).orElseThrow(()
+        User user = userRepository.findById(authUser.getId()).orElseThrow(()
                 -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
 
         MedicalRecord medicalRecord = medicalRecordRepository.findById(requestDto.getMedicalRecordId()).orElseThrow(()
@@ -108,7 +108,7 @@ public class ReviewService {
     // 리뷰 수정
     @Transactional
     public ReviewResponseDto updateReview(Long reviewId, ReviewUpdateRequestDto requestDto,
-                                          UserDetailsImpl userDetails) {
+                                          AuthUser authUser) {
 
 
         // 기존 리뷰 조회
@@ -116,7 +116,7 @@ public class ReviewService {
                 .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_REVIEW));
 
 
-        User user = userRepository.findById(userDetails.getUser().getId())
+        User user = userRepository.findById(authUser.getId())
                 .orElseThrow(() -> new ApiException(ErrorStatus._BAD_REQUEST_NOT_FOUND_USER));
 
         MedicalRecord medicalRecord = medicalRecordRepository.findById(requestDto.getMedicalRecordId())
@@ -144,15 +144,15 @@ public class ReviewService {
 
     // 리뷰 삭제
     @Transactional
-    public void deleteReview(Long reviewId, UserDetailsImpl userDetails) {
+    public void deleteReview(Long reviewId, AuthUser authUser) {
 
         Review review = reviewRepository.findById(reviewId).orElseThrow(()
                 -> new ApiException(ErrorStatus._NOT_FOUND_REVIEW));
 
-        User user = userRepository.findById(userDetails.getUser().getId())
+        User user = userRepository.findById(authUser.getId())
                 .orElseThrow(() -> new ApiException(ErrorStatus._BAD_REQUEST_NOT_FOUND_USER));
 
-        if(!review.getUser().getId().equals(user.getId())) {
+        if (!review.getUser().getId().equals(user.getId())) {
             throw new ApiException(ErrorStatus._FORBIDDEN_ACCESS);
         }
 

@@ -167,4 +167,15 @@ public class AuthService {
             throw new ApiException(ErrorStatus._ERROR_WHILE_SENDING_EMAIL, e);
         }
     }
+
+    @Transactional
+    public AuthResponse.SignIn signIn(String email, String password) {
+        User user = userRepository.findByEmail(email).orElseThrow(() -> new ApiException(ErrorStatus._EMAIL_OR_PASSWORD_NOT_MATCHES));
+        if (!passwordEncoder.matches(password, user.getPassword()))
+            throw new ApiException(ErrorStatus._EMAIL_OR_PASSWORD_NOT_MATCHES);
+
+        String accessToken = jwtUtil.createAccessToken(user.getId(), user.getEmail(), user.getUserRole());
+        String refreshToken = jwtUtil.createRefreshToken(user.getId(), user.getEmail(), user.getUserRole());
+        return new AuthResponse.SignIn(accessToken, refreshToken);
+    }
 }

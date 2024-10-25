@@ -1,6 +1,5 @@
 package com.docde.config;
 
-import com.docde.domain.auth.service.UserDetailsServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,24 +13,18 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.web.servlet.HandlerExceptionResolver;
+import org.springframework.security.web.servletapi.SecurityContextHolderAwareRequestFilter;
 
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    private final UserDetailsServiceImpl userDetailsService;
-    private final JwtDecodeFilter jwtDecodeFilter;
-    private final JwtUtil jwtUtil;
-    private final HandlerExceptionResolver handlerExceptionResolver;
+    private final JwtSecurityFilter jwtDecodeFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         AuthenticationManagerBuilder authenticationManagerBuilder = http.getSharedObject(AuthenticationManagerBuilder.class);
-        authenticationManagerBuilder.userDetailsService(userDetailsService);
         AuthenticationManager authenticationManager = authenticationManagerBuilder.build();
-        AuthenticationFilter authenticationFilter = new AuthenticationFilter(jwtUtil, authenticationManager, handlerExceptionResolver);
 
         http.csrf(AbstractHttpConfigurer::disable)
                 .csrf(AbstractHttpConfigurer::disable)
@@ -44,8 +37,7 @@ public class SecurityConfig {
                 .logout(LogoutConfigurer::permitAll)
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authenticationManager(authenticationManager)
-                .addFilterBefore(jwtDecodeFilter, UsernamePasswordAuthenticationFilter.class)
-                .addFilterAt(authenticationFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterBefore(jwtDecodeFilter, SecurityContextHolderAwareRequestFilter.class);
 
         return http.build();
     }
