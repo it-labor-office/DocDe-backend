@@ -1,0 +1,89 @@
+package com.docde.domain.auth.controller;
+
+import com.docde.common.enums.Gender;
+import com.docde.common.enums.UserRole;
+import com.docde.config.JwtUtil;
+import com.docde.domain.auth.dto.AuthRequest;
+import com.docde.domain.auth.service.AuthService;
+import com.docde.domain.auth.service.UserDetailsServiceImpl;
+import com.docde.domain.patient.entity.Patient;
+import com.docde.domain.user.entity.User;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.jpa.mapping.JpaMetamodelMappingContext;
+import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors;
+import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.mockito.Mockito.when;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+@WebMvcTest(value = AuthController.class)
+public class AuthControllerTest {
+    @Autowired
+    private MockMvc mockMvc;
+
+    @MockBean
+    private AuthService authService;
+
+    @MockBean
+    private UserDetailsServiceImpl userDetailsService;
+
+    @MockBean
+    private JwtUtil jwtUtil;
+
+    @MockBean
+    private JpaMetamodelMappingContext jpaMetamodelMappingContext;
+
+    @Autowired
+    ObjectMapper objectMapper;
+
+    @Test
+    @DisplayName("/auth/signup/patient")
+    @WithMockUser
+    void patientSignUp() throws Exception {
+        // given
+        String email = "a@a.com";
+        String password = "Password1234@";
+        String name = "dlfma";
+        String address = "wnth";
+        String phone = "01012345678";
+        Gender gender = Gender.M;
+        String code = "code";
+        Long patientId = 1L;
+        Long userId = 1L;
+        AuthRequest.PatientSignUp patientSignUp = new AuthRequest.PatientSignUp(email, password, name, address, phone, gender, code);
+        Patient patient = Patient.builder().name(name).address(address).phone(phone).gender(gender).build();
+        User user = User.builder().email(email).password(password).userRole(UserRole.ROLE_PATIENT).patient(patient).build();
+        ReflectionTestUtils.setField(patient, "id", patientId);
+        ReflectionTestUtils.setField(user, "id", userId);
+        String content = objectMapper.writeValueAsString(patientSignUp);
+
+        // when
+        when(authService.patientSignUp(email, password, name, address, phone, gender, code)).thenReturn(user);
+
+        // then
+        mockMvc.perform(post("/auth/signup/patient")
+                        .content(content)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON)
+                        .with(SecurityMockMvcRequestPostProcessors.csrf()))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.message").value("Created"))
+                .andExpect(jsonPath("$.statusCode").value(201))
+                .andExpect(jsonPath("$.data.email").value(email))
+                .andExpect(jsonPath("$.data.userRole").value("ROLE_PATIENT"))
+                .andExpect(jsonPath("$.data.patient.name").value(name))
+                .andExpect(jsonPath("$.data.patient.address").value(address))
+                .andExpect(jsonPath("$.data.patient.phone").value(phone))
+                .andExpect(jsonPath("$.data.patient.gender").value("M"));
+    }
+}
