@@ -1,5 +1,6 @@
 package com.docde.domain.user.entity;
 
+import com.docde.common.entity.Timestamped;
 import com.docde.common.enums.UserRole;
 import com.docde.domain.doctor.entity.Doctor;
 import com.docde.domain.patient.entity.Patient;
@@ -11,7 +12,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @NoArgsConstructor
-public class User {
+public class User extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

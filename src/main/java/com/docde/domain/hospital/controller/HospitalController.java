@@ -9,6 +9,7 @@ import com.docde.domain.hospital.dto.response.*;
 import com.docde.domain.hospital.service.HospitalService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
@@ -27,11 +28,10 @@ public class HospitalController {
 
     //병원 정보 생성
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public ApiResponse<HospitalPostResponseDto> postHospital(@RequestBody HospitalPostRequestDto requestDto,
-                                                             @AuthenticationPrincipal UserDetails userDetails) {
+    public ResponseEntity<ApiResponse<HospitalPostResponseDto>> postHospital(@RequestBody HospitalPostRequestDto requestDto,
+                                                                             @AuthenticationPrincipal UserDetails userDetails) {
         HospitalPostResponseDto responseDto = hospitalService.postHospital(requestDto, userDetails);
-        return ApiResponse.onCreated(responseDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.onCreated(responseDto));
     }
 
     //병원 정보 읽어 오기

@@ -18,4 +18,17 @@ spring:
         format_sql: true
         show_sql: true
         use_sql_comments: true
-
+  mail:
+    host: smtp.gmail.com
+    port: 465
+    username: ${GOOGLE_ACCOUNT_EMAIL}
+    password: ${GOOGLE_ACCOUNT_APP_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+    protocol: smtps
+  data:
+    redis:
+      host: localhost
+      port: 6379
