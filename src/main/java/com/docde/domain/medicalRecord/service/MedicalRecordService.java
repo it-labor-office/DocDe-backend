@@ -3,7 +3,7 @@ package com.docde.domain.medicalRecord.service;
 
 import com.docde.common.Apiresponse.ErrorStatus;
 import com.docde.common.exceptions.ApiException;
-import com.docde.domain.auth.entity.UserDetailsImpl;
+import com.docde.domain.auth.entity.AuthUser;
 import com.docde.domain.doctor.entity.Doctor;
 import com.docde.domain.doctor.repository.DoctorRepository;
 import com.docde.domain.medicalRecord.dto.request.DoctorMedicalRecordRequestDto;
@@ -22,8 +22,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.docde.domain.patient.entity.QPatient.patient;
-
 
 @Service
 @RequiredArgsConstructor
@@ -37,12 +35,9 @@ public class MedicalRecordService {
 
 
     @Transactional
-    public MedicalRecordResponseDto createMedicalRecord(DoctorMedicalRecordRequestDto requestDto, UserDetailsImpl userDetails) {
-
-
+    public MedicalRecordResponseDto createMedicalRecord(DoctorMedicalRecordRequestDto requestDto, AuthUser authUser) {
         // 로그인한 의사 정보
-        Doctor doctor = doctorRepository.findById(userDetails.getUser().getId()).orElseThrow(()
-                -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
+        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
 
         // 환자 정보
         Patient patient = patientRepository.findById(requestDto.getPatientId()).orElseThrow(()
@@ -88,12 +83,12 @@ public class MedicalRecordService {
 
 
     // 의사가 의사용 진료기록 조회
-    public List<DoctorMedicalRecordResponseDto> getDoctorMedicalRecord(UserDetailsImpl userDetails) {
+    public List<DoctorMedicalRecordResponseDto> getDoctorMedicalRecord(AuthUser authUser) {
 
         // 로그인한 의사 ID
-        Long doctorId = userDetails.getUser().getId();
+        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
 
-        List<MedicalRecord> medicalRecords = medicalRecordRepository.findByDoctorId(doctorId); // 의사 ID로 진료 기록 조회
+        List<MedicalRecord> medicalRecords = medicalRecordRepository.findByDoctorId(doctor.getId()); // 의사 ID로 진료 기록 조회
 
 
         return medicalRecords.stream().map(record -> new DoctorMedicalRecordResponseDto(
@@ -108,12 +103,11 @@ public class MedicalRecordService {
 
 
     // 환자가 자신의 진료기록 조회
-    public List<PatientMedicalRecordResponseDto> getPatientMedicalRecord(UserDetailsImpl userDetails) {
-        System.out.println(userDetails.getUser().getPatient().getId());
+    public List<PatientMedicalRecordResponseDto> getPatientMedicalRecord(AuthUser authUser) {
         // 로그인한 환자 ID
-        Long patientId = userDetails.getUser().getPatient().getId();
+        Patient patient = patientRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
 
-        List<MedicalRecord> medicalRecords = medicalRecordRepository.findByPatientId(patientId); // 환자 ID로 진료 기록 조회
+        List<MedicalRecord> medicalRecords = medicalRecordRepository.findByPatientId(patient.getId()); // 환자 ID로 진료 기록 조회
 
         return medicalRecords.stream().map(record -> new PatientMedicalRecordResponseDto(record.getMedicalRecordId(),
                         record.getDescription(),
@@ -125,13 +119,12 @@ public class MedicalRecordService {
 
     // 의사용 진료기록 수정
     @Transactional
-    public DoctorMedicalRecordResponseDto updateDoctorMedicalRecord(UserDetailsImpl userDetails,
+    public DoctorMedicalRecordResponseDto updateDoctorMedicalRecord(AuthUser authUser,
                                                                     Long medicalRecordId,
                                                                     DoctorMedicalRecordRequestDto requestDto) {
 
         // 로그인 의사정보
-        Doctor doctor = doctorRepository.findById(userDetails.getUser().getId())
-                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
+        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
 
         MedicalRecord medicalRecord = medicalRecordRepository.findById(medicalRecordId)
                 .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_MEDICAL_RECORD));
@@ -167,10 +160,8 @@ public class MedicalRecordService {
     public PatientMedicalRecordResponseDto updatePatientMedicalRecord(
             Long medicalRecordId,
             PatientMedicalRecordRequestDto requestDto,
-            UserDetailsImpl userDetails) {
-
-        Doctor doctor = doctorRepository.findById(userDetails.getUser().getId())
-                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
+            AuthUser authUser) {
+        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
 
         // 진료 기록 조회
         MedicalRecord medicalRecord = medicalRecordRepository.findById(medicalRecordId)
@@ -198,10 +189,8 @@ public class MedicalRecordService {
 
     // 진료기록 삭제
     @Transactional
-    public void deleteMedicalRecord(Long medicalRecordId, UserDetailsImpl userDetails) {
-
-        Doctor doctor = doctorRepository.findById(userDetails.getUser().getId())
-                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
+    public void deleteMedicalRecord(Long medicalRecordId, AuthUser authUser) {
+        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
 
         // 진료 기록 조회
         MedicalRecord medicalRecord = medicalRecordRepository.findById(medicalRecordId)
