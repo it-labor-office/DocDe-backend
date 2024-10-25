@@ -250,7 +250,7 @@ class CheckInServiceTest {
         // g
         Hospital otherHospital = new Hospital();
         setField(otherHospital, "id", 2L);
-        
+
         Doctor notMyDoctor = Doctor.builder()
                 .hospital(otherHospital)
                 .build();
@@ -265,10 +265,49 @@ class CheckInServiceTest {
     }
 
     @Test
-    void updateCheckIn() {
+    void updateCheckIn_요청에의사가존재할때() {
+
+        // g
+        setField(mokCheckInRequest, "doctorId", 1L);
+        setField(mokCheckInRequest, "status", null);
+        BDDMockito.given(doctorRepository.findById(mokDoctorUserDetails.getUser().getDoctor().getId())).willReturn(Optional.of(mokDoctor));
+        BDDMockito.given(checkInRepository.findById(1L)).willReturn(Optional.of(mokCheckIn));
+        BDDMockito.given(doctorRepository.findById(mokCheckInRequest.getDoctorId())).willReturn(Optional.of(mokDoctor));
+
+        // w
+        CheckInResponse checkInResponse = checkInService.updateCheckIn(mokDoctorUserDetails, 1L, 1L, mokCheckInRequest);
+
+        // t
+        Assertions.assertNotNull(checkInResponse);
+    }
+
+    @Test
+    void updateCheckIn_요청에접수상태변경이존재할때() {
+
+        // g
+        setField(mokCheckInRequest, "doctorId", null);
+        setField(mokCheckInRequest, "status", "WAITING");
+        BDDMockito.given(doctorRepository.findById(mokDoctorUserDetails.getUser().getDoctor().getId())).willReturn(Optional.of(mokDoctor));
+        BDDMockito.given(checkInRepository.findById(1L)).willReturn(Optional.of(mokCheckIn));
+
+        // w
+        CheckInResponse checkInResponse = checkInService.updateCheckIn(mokDoctorUserDetails, 1L, 1L, mokCheckInRequest);
+
+        // t
+        Assertions.assertNotNull(checkInResponse);
     }
 
     @Test
     void deleteCheckIn() {
+
+        // g
+        checkInRepository.save(mokCheckIn);
+        BDDMockito.given(checkInRepository.findById(1L)).willReturn(Optional.of(mokCheckIn));
+
+        // w
+        checkInService.deleteCheckIn(mokDoctorUserDetails, 1L);
+
+        // t
+        Assertions.assertEquals(0, checkInRepository.count());
     }
 }
