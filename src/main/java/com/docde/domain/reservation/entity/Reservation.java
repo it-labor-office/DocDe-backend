@@ -37,27 +37,11 @@ public class Reservation extends Timestamped {
     @JoinColumn(name = "patient_id", nullable = false)
     private Patient patient;
 
-    public Reservation(String reservation_reason, ReservationStatus reservationStatus, Doctor doctor, Patient patient) {
-        this.reservationReason = reservation_reason;
-        this.status = reservationStatus;
-        this.doctor = doctor;
-        this.patient = patient;
-    }
-
-
-    public static Reservation createReservation(String reservation_reason, ReservationStatus reservationStatus, Doctor doctor, Patient patient) {
-        return new Reservation(reservation_reason, reservationStatus, doctor, patient);
-    }
-
-    public void changeReservationStatus(ReservationStatus reservationStatus) {
-        this.status = reservationStatus;
-    }
-
     @Builder
-    public Reservation(String reservation_reason, ReservationStatus reservationStatus, String rejectionReason, Doctor doctor, Patient patient) {
-        this.reservationReason = reservation_reason;
-        this.status = reservationStatus;
-        this.rejectReason = rejectionReason;
+    public Reservation(String reservationReason, ReservationStatus status, String rejectReason, Doctor doctor, Patient patient) {
+        this.reservationReason = reservationReason;
+        this.status = status;
+        this.rejectReason = rejectReason;
         this.doctor = doctor;
         this.patient = patient;
     }

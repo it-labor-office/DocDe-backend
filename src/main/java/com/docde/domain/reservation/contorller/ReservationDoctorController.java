@@ -4,6 +4,7 @@ import com.docde.common.Apiresponse.ApiResponse;
 import com.docde.common.enums.UserRole;
 import com.docde.domain.auth.entity.AuthUser;
 import com.docde.domain.doctor.dto.DoctorResponse;
+import com.docde.domain.patient.dto.PatientResponse;
 import com.docde.domain.reservation.dto.ReservationDoctorRequest;
 import com.docde.domain.reservation.dto.ReservationDoctorResponse;
 import com.docde.domain.reservation.entity.Reservation;
@@ -25,28 +26,29 @@ public class ReservationDoctorController {
 
     @PutMapping("/reservations/{reservationId}/approval")
     @Secured({UserRole.Authority.DOCTOR, UserRole.Authority.DOCTOR_PRESIDENT})
-    public ApiResponse<ReservationDoctorResponse.ReservationWithDoctor> approvalReservation(
+    public ApiResponse<ReservationDoctorResponse.ReservationWithPatientAndDoctor> approvalReservation(
             @PathVariable Long reservationId,
             @AuthenticationPrincipal AuthUser authUser) {
         Reservation reservation = reservationDoctorService.approvalReservation(reservationId, authUser);
-        return ApiResponse.onCreated(new ReservationDoctorResponse.ReservationWithDoctor(reservation.getId(), reservation.getReservationReason(), reservation.getStatus(), reservation.getRejectReason(), new DoctorResponse(reservation.getDoctor())));
+        return ApiResponse.onCreated(new ReservationDoctorResponse.ReservationWithPatientAndDoctor(reservation.getId(), reservation.getReservationReason(), reservation.getStatus(), reservation.getRejectReason(), new PatientResponse(reservation.getPatient()), new DoctorResponse(reservation.getDoctor())));
     }
 
     @PutMapping("/reservations/{reservationId}/refusal")
     @Secured({UserRole.Authority.DOCTOR, UserRole.Authority.DOCTOR_PRESIDENT})
-    public ApiResponse<ReservationDoctorResponse.ReservationWithDoctor> refusalReservation(
+    public ApiResponse<ReservationDoctorResponse.ReservationWithPatientAndDoctor> refusalReservation(
             @PathVariable Long reservationId,
             @RequestBody @Valid ReservationDoctorRequest.RejectReservation rejectReservationRequestDto,
             @AuthenticationPrincipal AuthUser authUser) {
         Reservation reservation = reservationDoctorService.refusalReservation(reservationId, rejectReservationRequestDto.rejectionReason(), authUser);
-        return ApiResponse.onCreated(new ReservationDoctorResponse.ReservationWithDoctor(reservation.getId(), reservation.getReservationReason(), reservation.getStatus(), reservation.getRejectReason(), new DoctorResponse(reservation.getDoctor())));
+        return ApiResponse.onCreated(new ReservationDoctorResponse.ReservationWithPatientAndDoctor(reservation.getId(), reservation.getReservationReason(), reservation.getStatus(), reservation.getRejectReason(), new PatientResponse(reservation.getPatient()), new DoctorResponse(reservation.getDoctor())));
     }
 
     @PutMapping("/reservations/{reservationId}/done")
-    public ApiResponse<ReservationDoctorResponse.ReservationWithDoctor> doneReservation(
+    @Secured({UserRole.Authority.DOCTOR, UserRole.Authority.DOCTOR_PRESIDENT})
+    public ApiResponse<ReservationDoctorResponse.ReservationWithPatientAndDoctor> doneReservation(
             @PathVariable Long reservationId,
             @AuthenticationPrincipal AuthUser authUser) {
         Reservation reservation = reservationDoctorService.doneReservation(reservationId, authUser);
-        return ApiResponse.onCreated(new ReservationDoctorResponse.ReservationWithDoctor(reservation.getId(), reservation.getReservationReason(), reservation.getStatus(), reservation.getRejectReason(), new DoctorResponse(reservation.getDoctor())));
+        return ApiResponse.onCreated(new ReservationDoctorResponse.ReservationWithPatientAndDoctor(reservation.getId(), reservation.getReservationReason(), reservation.getStatus(), reservation.getRejectReason(), new PatientResponse(reservation.getPatient()), new DoctorResponse(reservation.getDoctor())));
     }
 }
