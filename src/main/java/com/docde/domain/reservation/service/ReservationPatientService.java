@@ -35,7 +35,7 @@ public class ReservationPatientService {
 
     @Transactional
     public Reservation cancelReservation(Long reservationId, AuthUser authUser) {
-        Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_RESERVATION));
+        Reservation reservation = reservationRepository.findByIdWithDoctorAndHospitalAndPatient(reservationId).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_RESERVATION));
         if (!reservation.getPatient().getId().equals(authUser.getPatientId()))
             throw new ApiException(ErrorStatus._FORBIDDEN);
 
@@ -52,7 +52,7 @@ public class ReservationPatientService {
     }
 
     public Reservation getReservation(Long reservationId, AuthUser authUser) {
-        Reservation reservation = reservationRepository.findById(reservationId).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_RESERVATION));
+        Reservation reservation = reservationRepository.findByIdWithDoctorAndHospitalAndPatient(reservationId).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_RESERVATION));
         if (authUser.getUserRole().equals(UserRole.ROLE_DOCTOR) || authUser.getUserRole().equals(UserRole.ROLE_DOCTOR_PRESIDENT)) {
             if (authUser.getHospitalId() == null || !reservation.getDoctor().getHospital().getId().equals(authUser.getHospitalId()))
                 throw new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL);
