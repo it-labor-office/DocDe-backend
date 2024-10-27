@@ -40,4 +40,9 @@ public class AuthController {
         authService.authenticateEmail(authenticateEmailRequestDto.email());
         return ApiResponse.onCreated(null);
     }
+
+    @PostMapping("/auth/signin")
+    public ApiResponse<AuthResponse.SignIn> signIn(@RequestBody @Valid AuthRequest.SignIn signInRequestDto) {
+        return ApiResponse.onCreated(authService.signIn(signInRequestDto.email(), signInRequestDto.password()));
+    }
 }
