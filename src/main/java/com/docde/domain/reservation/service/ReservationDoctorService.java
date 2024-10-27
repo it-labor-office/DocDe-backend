@@ -27,7 +27,7 @@ public class ReservationDoctorService {
 
     @Transactional
     public Reservation approvalReservation(Long reservationId, AuthUser authUser) {
-        Reservation reservation = reservationRepository.findByIdWithDoctorAndHospital(reservationId).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_RESERVATION));
+        Reservation reservation = reservationRepository.findByIdWithDoctorAndHospitalAndPatient(reservationId).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_RESERVATION));
         Hospital hospital = reservation.getDoctor().getHospital();
         if (authUser.getHospitalId() == null || !hospital.getId().equals(authUser.getHospitalId()))
             throw new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL);
@@ -47,7 +47,7 @@ public class ReservationDoctorService {
 
     @Transactional
     public Reservation refusalReservation(Long reservationId, String rejectionReason, AuthUser authUser) {
-        Reservation reservation = reservationRepository.findByIdWithDoctorAndHospital(reservationId).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_RESERVATION));
+        Reservation reservation = reservationRepository.findByIdWithDoctorAndHospitalAndPatient(reservationId).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_RESERVATION));
         Hospital hospital = reservation.getDoctor().getHospital();
         if (authUser.getHospitalId() == null || !hospital.getId().equals(authUser.getHospitalId()))
             throw new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL);
@@ -65,7 +65,7 @@ public class ReservationDoctorService {
     }
 
     public Reservation doneReservation(Long reservationId, AuthUser authUser) {
-        Reservation reservation = reservationRepository.findByIdWithDoctorAndHospital(reservationId).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_RESERVATION));
+        Reservation reservation = reservationRepository.findByIdWithDoctorAndHospitalAndPatient(reservationId).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_RESERVATION));
         Hospital hospital = reservation.getDoctor().getHospital();
         if (authUser.getHospitalId() == null || !hospital.getId().equals(authUser.getHospitalId()))
             throw new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL);
