@@ -21,6 +21,7 @@ public class AuthUser {
     private final Long doctorId;
     private final Long patientId;
     private final Long hospitalId;
+    private final UserRole userRole;
 
     @Builder
     public AuthUser(Long id, String email, UserRole userRole, Long doctorId, Long patientId, Long hospitalId) {
@@ -30,6 +31,7 @@ public class AuthUser {
         this.doctorId = doctorId;
         this.patientId = patientId;
         this.hospitalId = hospitalId;
+        this.userRole = userRole;
     }
 
     public AuthUser(User user) {
@@ -42,5 +44,6 @@ public class AuthUser {
         this.doctorId = doctor == null ? null : doctor.getId();
         this.patientId = patient == null ? null : patient.getId();
         this.hospitalId = hospital == null ? null : hospital.getId();
+        this.userRole = user.getUserRole();
     }
 }
