@@ -3,9 +3,7 @@ package com.docde.domain.reservation.service;
 import com.docde.common.Apiresponse.ErrorStatus;
 import com.docde.common.exceptions.ApiException;
 import com.docde.domain.auth.entity.AuthUser;
-import com.docde.domain.doctor.repository.DoctorRepository;
 import com.docde.domain.hospital.entity.Hospital;
-import com.docde.domain.patient.repository.PatientRepository;
 import com.docde.domain.reservation.entity.Reservation;
 import com.docde.domain.reservation.entity.ReservationStatus;
 import com.docde.domain.reservation.repository.ReservationRepository;
@@ -19,11 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 @Slf4j
 public class ReservationDoctorService {
-
-
     private final ReservationRepository reservationRepository;
-    private final DoctorRepository doctorRepository;
-    private final PatientRepository patientRepository;
 
     @Transactional
     public Reservation approvalReservation(Long reservationId, AuthUser authUser) {
