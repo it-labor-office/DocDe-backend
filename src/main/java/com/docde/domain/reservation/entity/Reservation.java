@@ -11,18 +11,23 @@ import lombok.Setter;
 @Entity
 @Getter
 @NoArgsConstructor
-@Setter
 public class Reservation extends Timestamped {
 
 
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
-    private String reservation_reason;
+    private String reservationReason;
 
     @Column(nullable = false)
-    private ReservationStatus reservationStatus;
+    @Setter
+    private ReservationStatus status;
+
+    @Column
+    @Setter
+    private String rejectReason;
 
     @ManyToOne
     @JoinColumn(name = "doctor_id", nullable = false)
@@ -33,20 +38,27 @@ public class Reservation extends Timestamped {
     private Patient patient;
 
     public Reservation(String reservation_reason, ReservationStatus reservationStatus, Doctor doctor, Patient patient) {
-        this.reservation_reason = reservation_reason;
-        this.reservationStatus = reservationStatus;
+        this.reservationReason = reservation_reason;
+        this.status = reservationStatus;
         this.doctor = doctor;
         this.patient = patient;
     }
 
 
-    public static Reservation createReservation(String reservation_reason, ReservationStatus reservationStatus, Doctor doctor, Patient patient){
+    public static Reservation createReservation(String reservation_reason, ReservationStatus reservationStatus, Doctor doctor, Patient patient) {
         return new Reservation(reservation_reason, reservationStatus, doctor, patient);
     }
 
-    public void changeReservationStatus(ReservationStatus reservationStatus){
-        this.reservationStatus = reservationStatus;
+    public void changeReservationStatus(ReservationStatus reservationStatus) {
+        this.status = reservationStatus;
     }
 
-
+    @Builder
+    public Reservation(String reservation_reason, ReservationStatus reservationStatus, String rejectionReason, Doctor doctor, Patient patient) {
+        this.reservationReason = reservation_reason;
+        this.status = reservationStatus;
+        this.rejectReason = rejectionReason;
+        this.doctor = doctor;
+        this.patient = patient;
+    }
 }
