@@ -3,11 +3,10 @@ package com.docde.domain.hospital.service;
 import com.docde.common.Apiresponse.ErrorStatus;
 import com.docde.common.exceptions.ApiException;
 import com.docde.domain.auth.entity.AuthUser;
+import com.docde.domain.doctor.entity.Doctor;
+import com.docde.domain.doctor.repository.DoctorRepository;
 import com.docde.domain.hospital.dto.TimetableDto;
-import com.docde.domain.hospital.dto.request.HospitalPostRequestDto;
-import com.docde.domain.hospital.dto.request.HospitalUpdateRequestDto;
-import com.docde.domain.hospital.dto.request.HospitalWeeklyTimetablePostRequestDto;
-import com.docde.domain.hospital.dto.request.HospitalWeeklyTimetableUpdateRequestDto;
+import com.docde.domain.hospital.dto.request.*;
 import com.docde.domain.hospital.dto.response.*;
 import com.docde.domain.hospital.entity.Hospital;
 import com.docde.domain.hospital.entity.HospitalTimetable;
@@ -26,6 +25,7 @@ import java.util.Optional;
 public class HospitalService {
     private final HospitalRepository hospitalRepository;
     private final HospitalTimetableRepository hospitalTimetableRepository;
+    private final DoctorRepository doctorRepository;
 
 //    @Transactional
 //    public void ModifyingTest() {
@@ -45,12 +45,15 @@ public class HospitalService {
 
     @Transactional
     public HospitalPostResponseDto postHospital(HospitalPostRequestDto requestDto, AuthUser authUser) {
-        //유저 권한 확인
-        checkDoctorPresident(authUser);
-        //병원 갯수는 누구를 기준으로 할까??
-        //받은 정보를 바탕으로 병원데이터생성
+        //authUser의 아이디로 의사정보를 업데이트하기 위해 의사엔티티를 찾습니다.
+        Doctor doctor = doctorRepository.findById(authUser.getDoctorId()).orElseThrow(
+                () -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR)
+        );
+        //병원 생성 후 저장
         Hospital hospital = new Hospital(requestDto);
-        hospitalRepository.save(hospital);
+        Hospital savedHospital = hospitalRepository.save(hospital);
+        //해당의사(병원장)은 이제부터 저장된병원소속
+        doctor.addDoctorToHospital(savedHospital);
         return new HospitalPostResponseDto(hospital);
     }
 
@@ -63,24 +66,11 @@ public class HospitalService {
 
     @Transactional
     public HospitalWeeklyTimetablePostResponseDto postWeeklyTimetable(
-            HospitalWeeklyTimetablePostRequestDto requestDto,
-            AuthUser authUser, Long hospitalId) {
-        checkDoctorPresident(authUser);
+            HospitalWeeklyTimetablePostRequestDto requestDto
+            , AuthUser authUser
+            , Long hospitalId) {
 
-        Hospital hospital = findHospitalByHospitalId(hospitalId);
-
-        /*
-        {
-            "timetables":[
-                {
-                "dayOfTheWeek":"SUN","openTime":"12:00","closingTime":"13:00"},
-                {
-                "dayOfTheWeek":"MON","openTime":"12:00","closingTime":"13:00"},
-                {
-                "dayOfTheWeek":"TUE","openTime":"12:00","closingTime":"13:00"}
-        requestDto의 모양
-        **/
-        //이걸 매핑해서 리스트로 변환
+        Hospital hospital = findHospitalByHospitalId(authUser.getHospitalId());
         List<HospitalTimetable> timetables = requestDto.getTimetables().stream().
                 map(dto -> {
                     return new HospitalTimetable(
@@ -108,9 +98,7 @@ public class HospitalService {
     public HospitalWeeklyTimetableUpdateResponseDto updateWeeklyTimetable(HospitalWeeklyTimetableUpdateRequestDto requestDto,
                                                                           AuthUser authUser,
                                                                           Long hospitalId) {
-        checkDoctorPresident(authUser);
-
-        Hospital hospital = findHospitalByHospitalId(hospitalId);
+        Hospital hospital = findHospitalByHospitalId(authUser.getHospitalId());
         //구 시간표
         List<HospitalTimetable> oldTimetables = hospitalTimetableRepository.findAllByHospitalId(hospital.getId());
         //변경 하려는 시간표
@@ -155,9 +143,7 @@ public class HospitalService {
 
     @Transactional
     public HospitalUpdateResponseDto putHospital(HospitalUpdateRequestDto requestDto, AuthUser authUser) {
-        checkDoctorPresident(authUser);
-
-        Hospital hospital = findHospitalByHospitalId(requestDto.getHospitalId());
+        Hospital hospital = findHospitalByHospitalId(authUser.getHospitalId());
 
         hospital.updateAll(requestDto);
 
@@ -165,22 +151,10 @@ public class HospitalService {
     }
 
     @Transactional
-    public HospitalDeleteResponseDto deleteHospital(HospitalDeleteRequestDto requestDto, AuthUser authUser) {
-        checkDoctorPresident(authUser);
-
-        Hospital hospital = findHospitalByHospitalId(requestDto.getHospitalId());
-
+    public HospitalDeleteResponseDto deleteHospital(AuthUser authUser) {
+        Hospital hospital = findHospitalByHospitalId(authUser.getHospitalId());
         hospitalRepository.delete(hospital);
-
         return new HospitalDeleteResponseDto(hospital);
-    }
-
-    public void checkDoctorPresident(AuthUser authUser) {
-        boolean check = authUser.getAuthorities().stream().anyMatch(authority ->
-                authority.getAuthority().equals("ROLE_DOCTOR_PRESIDENT"));
-        if (!check) {
-            throw new ApiException(ErrorStatus._FORBIDDEN);
-        }
     }
 
     public Hospital findHospitalByHospitalId(Long hospitalId) {
@@ -189,9 +163,9 @@ public class HospitalService {
         );
     }
 
+    @Transactional
     public HospitalUpdateResponseDto patchHospital(HospitalUpdateRequestDto requestDto, AuthUser authUser) {
-        checkDoctorPresident(authUser);
-        Hospital hospital = findHospitalByHospitalId(requestDto.getHospitalId());
+        Hospital hospital = findHospitalByHospitalId(authUser.getHospitalId());
 
         if (requestDto.getHospitalName() != null) {
             hospital.updateName(requestDto.getHospitalName());
@@ -213,4 +187,21 @@ public class HospitalService {
         }
         return new HospitalUpdateResponseDto(hospital);
     }
+
+    @Transactional
+    public HospitalPostDoctorResponseDto addDoctorToHospital(Long hospitalId, HospitalPostDoctorRequestDto requestDto, AuthUser authUser) {
+        //병원을 찾는다
+        Hospital hospital = findHospitalByHospitalId(hospitalId);
+        Doctor doctor = doctorRepository.findByUser_Email(requestDto.getDoctorEmail()).orElseThrow(
+                () -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR)
+        );
+        //의사를 병원에 추가한다. 연관관계 설정
+        doctor.addDoctorToHospital(hospital);
+
+        return new HospitalPostDoctorResponseDto(doctor.getId(), doctor.getName(), hospital.getId(), hospital.getName());
+    }
+
+//    public boolean check(AuthUser authUser) {
+//
+//    }
 }
