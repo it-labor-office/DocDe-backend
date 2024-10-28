@@ -41,7 +41,7 @@ public class AuthControllerTest {
     ObjectMapper objectMapper;
 
     @Test
-    @DisplayName("/auth/signup/patient")
+    @DisplayName("[POST] /auth/signup/patient")
     @WithMockUser
     void patientSignUp() throws Exception {
         // given
@@ -83,7 +83,7 @@ public class AuthControllerTest {
 
 
     @Test
-    @DisplayName("/auth/signup/doctor")
+    @DisplayName("[POST] /auth/signup/doctor")
     @WithMockUser
     void doctorSignUp() throws Exception {
         // given
@@ -119,7 +119,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("/auth/refresh")
+    @DisplayName("[POST] /auth/refresh")
     @WithMockUser
     void reissue() throws Exception {
         // given
@@ -145,7 +145,7 @@ public class AuthControllerTest {
     }
 
     @Test
-    @DisplayName("/auth/email-authentication")
+    @DisplayName("[POST] /auth/email-authentication")
     @WithMockUser
     void authenticateEmail() throws Exception {
         // given
