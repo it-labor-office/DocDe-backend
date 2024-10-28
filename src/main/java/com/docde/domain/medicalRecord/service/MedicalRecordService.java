@@ -7,7 +7,6 @@ import com.docde.domain.auth.entity.AuthUser;
 import com.docde.domain.doctor.entity.Doctor;
 import com.docde.domain.doctor.repository.DoctorRepository;
 import com.docde.domain.medicalRecord.dto.request.DoctorMedicalRecordRequestDto;
-import com.docde.domain.medicalRecord.dto.request.PatientMedicalRecordRequestDto;
 import com.docde.domain.medicalRecord.dto.response.DoctorMedicalRecordResponseDto;
 import com.docde.domain.medicalRecord.dto.response.MedicalRecordResponseDto;
 import com.docde.domain.medicalRecord.dto.response.PatientMedicalRecordResponseDto;
@@ -52,10 +51,6 @@ public class MedicalRecordService {
                 requestDto.getDoctorComment()
         );
 
-       /* // 병원 정보가 누락되지 않았는지 확인
-        if (doctor.getHospital() == null) {
-            throw new ApiException(ErrorStatus._NOT_FOUND_HOSPITAL);  // 병원 정보가 없을 경우 예외 처리
-        }*/
 
         MedicalRecord savedRecord = medicalRecordRepository.save(medicalRecord);
 
@@ -79,6 +74,36 @@ public class MedicalRecordService {
         );
 
         return new MedicalRecordResponseDto(doctorResponseDto, patientResponseDto);
+    }
+
+
+    // 특정 진료기록 조회
+    @Transactional(readOnly = true)
+    public DoctorMedicalRecordResponseDto getSpecificDoctorMedicalRecord(AuthUser authUser, Long medicalRecordId,
+                                                                         String description, String treatmentPlan,
+                                                                         String doctorComment) {
+
+        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId())
+                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
+
+        MedicalRecord medicalRecord = medicalRecordRepository
+                .findSpecificMedicalRecord(medicalRecordId, description, treatmentPlan, doctorComment)
+                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_MEDICAL_RECORD));
+
+        if (!medicalRecord.getDoctor().getId().equals(doctor.getId())) {
+            throw new ApiException(ErrorStatus._UNAUTHORIZED_ACCESS_MEDICAL_RECORD);
+        }
+
+        // 응답 DTO 생성
+        return new DoctorMedicalRecordResponseDto(
+                medicalRecord.getMedicalRecordId(),
+                medicalRecord.getDescription(),
+                medicalRecord.getConsultation(),
+                medicalRecord.getPatient().getName(),
+                medicalRecord.getPatient().getId(),
+                medicalRecord.getTreatmentPlan(),
+                medicalRecord.getDoctorComment()
+        );
     }
 
 
@@ -117,73 +142,52 @@ public class MedicalRecordService {
     }
 
 
-    // 의사용 진료기록 수정
+    // 진료기록 수정
     @Transactional
-    public DoctorMedicalRecordResponseDto updateDoctorMedicalRecord(AuthUser authUser,
-                                                                    Long medicalRecordId,
-                                                                    DoctorMedicalRecordRequestDto requestDto) {
+    public MedicalRecordResponseDto updateMedicalRecord(Long medicalRecordId,
+                                                        DoctorMedicalRecordRequestDto doctorRequestDto,
+                                                        AuthUser authUser) {
 
-        // 로그인 의사정보
-        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
+        // 로그인한 의사 정보 확인
+        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId())
+                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
 
-        MedicalRecord medicalRecord = medicalRecordRepository.findById(medicalRecordId)
-                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_MEDICAL_RECORD));
-
-        // 진료 기록 업데이트
-        MedicalRecord updatedRecord = new MedicalRecord(
-                medicalRecord.getMedicalRecordId(), // 기존 ID 유지
-                requestDto.getDescription(),
-                requestDto.getConsultation(),
-                medicalRecord.getPatient(), // 환자 정보 유지
-                doctor, // 로그인한 의사 정보 유지
-                requestDto.getTreatmentPlan(),
-                requestDto.getDoctorComment()
-        );
-
-        // 진료 기록 저장
-        MedicalRecord savedRecord = medicalRecordRepository.save(updatedRecord);
-
-        return new DoctorMedicalRecordResponseDto(
-                savedRecord.getMedicalRecordId(),
-                savedRecord.getDescription(),
-                savedRecord.getConsultation(),
-                savedRecord.getPatient().getName(),
-                savedRecord.getPatient().getId(),
-                savedRecord.getTreatmentPlan(),
-                savedRecord.getDoctorComment()
-        );
-    }
-
-
-    // 환자용 진료기록 수정
-    @Transactional
-    public PatientMedicalRecordResponseDto updatePatientMedicalRecord(
-            Long medicalRecordId,
-            PatientMedicalRecordRequestDto requestDto,
-            AuthUser authUser) {
-        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
-
-        // 진료 기록 조회
+        // 수정할 진료기록 조회
         MedicalRecord medicalRecord = medicalRecordRepository.findById(medicalRecordId)
                 .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_MEDICAL_RECORD));
 
         MedicalRecord updatedRecord = new MedicalRecord(
                 medicalRecord.getMedicalRecordId(), // 기존 ID 유지
-                requestDto.getDescription(),
-                requestDto.getConsultation(),
-                medicalRecord.getPatient(),
-                doctor,
-                requestDto.getTreatmentPlan()
+                doctorRequestDto.getDescription(),
+                doctorRequestDto.getConsultation(),
+                medicalRecord.getPatient(), // 기존 환자 유지
+                doctor, // 로그인한 의사
+                doctorRequestDto.getTreatmentPlan(),
+                doctorRequestDto.getDoctorComment()
         );
 
-        MedicalRecord savedRecord = medicalRecordRepository.save(updatedRecord);
+        medicalRecordRepository.save(updatedRecord);
 
-        return new PatientMedicalRecordResponseDto(
-                savedRecord.getMedicalRecordId(),
-                savedRecord.getDescription(),
-                savedRecord.getConsultation(),
-                savedRecord.getDoctor().getName()
+
+
+        DoctorMedicalRecordResponseDto doctorResponse = new DoctorMedicalRecordResponseDto(
+                medicalRecord.getMedicalRecordId(),
+                medicalRecord.getDescription(),
+                medicalRecord.getConsultation(),
+                medicalRecord.getPatient().getName(),
+                medicalRecord.getPatient().getId(),
+                medicalRecord.getTreatmentPlan(),
+                medicalRecord.getDoctorComment()
         );
+
+        PatientMedicalRecordResponseDto patientResponse = new PatientMedicalRecordResponseDto(
+                medicalRecord.getMedicalRecordId(),
+                medicalRecord.getDescription(),
+                medicalRecord.getConsultation(),
+                doctor.getName()
+        );
+
+        return new MedicalRecordResponseDto(doctorResponse, patientResponse);
     }
 
 
