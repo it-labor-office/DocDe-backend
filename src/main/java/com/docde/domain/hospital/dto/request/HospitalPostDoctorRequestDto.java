@@ -8,4 +8,7 @@ import lombok.NoArgsConstructor;
 public class HospitalPostDoctorRequestDto {
     private String doctorEmail;
 
+    public HospitalPostDoctorRequestDto(String doctorEmail) {
+        this.doctorEmail = doctorEmail;
+    }
 }
