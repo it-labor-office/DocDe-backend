@@ -43,6 +43,8 @@ public enum ErrorStatus implements BaseCode {
 
     //병원 관련 코드
     _NOT_FOUND_HOSPITAL(HttpStatus.BAD_REQUEST, 400, "병원을 찾을 수 없습니다"),
+    //삭제된 병원은 어떤 스테이터스를 반환해야하는가?
+    _DELETED_HOSPITAL(HttpStatus.BAD_REQUEST, 400, "삭제된 병원입니다."),
 
     //예약 관련 코드
     _NOT_FOUND_RESERVATION(HttpStatus.NOT_FOUND, 404, "예약을 찾을 수 없습니다."),
