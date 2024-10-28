@@ -8,12 +8,16 @@ import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.SQLRestriction;
 
 import java.util.List;
 
 @Getter
 @Entity
 @NoArgsConstructor
+@SQLDelete(sql = "UPDATE doctor SET deleted = true WHERE id = ?")
+@SQLRestriction("deleted = false")
 public class Doctor extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -35,11 +39,15 @@ public class Doctor extends Timestamped {
     @OneToOne(mappedBy = "doctor")
     private User user;
 
+    @Column(nullable = false)
+    Boolean deleted;
+
     @Builder
     public Doctor(String name, String description, Hospital hospital, User user) {
         this.name = name;
         this.description = description;
         this.hospital = hospital;
         this.user = user;
+        this.deleted = false;
     }
 }
