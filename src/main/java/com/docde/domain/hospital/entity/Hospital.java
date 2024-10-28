@@ -32,6 +32,10 @@ public class Hospital {
     @Column(nullable = false)
     private LocalTime closing_time;
 
+    @Column(nullable = false)
+    private boolean deleted = false;
+
+
 //    @OneToMany(mappedBy = "hospital", cascade = CascadeType.PERSIST)
 //    private List<HospitalTimetable> timetables = new ArrayList<>();
 //    //병원은 승인을 받아야 한다.
@@ -39,6 +43,10 @@ public class Hospital {
 
     @Column(nullable = false)
     private String announcement;
+
+    public void delete() {
+        deleted = true;
+    }
 
     public void updateName(String name) {
         this.name = name;

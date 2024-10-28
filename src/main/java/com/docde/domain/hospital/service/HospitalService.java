@@ -59,7 +59,7 @@ public class HospitalService {
 
     public HospitalGetResponseDto getHospital(Long hospitalId, AuthUser authUser) {
 
-        Hospital hospital = findHospitalByHospitalId(hospitalId);
+        Hospital hospital = findHospitalByHospitalIdAndCheckIsDeleted(hospitalId);
 
         return new HospitalGetResponseDto(hospital);
     }
@@ -70,7 +70,7 @@ public class HospitalService {
             , AuthUser authUser
             , Long hospitalId) {
 
-        Hospital hospital = findHospitalByHospitalId(authUser.getHospitalId());
+        Hospital hospital = findHospitalByHospitalIdAndCheckIsDeleted(authUser.getHospitalId());
         List<HospitalTimetable> timetables = requestDto.getTimetables().stream().
                 map(dto -> {
                     return new HospitalTimetable(
@@ -98,7 +98,7 @@ public class HospitalService {
     public HospitalWeeklyTimetableUpdateResponseDto updateWeeklyTimetable(HospitalWeeklyTimetableUpdateRequestDto requestDto,
                                                                           AuthUser authUser,
                                                                           Long hospitalId) {
-        Hospital hospital = findHospitalByHospitalId(authUser.getHospitalId());
+        Hospital hospital = findHospitalByHospitalIdAndCheckIsDeleted(authUser.getHospitalId());
         //구 시간표
         List<HospitalTimetable> oldTimetables = hospitalTimetableRepository.findAllByHospitalId(hospital.getId());
         //변경 하려는 시간표
@@ -143,7 +143,7 @@ public class HospitalService {
 
     @Transactional
     public HospitalUpdateResponseDto putHospital(HospitalUpdateRequestDto requestDto, AuthUser authUser) {
-        Hospital hospital = findHospitalByHospitalId(authUser.getHospitalId());
+        Hospital hospital = findHospitalByHospitalIdAndCheckIsDeleted(authUser.getHospitalId());
 
         hospital.updateAll(requestDto);
 
@@ -152,20 +152,25 @@ public class HospitalService {
 
     @Transactional
     public HospitalDeleteResponseDto deleteHospital(AuthUser authUser) {
-        Hospital hospital = findHospitalByHospitalId(authUser.getHospitalId());
-        hospitalRepository.delete(hospital);
+        Hospital hospital = findHospitalByHospitalIdAndCheckIsDeleted(authUser.getHospitalId());
+        //소프트 삭제
+        hospital.delete();
         return new HospitalDeleteResponseDto(hospital);
     }
 
-    public Hospital findHospitalByHospitalId(Long hospitalId) {
-        return hospitalRepository.findById(hospitalId).orElseThrow(
+    public Hospital findHospitalByHospitalIdAndCheckIsDeleted(Long hospitalId) {
+        Hospital hospital = hospitalRepository.findById(hospitalId).orElseThrow(
                 () -> new ApiException(ErrorStatus._NOT_FOUND_HOSPITAL)
         );
+        if (hospital.isDeleted()) {
+            throw new ApiException(ErrorStatus._DELETED_HOSPITAL);
+        }
+        return hospital;
     }
 
     @Transactional
     public HospitalUpdateResponseDto patchHospital(HospitalUpdateRequestDto requestDto, AuthUser authUser) {
-        Hospital hospital = findHospitalByHospitalId(authUser.getHospitalId());
+        Hospital hospital = findHospitalByHospitalIdAndCheckIsDeleted(authUser.getHospitalId());
 
         if (requestDto.getHospitalName() != null) {
             hospital.updateName(requestDto.getHospitalName());
@@ -191,7 +196,7 @@ public class HospitalService {
     @Transactional
     public HospitalPostDoctorResponseDto addDoctorToHospital(Long hospitalId, HospitalPostDoctorRequestDto requestDto, AuthUser authUser) {
         //병원을 찾는다
-        Hospital hospital = findHospitalByHospitalId(hospitalId);
+        Hospital hospital = findHospitalByHospitalIdAndCheckIsDeleted(hospitalId);
         Doctor doctor = doctorRepository.findByUser_Email(requestDto.getDoctorEmail()).orElseThrow(
                 () -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR)
         );
