@@ -14,4 +14,13 @@ public class DoctorMedicalRecordRequestDto {
     private String treatmentPlan;       // 치료 계획
     private String doctorComment;       // 의사 코멘트
 
+    public DoctorMedicalRecordRequestDto(Long doctorId, Long patientId, String description,
+                                         LocalDateTime consultation, String treatmentPlan, String doctorComment) {
+        this.doctorId = doctorId;
+        this.patientId = patientId;
+        this.description = description;
+        this.consultation = consultation;
+        this.treatmentPlan = treatmentPlan;
+        this.doctorComment = doctorComment;
+    }
 }
