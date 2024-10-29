@@ -171,19 +171,19 @@ public class MedicalRecordService {
 
 
         DoctorMedicalRecordResponseDto doctorResponse = new DoctorMedicalRecordResponseDto(
-                medicalRecord.getMedicalRecordId(),
-                medicalRecord.getDescription(),
-                medicalRecord.getConsultation(),
-                medicalRecord.getPatient().getName(),
-                medicalRecord.getPatient().getId(),
-                medicalRecord.getTreatmentPlan(),
-                medicalRecord.getDoctorComment()
+                updatedRecord.getMedicalRecordId(),
+                updatedRecord.getDescription(),
+                updatedRecord.getConsultation(),
+                updatedRecord.getPatient().getName(),
+                updatedRecord.getPatient().getId(),
+                updatedRecord.getTreatmentPlan(),
+                updatedRecord.getDoctorComment()
         );
 
         PatientMedicalRecordResponseDto patientResponse = new PatientMedicalRecordResponseDto(
-                medicalRecord.getMedicalRecordId(),
-                medicalRecord.getDescription(),
-                medicalRecord.getConsultation(),
+                updatedRecord.getMedicalRecordId(),
+                updatedRecord.getDescription(),
+                updatedRecord.getConsultation(),
                 doctor.getName()
         );
 
