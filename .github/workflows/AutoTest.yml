@@ -9,7 +9,7 @@ name: AutoTest
 
 on:
   pull_request:
-    branches: [ "develope" ]
+    branches: [ "develop" ]
 
 jobs:
 #jobs는 실행시킬 단위인 job의 모음입니다.
