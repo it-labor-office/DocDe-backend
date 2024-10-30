@@ -15,4 +15,12 @@ public class CItest {
 
         assertEquals(a + b, 15L);
     }
+
+    @Test
+    public void test2() {
+        Long a = 5L;
+        Long b = 10L;
+
+        assertEquals(a + b, 14L);
+    }
 }
