@@ -31,15 +31,13 @@ public class JwtSecurityFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        String authorization = request.getHeader("Authorization");
-
-        if (authorization == null) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         try {
+
             try {
+                String authorization = request.getHeader("Authorization");
+
+                if (authorization == null) throw new ApiException(ErrorStatus._NOT_FOUND_TOKEN);
+
                 String token = jwtUtil.substringToken(authorization);
                 TokenType tokenType = jwtUtil.getTokenType(token);
                 if (!tokenType.equals(TokenType.ACCESS)) throw new ApiException(ErrorStatus._NOT_ACCESS_TOKEN);
@@ -58,6 +56,7 @@ public class JwtSecurityFilter extends OncePerRequestFilter {
                 JwtAuthenticationToken authenticationToken = new JwtAuthenticationToken(authUser);
                 authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                filterChain.doFilter(request, response);
             } catch (SecurityException | MalformedJwtException e) {
                 throw new ApiException(ErrorStatus._UNAUTHORIZED_INVALID_TOKEN, e);
             } catch (ExpiredJwtException e) {
@@ -68,10 +67,8 @@ public class JwtSecurityFilter extends OncePerRequestFilter {
                 throw new ApiException(ErrorStatus._ERROR_WHILE_CREATE_TOKEN, e);
             }
         } catch (Exception e) {
-            System.out.println(e);
             handlerExceptionResolver.resolveException(request, response, null, e);
         }
-        filterChain.doFilter(request, response);
     }
 
     @Override

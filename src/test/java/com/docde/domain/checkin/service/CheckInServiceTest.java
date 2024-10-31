@@ -84,7 +84,7 @@ class CheckInServiceTest {
                 .address("주소")
                 .build();
 
-        setField(mokHospitalTimetable, "id", 1L);
+        setField(mokHospitalTimetable, "Id", 1L);
         setField(mokHospitalTimetable, "dayOfTheWeek", DayOfTheWeek.FRI);
         setField(mokHospitalTimetable, "openTime", LocalTime.of(9, 30));
         setField(mokHospitalTimetable, "closeTime", LocalTime.of(21, 30));
@@ -92,7 +92,7 @@ class CheckInServiceTest {
         mokHospitalTimetableList = new ArrayList<>();
         mokHospitalTimetableList.add(mokHospitalTimetable);
 
-        setField(mokHospital, "id", 1L);
+        setField(mokHospital, "Id", 1L);
         setField(mokHospital, "name", "병원이름");
         setField(mokHospital, "address", "병원주소");
         setField(mokHospital, "contact", "이게뭔지모르겠어요");
@@ -197,7 +197,7 @@ class CheckInServiceTest {
         setField(mokCheckInRequest, "doctorId", 1L);
 
         Hospital mokHospital2 = new Hospital();
-        setField(mokHospital2, "id", 2L);
+        setField(mokHospital2, "Id", 2L);
         setField(mokHospital2, "name", "병원이름");
         setField(mokHospital2, "address", "병원주소");
         setField(mokHospital2, "contact", "이게뭔지모르겠어요");
@@ -244,7 +244,7 @@ class CheckInServiceTest {
 
         // g
         Hospital otherHospital = new Hospital();
-        setField(otherHospital, "id", 2L);
+        setField(otherHospital, "Id", 2L);
 
         // w
         ApiException exception = assertThrows(ApiException.class, () -> {

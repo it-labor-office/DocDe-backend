@@ -6,7 +6,6 @@ import com.docde.domain.patient.entity.Patient;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
@@ -23,8 +22,7 @@ public class MedicalRecord extends Timestamped {
 
     private String description;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime consultation; // 진료 날짜
+    private LocalDateTime consultation;
 
     private String treatmentPlan; // 치료 계획
 
@@ -50,13 +48,14 @@ public class MedicalRecord extends Timestamped {
     }
 
     public MedicalRecord(Long medicalRecordId, String description, LocalDateTime consultation,
-                         Patient patient, Doctor doctor) {
+                         Patient patient, Doctor doctor, String treatmentPlan) {
 
         this.medicalRecordId = medicalRecordId;
         this.description = description;
         this.consultation = consultation;
         this.patient = patient;
         this.doctor = doctor;
+        this.treatmentPlan = treatmentPlan;
     }
 
     public MedicalRecord(Long medicalRecordId, String description, LocalDateTime consultation,

@@ -38,7 +38,7 @@ public class ReviewController {
     }
 
 
-    // 특정 사용자 리뷰 조회
+    // 특정 사용자의 리뷰 조회
     @GetMapping("/reviews/user/{userId}")
     public ApiResponse<List<ReviewResponseDto>> getReviewsByUserId(@PathVariable Long userId) {
 

@@ -35,7 +35,7 @@ public class ReviewService {
     public ReviewResponseDto createReview(AuthUser authUser, ReviewRequestDto requestDto) {
 
         User user = userRepository.findById(authUser.getId()).orElseThrow(()
-                -> new ApiException(ErrorStatus._BAD_REQUEST_NOT_FOUND_USER));
+                -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
 
         MedicalRecord medicalRecord = medicalRecordRepository.findById(requestDto.getMedicalRecordId()).orElseThrow(()
                 -> new ApiException(ErrorStatus._NOT_FOUND_MEDICAL_RECORD));
@@ -69,12 +69,7 @@ public class ReviewService {
 
         List<Review> reviews = reviewRepository.findAll();
 
-        if (reviews.isEmpty()) {
-            throw new ApiException(ErrorStatus._NOT_FOUND_REVIEW);
-        }
-
         return reviews.stream()
-
                 .map(review -> new ReviewResponseDto(
                         review.getMedicalRecord().getMedicalRecordId(),
                         review.getUser().getId(),
@@ -86,7 +81,7 @@ public class ReviewService {
     }
 
 
-    // 특정 사용자에 대한 리뷰 조회
+    // 특정 사용자 리뷰 조회
     public List<ReviewResponseDto> getReviewsByUserId(Long userId) {
 
         User user = userRepository.findById(userId)
@@ -111,48 +106,40 @@ public class ReviewService {
 
 
     // 리뷰 수정
-        @Transactional
-        public ReviewResponseDto updateReview(Long reviewId, ReviewUpdateRequestDto requestDto,
-                                              AuthUser authUser) {
+    @Transactional
+    public ReviewResponseDto updateReview(Long reviewId, ReviewUpdateRequestDto requestDto,
+                                          AuthUser authUser) {
 
 
-            // 기존 리뷰 조회
-            Review review = reviewRepository.findById(reviewId)
-                    .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_REVIEW));
+        // 기존 리뷰 조회
+        Review review = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_REVIEW));
 
 
-            User user = userRepository.findById(authUser.getId())
-                    .orElseThrow(() -> new ApiException(ErrorStatus._BAD_REQUEST_NOT_FOUND_USER));
+        User user = userRepository.findById(authUser.getId())
+                .orElseThrow(() -> new ApiException(ErrorStatus._BAD_REQUEST_NOT_FOUND_USER));
 
-            MedicalRecord medicalRecord = medicalRecordRepository.findById(requestDto.getMedicalRecordId())
-                    .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_MEDICAL_RECORD));
+        MedicalRecord medicalRecord = medicalRecordRepository.findById(requestDto.getMedicalRecordId())
+                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_MEDICAL_RECORD));
 
-            Review updatedReview = new Review(
-                    review.getReviewId(),
-                    requestDto.getStar(),
-                    requestDto.getContents(),
-                    user,
-                    medicalRecord
-            );
+        Review updatedReview = new Review(
+                review.getReviewId(),
+                requestDto.getStar(),
+                requestDto.getContents(),
+                user,
+                medicalRecord
+        );
 
-            Review savedReview = reviewRepository.save(updatedReview);
+        Review savedReview = reviewRepository.save(updatedReview);
 
-            if (savedReview.getMedicalRecord() == null) {
-                    throw new ApiException(ErrorStatus._NOT_FOUND_MEDICAL_RECORD);
-            }
-            if (savedReview.getMedicalRecord().getPatient() == null) {
-                throw new ApiException(ErrorStatus._NOT_FOUND_PATIENT);
-            }
-
-
-            return new ReviewResponseDto(
-                    savedReview.getMedicalRecord().getMedicalRecordId(),
-                    savedReview.getUser().getId(),
-                    savedReview.getStar(),
-                    savedReview.getContents(),
-                    savedReview.getMedicalRecord().getPatient().getName()
-            );
-        }
+        return new ReviewResponseDto(
+                savedReview.getMedicalRecord().getMedicalRecordId(),
+                savedReview.getUser().getId(),
+                savedReview.getStar(),
+                savedReview.getContents(),
+                savedReview.getMedicalRecord().getPatient().getName()
+        );
+    }
 
 
     // 리뷰 삭제
