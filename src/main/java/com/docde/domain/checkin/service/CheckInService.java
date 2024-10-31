@@ -60,8 +60,10 @@ public class CheckInService {
 
             Patient patient = patientRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
 
+            Long num = checkInRepository.maxNum() + 1L;
             CheckIn checkIn = CheckIn.builder()
                     .checkinStatus(CheckinStatus.PENDING)
+                    .number(num)
                     .doctor(doctor)
                     .patient(patient)
                     .build();
@@ -71,8 +73,11 @@ public class CheckInService {
             return checkInResponseFromCheckIn(checkIn);
         } else {
             Patient patient = patientRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
+
+            Long num = checkInRepository.maxNum() + 1L;
             CheckIn checkIn = CheckIn.builder()
                     .checkinStatus(CheckinStatus.PENDING)
+                    .number(num)
                     .patient(patient)
                     .build();
 
