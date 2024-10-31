@@ -12,7 +12,7 @@ import java.time.LocalTime;
 public class HospitalTimetable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long Id;
+    private Long id;
 
     @Enumerated(EnumType.STRING)
     private DayOfTheWeek dayOfTheWeek;
