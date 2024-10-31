@@ -15,6 +15,7 @@ import com.docde.domain.hospital.repository.HospitalRepository;
 import com.docde.domain.patient.entity.Patient;
 import com.docde.domain.patient.repository.PatientRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,7 @@ public class CheckInService {
     private final HospitalRepository hospitalRepository;
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     // 접수하기
     @Transactional
@@ -60,13 +62,16 @@ public class CheckInService {
 
             Patient patient = patientRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
 
-            Long num = checkInRepository.maxNum() + 1L;
+            Long num = getNum("number");
+
             CheckIn checkIn = CheckIn.builder()
                     .checkinStatus(CheckinStatus.PENDING)
                     .number(num)
                     .doctor(doctor)
                     .patient(patient)
                     .build();
+
+            setNum("number", num + 1L);
 
             checkInRepository.save(checkIn);
 
@@ -175,5 +180,17 @@ public class CheckInService {
                 checkIn.getDoctor() != null ? checkIn.getDoctor().getName() : "의사 배정 필요",
                 checkIn.getCreatedAt()
         );
+    }
+
+    private Long getNum(String key) {
+        String value = (String) redisTemplate.opsForValue().get(key);
+        if (value == null) {
+            value = "0";
+        }
+        return Long.parseLong(value);
+    }
+
+    private void setNum(String key, Long value) {
+        redisTemplate.opsForValue().set(key, value.toString());
     }
 }
