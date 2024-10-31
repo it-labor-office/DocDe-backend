@@ -17,6 +17,7 @@ jobs:
   test:
     #test가 돌아가는 환경을 설정합니다.
     runs-on: ubuntu-latest
+    #환경변수 설정을 해주지 않아 생기던 테스트 문제를 환경변수 설정으로 해결했습니다.
     env:
       JWT_SECRET_TOKEN: ${{secrets.JWT_SECRET_TOKEN}}
     permissions:
