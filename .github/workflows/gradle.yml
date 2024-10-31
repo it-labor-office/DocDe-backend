@@ -17,6 +17,8 @@ jobs:
   test:
     #test가 돌아가는 환경을 설정합니다.
     runs-on: ubuntu-latest
+    env:
+      JWT_SECRET_TOKEN: ${{secrets.JWT_SECRET_TOKEN}}
     permissions:
       contents: read
     #steps는 환경이 설정된 후 실행되는 작업의 목록입니다.
