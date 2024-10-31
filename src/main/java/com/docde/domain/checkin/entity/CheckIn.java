@@ -3,7 +3,6 @@ package com.docde.domain.checkin.entity;
 import com.docde.common.entity.Timestamped;
 import com.docde.domain.doctor.entity.Doctor;
 import com.docde.domain.patient.entity.Patient;
-import com.docde.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,10 +12,13 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Getter
 public class CheckIn extends Timestamped {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private CheckinStatus checkinStatus;
+
+    private Long number;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "doctor_id")
@@ -27,17 +29,18 @@ public class CheckIn extends Timestamped {
     private Patient patient;
 
     @Builder
-    public CheckIn(CheckinStatus checkinStatus, Doctor doctor, Patient patient) {
+    public CheckIn(CheckinStatus checkinStatus, Long number, Doctor doctor, Patient patient) {
         this.checkinStatus = checkinStatus;
+        this.number = number;
         this.doctor = doctor;
         this.patient = patient;
     }
 
-    public void updateStatus(CheckinStatus checkinStatus){
+    public void updateStatus(CheckinStatus checkinStatus) {
         this.checkinStatus = checkinStatus;
     }
 
-    public void updateDoctor(Doctor doctor){
+    public void updateDoctor(Doctor doctor) {
         this.doctor = doctor;
     }
 }
