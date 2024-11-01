@@ -21,6 +21,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.time.LocalDate;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -44,6 +45,9 @@ public class ReservationPatientServiceTest {
     @Nested
     @DisplayName("ReservationPatientService::createReservation")
     class Test1 {
+
+        LocalDate reservationDate = LocalDate.now();
+
         @Test
         @DisplayName("의사를 찾지 못하면 예외 발생")
         void test1() {
@@ -54,7 +58,7 @@ public class ReservationPatientServiceTest {
             AuthUser authUser = AuthUser.builder().userRole(UserRole.ROLE_PATIENT).build();
 
             // when & then
-            ApiException apiException = assertThrows(ApiException.class, () -> reservationPatientService.createReservation(doctorId, reservationReason, authUser));
+            ApiException apiException = assertThrows(ApiException.class, () -> reservationPatientService.createReservation(doctorId, reservationReason, reservationDate, authUser));
             assertEquals(apiException.getErrorCode(), ErrorStatus._NOT_FOUND_DOCTOR);
         }
 
@@ -71,7 +75,7 @@ public class ReservationPatientServiceTest {
             AuthUser authUser = AuthUser.builder().userRole(UserRole.ROLE_PATIENT).patientId(patientId).build();
 
             // when & then
-            ApiException apiException = assertThrows(ApiException.class, () -> reservationPatientService.createReservation(doctorId, reservationReason, authUser));
+            ApiException apiException = assertThrows(ApiException.class, () -> reservationPatientService.createReservation(doctorId, reservationReason, reservationDate, authUser));
             assertEquals(apiException.getErrorCode(), ErrorStatus._NOT_FOUND_PATIENT);
         }
 
@@ -92,7 +96,7 @@ public class ReservationPatientServiceTest {
             when(reservationRepository.save(any())).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
 
             // when
-            Reservation reservation = assertDoesNotThrow(() -> reservationPatientService.createReservation(doctorId, reservationReason, authUser));
+            Reservation reservation = assertDoesNotThrow(() -> reservationPatientService.createReservation(doctorId, reservationReason, reservationDate, authUser));
 
             // then
             assertEquals(reservation.getStatus(), ReservationStatus.WAITING_RESERVATION);

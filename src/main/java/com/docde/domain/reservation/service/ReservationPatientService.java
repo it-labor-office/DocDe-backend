@@ -1,6 +1,7 @@
 package com.docde.domain.reservation.service;
 
 import com.docde.common.Apiresponse.ErrorStatus;
+import com.docde.common.aspect.Lockable;
 import com.docde.common.enums.UserRole;
 import com.docde.common.exceptions.ApiException;
 import com.docde.domain.auth.entity.AuthUser;
@@ -15,6 +16,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -23,8 +26,17 @@ public class ReservationPatientService {
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
 
+
+    @Lockable
     @Transactional
-    public Reservation createReservation(Long doctorId, String reservationReason, AuthUser authUser) {
+    public Reservation createReservation(Long doctorId, String reservationReason, LocalDate reservationDate, AuthUser authUser) {
+
+        LocalDate today = LocalDate.now();
+
+        if (reservationDate.isBefore(today) || reservationDate.isAfter(today.plusDays(1))) {
+            throw new ApiException(ErrorStatus._INVALID_RESERVATION_DATE);
+        }
+
         Doctor doctor = doctorRepository.findById(doctorId).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
         Patient patient = patientRepository.findById(authUser.getPatientId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
         Reservation reservation = Reservation.builder().status(ReservationStatus.WAITING_RESERVATION).reservationReason(reservationReason).doctor(doctor).patient(patient).build();
