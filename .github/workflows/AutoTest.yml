@@ -17,6 +17,9 @@ jobs:
   test:
     #test가 돌아가는 환경을 설정합니다.
     runs-on: ubuntu-latest
+    #환경변수 설정을 해주지 않아 생기던 테스트 문제를 환경변수 설정으로 해결했습니다.
+    env:
+      JWT_SECRET_TOKEN: ${{secrets.JWT_SECRET_TOKEN}}
     permissions:
       contents: read
     #steps는 환경이 설정된 후 실행되는 작업의 목록입니다.
@@ -27,6 +30,16 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
+        
+    - name: Cache
+      uses: actions/cache@v4.1.2
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
 
     # Configure Gradle for optimal use in GitHub Actions, including caching of downloaded dependencies.
     # See: https://github.com/gradle/actions/blob/main/setup-gradle/README.md
