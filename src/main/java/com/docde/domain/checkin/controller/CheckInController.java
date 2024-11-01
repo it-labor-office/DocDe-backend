@@ -34,8 +34,17 @@ public class CheckInController {
         return ApiResponse.onSuccess(checkInService.getMyCheckIn(authUser));
     }
 
+    // 접수 목록만 확인(병원)
+    @GetMapping("/{hospitalId}/checkin/simple")
+    public ApiResponse<List<Object>> getQueue(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long hospitalId
+    ) {
+        return ApiResponse.onSuccess(checkInService.getQueue(authUser, hospitalId));
+    }
+
     // 접수 상태 확인(병원)
-    @GetMapping("{hospitalId}/checkin/all")
+    @GetMapping("/{hospitalId}/checkin/all")
     public ApiResponse<List<CheckInResponse>> getAllCheckIns(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long hospitalId

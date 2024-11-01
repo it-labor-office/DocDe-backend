@@ -46,7 +46,7 @@ public class CheckInService {
                 .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_HOSPITAL));
 
         // 이미 진행중인 접수가 있으면 예외처리
-        if (checkInRepository.findPatientId().contains(hospitalId)) {
+        if (checkInRepository.findPatientId().contains(authUser.getPatientId())) {
             throw new ApiException(ErrorStatus._BAD_REQUEST_ALREADY_CHECKED_IN);
         }
 
@@ -65,12 +65,15 @@ public class CheckInService {
             Long num = getNum("number of hospital" + hospital.getId());
 
             CheckIn checkIn = CheckIn.builder()
-                    .checkinStatus(CheckinStatus.PENDING)
+                    .checkinStatus(CheckinStatus.WAITING)
                     .number(num)
                     .doctor(doctor)
                     .patient(patient)
                     .build();
 
+            joinQueue(checkIn.getPatient().getName());
+
+            // 최대 번호(다음 접수에 발급될 번호)
             setNum("number of hospital" + hospital.getId(), num + 1L);
 
             checkInRepository.save(checkIn);
@@ -79,12 +82,18 @@ public class CheckInService {
         } else {
             Patient patient = patientRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
 
-            Long num = checkInRepository.maxNum() + 1L;
+            Long num = getNum("number of hospital" + hospital.getId());
+
             CheckIn checkIn = CheckIn.builder()
-                    .checkinStatus(CheckinStatus.PENDING)
+                    .checkinStatus(CheckinStatus.WAITING)
                     .number(num)
                     .patient(patient)
                     .build();
+
+            joinQueue(checkIn.getPatient().getName());
+
+            // 최대 번호(다음 접수에 발급될 번호)
+            setNum("number of hospital" + hospital.getId(), num + 1L);
 
             checkInRepository.save(checkIn);
 
@@ -102,14 +111,32 @@ public class CheckInService {
         return checkInResponseFromCheckIn(checkIn);
     }
 
+    // 접수 목록만 확인(병원)
+    public List<Object> getQueue(AuthUser authUser, Long hospitalId) {
+
+        // 로그인된 유저 정보로 해당 병원 관계자인지 확인하기
+        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId())
+                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
+        if (!doctor.getHospital().getId().equals(hospitalId)) {
+            throw new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL);
+        }
+
+        List<Object> queue = redisTemplate.opsForList().range("checkin queue", 0, -1);
+
+        return queue;
+    }
+
     // 접수 상태 확인(병원)
     public List<CheckInResponse> getAllCheckIns(AuthUser authUser, Long hospitalId) {
 
         // 로그인된 유저 정보로 해당 병원 관계자인지 확인하기
-        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
+        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId())
+                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
         if (!doctor.getHospital().getId().equals(hospitalId)) {
             throw new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL);
         }
+
+        List<Object> queue = redisTemplate.opsForList().range("checkin queue", 0, -1);
 
         // 해당 병원의 모든 접수 반환
         List<CheckIn> checkInList = checkInRepository.findAllByHospitalId(hospitalId);
@@ -178,7 +205,8 @@ public class CheckInService {
                 checkIn.getId(),
                 checkIn.getPatient().getName(),
                 checkIn.getDoctor() != null ? checkIn.getDoctor().getName() : "의사 배정 필요",
-                checkIn.getCreatedAt()
+                checkIn.getCreatedAt(),
+                checkIn.getCheckinStatus().toString()
         );
     }
 
@@ -193,4 +221,9 @@ public class CheckInService {
     private void setNum(String key, Long value) {
         redisTemplate.opsForValue().set(key, value.toString());
     }
+
+    private void joinQueue(String value) {
+        redisTemplate.opsForList().leftPush("checkin queue", value);
+    }
+
 }
