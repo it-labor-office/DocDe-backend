@@ -54,6 +54,7 @@ public enum ErrorStatus implements BaseCode {
     _ALREADY_DONE_RESERVATION(HttpStatus.BAD_REQUEST, 400, "이미 진료가 끝난 예약입니다."),
     _DENIED_RESERVATION(HttpStatus.BAD_REQUEST, 400, "진료가 거부된 예약입니다."),
     _ALREADY_RESERVED_RESERVATION(HttpStatus.BAD_REQUEST, 400, "이미 예약이 승인 되었습니다."),
+    _INVALID_RESERVATION_DATE(HttpStatus.BAD_REQUEST,400, "예약 날짜는 오늘 또는 내일로 설정해야 합니다."),
 
     // 의사 관련 코드
     _NOT_FOUND_DOCTOR(HttpStatus.NOT_FOUND, 404, "의사를 찾을 수 없습니다."),
