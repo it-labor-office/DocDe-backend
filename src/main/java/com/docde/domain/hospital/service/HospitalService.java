@@ -142,7 +142,7 @@ public class HospitalService {
     }
 
     @Transactional
-    public HospitalUpdateResponseDto putHospital(HospitalUpdateRequestDto requestDto, AuthUser authUser) {
+    public HospitalUpdateResponseDto putHospital(HospitalUpdateRequestDto requestDto, Long hospitalId, AuthUser authUser) {
         Hospital hospital = findHospitalByHospitalIdAndCheckIsDeleted(authUser.getHospitalId());
 
         hospital.updateAll(requestDto);
@@ -169,7 +169,7 @@ public class HospitalService {
     }
 
     @Transactional
-    public HospitalUpdateResponseDto patchHospital(HospitalUpdateRequestDto requestDto, AuthUser authUser) {
+    public HospitalUpdateResponseDto patchHospital(HospitalUpdateRequestDto requestDto, Long hospitalId, AuthUser authUser) {
         Hospital hospital = findHospitalByHospitalIdAndCheckIsDeleted(authUser.getHospitalId());
 
         if (requestDto.getHospitalName() != null) {
