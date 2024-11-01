@@ -62,7 +62,7 @@ public class CheckInService {
 
             Patient patient = patientRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
 
-            Long num = getNum("number");
+            Long num = getNum("number of hospital" + hospital.getId());
 
             CheckIn checkIn = CheckIn.builder()
                     .checkinStatus(CheckinStatus.PENDING)
@@ -71,7 +71,7 @@ public class CheckInService {
                     .patient(patient)
                     .build();
 
-            setNum("number", num + 1L);
+            setNum("number of hospital" + hospital.getId(), num + 1L);
 
             checkInRepository.save(checkIn);
 
