@@ -72,7 +72,7 @@ public class CheckInService {
                     .patient(patient)
                     .build();
 
-            joinQueue(checkIn.getPatient().getName());
+            joinQueue(hospital.getId(), checkIn.getPatient().getName() + checkIn.getPatient().getId());
 
             // 최대 번호(다음 접수에 발급될 번호)
             setNum("number of hospital" + hospital.getId(), num + 1L);
@@ -92,7 +92,7 @@ public class CheckInService {
                     .patient(patient)
                     .build();
 
-            joinQueue(checkIn.getPatient().getName());
+            joinQueue(hospital.getId(), checkIn.getPatient().getName() + checkIn.getPatient().getId());
 
             // 최대 번호(다음 접수에 발급될 번호)
             setNum("number of hospital" + hospital.getId(), num + 1L);
@@ -124,9 +124,7 @@ public class CheckInService {
             throw new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL);
         }
 
-        List<Object> queue = redisTemplate.opsForList().range("checkin queue", 0, -1);
-
-        return queue;
+        return redisTemplate.opsForList().range("checkin queue", 0, -1);
     }
 
     // 접수 상태 확인(병원)
@@ -184,10 +182,22 @@ public class CheckInService {
             checkIn.updateDoctor(addedDoctor);
         }
 
-        // 요청에 접수 상태가 존재할 때
-        if (checkInRequest.getStatus() != null) {
-            checkIn.updateStatus(CheckinStatus.valueOf(checkInRequest.getStatus()));
+        // 접수 상태 대기중이 아닐 때
+        if (checkIn.getCheckinStatus() != CheckinStatus.WAITING) {
+            throw new ApiException(ErrorStatus._ONLY_WAITING_CAN_CHANGED);
         }
+        // 접수 상태 완료 혹은 취소로 변경
+        if (checkInRequest.getStatus() != null) {
+
+            if (!checkInRequest.getStatus().equals("COMPLETED") && !checkInRequest.getStatus().equals("CANCELED")) {
+                throw new ApiException(ErrorStatus._INVALID_CHECK_IN_STATUS);
+            }
+
+            checkIn.updateStatus(CheckinStatus.valueOf(checkInRequest.getStatus()));
+
+            exitQueue(hospitalId, checkIn.getPatient().getName() + checkIn.getPatient().getId());
+        }
+
 
         return checkInResponseFromCheckIn(checkIn);
     }
@@ -254,7 +264,11 @@ public class CheckInService {
         redisTemplate.opsForValue().set(key, value.toString());
     }
 
-    private void joinQueue(String value) {
-        redisTemplate.opsForList().leftPush("checkin queue", value);
+    private void joinQueue(Long hospitalId, String value) {
+        redisTemplate.opsForList().rightPush("checkin queue of hospital " + hospitalId, value);
+    }
+
+    private void exitQueue(Long hospitalId, String value) {
+        redisTemplate.opsForList().remove("checkin queue of hospital " + hospitalId, 0, value);
     }
 }
