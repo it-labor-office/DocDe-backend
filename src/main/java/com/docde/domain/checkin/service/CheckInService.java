@@ -198,7 +198,6 @@ public class CheckInService {
             exitQueue(hospitalId, checkIn.getPatient().getName() + checkIn.getPatient().getId());
         }
 
-
         return checkInResponseFromCheckIn(checkIn);
     }
 
