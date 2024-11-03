@@ -63,6 +63,15 @@ public class CheckInController {
         return ApiResponse.onSuccess(checkInService.updateCheckIn(authUser, hospitalId, checkInId, checkInRequest));
     }
 
+    // 접수 번호 초기화
+    @PutMapping("/{hospitalId}/checkin/reset")
+    public void resetNumber(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long hospitalId
+    ) {
+        checkInService.resetNumber(authUser, hospitalId);
+    }
+
     // 접수 기록 영구 삭제
     @DeleteMapping("/checkin/{checkInId}")
     public void deleteCheckIn(

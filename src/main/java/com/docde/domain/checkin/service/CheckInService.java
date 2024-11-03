@@ -60,7 +60,8 @@ public class CheckInService {
                 throw new ApiException(ErrorStatus._BAD_REQUEST_DOCTOR_NOT_BELONG_TO_HOSPITAL);
             }
 
-            Patient patient = patientRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
+            Patient patient = patientRepository.findByUser_Id(authUser.getId())
+                    .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
 
             Long num = getNum("number of hospital" + hospital.getId());
 
@@ -80,7 +81,8 @@ public class CheckInService {
 
             return checkInResponseFromCheckIn(checkIn);
         } else {
-            Patient patient = patientRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
+            Patient patient = patientRepository.findByUser_Id(authUser.getId())
+                    .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
 
             Long num = getNum("number of hospital" + hospital.getId());
 
@@ -103,7 +105,8 @@ public class CheckInService {
 
     // 자신의 접수 상태 확인(사용자)
     public CheckInResponse getMyCheckIn(AuthUser authUser) {
-        Patient patient = patientRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
+        Patient patient = patientRepository.findByUser_Id(authUser.getId())
+                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
         // 로그인된 유저 id로 접수 찾기
         CheckIn checkIn = checkInRepository.findByPatientId(patient.getId())
                 .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_CHECK_IN));
@@ -152,10 +155,16 @@ public class CheckInService {
 
     // 접수 상태 변경
     @Transactional
-    public CheckInResponse updateCheckIn(AuthUser authUser, Long hospitalId, Long checkInId, CheckInRequest checkInRequest) {
+    public CheckInResponse updateCheckIn(
+            AuthUser authUser,
+            Long hospitalId,
+            Long checkInId,
+            CheckInRequest checkInRequest
+    ) {
 
         // 로그인된 유저 정보로 해당 병원 관계자인지 확인하기
-        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
+        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId())
+                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
         if (!doctor.getHospital().getId().equals(hospitalId)) {
             throw new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL);
         }
@@ -183,6 +192,27 @@ public class CheckInService {
         return checkInResponseFromCheckIn(checkIn);
     }
 
+    // 대기 번호 초기화하기
+    @Transactional
+    public void resetNumber(AuthUser authUser, Long hospitalId) {
+
+        // 로그인된 유저 정보로 해당 병원 관계자인지 확인하기
+        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId())
+                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
+
+        if (!doctor.getHospital().getId().equals(hospitalId)) {
+            throw new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL);
+        }
+
+        // 지금 대기 중인 접수가 있으면 안 됨
+        if (!checkInRepository.findAllWaitingByHospitalId(hospitalId).isEmpty()) {
+            throw new ApiException(ErrorStatus._RESET_ONLY_EMPTY);
+        }
+
+        // 초기화하기
+        setNum("number of hospital" + hospitalId, 0L);
+    }
+
     // 접수 기록 영구 삭제
     @Transactional
     public void deleteCheckIn(AuthUser authUser, Long checkInId) {
@@ -191,7 +221,9 @@ public class CheckInService {
                 .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_CHECK_IN));
 
         // 로그인된 유저의 소속 병원이 접수의 병원과 같은지 확인
-        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
+        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId())
+                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
+
         if (!doctor.getHospital().equals(checkIn.getDoctor().getHospital())) {
             throw new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL);
         }
@@ -225,5 +257,4 @@ public class CheckInService {
     private void joinQueue(String value) {
         redisTemplate.opsForList().leftPush("checkin queue", value);
     }
-
 }

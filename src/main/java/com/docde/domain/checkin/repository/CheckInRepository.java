@@ -22,4 +22,8 @@ public interface CheckInRepository extends JpaRepository<CheckIn, Long> {
 
     @Query("UPDATE CheckIn c SET c.number = 0")
     void resetNum();
+
+    // 특정 병원의 대기 중인 접수 모두 찾기
+    @Query("SELECT c FROM CheckIn c WHERE c.doctor.hospital.id = :hospitalId AND c.checkinStatus = :WATING")
+    List<CheckIn> findAllWaitingByHospitalId(Long hospitalId);
 }
