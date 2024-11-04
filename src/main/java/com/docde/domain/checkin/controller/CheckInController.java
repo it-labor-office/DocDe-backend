@@ -4,6 +4,7 @@ import com.docde.common.Apiresponse.ApiResponse;
 import com.docde.domain.auth.entity.AuthUser;
 import com.docde.domain.checkin.dto.CheckInRequest;
 import com.docde.domain.checkin.dto.CheckInResponse;
+import com.docde.domain.checkin.dto.CheckInResponseOfPatient;
 import com.docde.domain.checkin.service.CheckInService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,13 +30,25 @@ public class CheckInController {
     }
 
     // 자신의 접수 상태 확인(사용자)
-    @GetMapping("/checkin")
-    public ApiResponse<CheckInResponse> getMyCheckIn(@AuthenticationPrincipal AuthUser authUser) {
-        return ApiResponse.onSuccess(checkInService.getMyCheckIn(authUser));
+    @GetMapping("{hospitalId}/checkin")
+    public ApiResponse<CheckInResponseOfPatient> getMyCheckIn(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long hospitalId
+    ) {
+        return ApiResponse.onSuccess(checkInService.getMyCheckIn(authUser, hospitalId));
+    }
+
+    // 접수 목록만 확인(병원)
+    @GetMapping("/{hospitalId}/checkin/simple")
+    public ApiResponse<List<Object>> getQueue(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long hospitalId
+    ) {
+        return ApiResponse.onSuccess(checkInService.getQueue(authUser, hospitalId));
     }
 
     // 접수 상태 확인(병원)
-    @GetMapping("{hospitalId}/checkin/all")
+    @GetMapping("/{hospitalId}/checkin/all")
     public ApiResponse<List<CheckInResponse>> getAllCheckIns(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long hospitalId
@@ -52,6 +65,15 @@ public class CheckInController {
             @RequestBody CheckInRequest checkInRequest
     ) {
         return ApiResponse.onSuccess(checkInService.updateCheckIn(authUser, hospitalId, checkInId, checkInRequest));
+    }
+
+    // 접수 번호 초기화
+    @PutMapping("/{hospitalId}/checkin/reset")
+    public void resetNumber(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long hospitalId
+    ) {
+        checkInService.resetNumber(authUser, hospitalId);
     }
 
     // 접수 기록 영구 삭제

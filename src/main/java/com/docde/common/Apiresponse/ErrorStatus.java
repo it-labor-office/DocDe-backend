@@ -54,7 +54,7 @@ public enum ErrorStatus implements BaseCode {
     _ALREADY_DONE_RESERVATION(HttpStatus.BAD_REQUEST, 400, "이미 진료가 끝난 예약입니다."),
     _DENIED_RESERVATION(HttpStatus.BAD_REQUEST, 400, "진료가 거부된 예약입니다."),
     _ALREADY_RESERVED_RESERVATION(HttpStatus.BAD_REQUEST, 400, "이미 예약이 승인 되었습니다."),
-    _INVALID_RESERVATION_DATE(HttpStatus.BAD_REQUEST,400, "예약 날짜는 오늘 또는 내일로 설정해야 합니다."),
+    _INVALID_RESERVATION_DATE(HttpStatus.BAD_REQUEST, 400, "예약 날짜는 오늘 또는 내일로 설정해야 합니다."),
 
     // 의사 관련 코드
     _NOT_FOUND_DOCTOR(HttpStatus.NOT_FOUND, 404, "의사를 찾을 수 없습니다."),
@@ -75,7 +75,11 @@ public enum ErrorStatus implements BaseCode {
     _BAD_REQUEST_ALREADY_CHECKED_IN(HttpStatus.BAD_REQUEST, 400, "이미 진행중인 접수가 있습니다."),
     _BAD_REQUEST_DOCTOR_NOT_BELONG_TO_HOSPITAL(HttpStatus.BAD_REQUEST, 400, "해당 병원에 소속된 의사가 아닙니다."),
     _NOT_FOUND_CHECK_IN(HttpStatus.BAD_REQUEST, 400, "진행 중인 진료 접수가 없습니다."),
-    _FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL(HttpStatus.FORBIDDEN, 403, "해당 병원에 소속된 의사가 아닙니다.");
+    _FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL(HttpStatus.FORBIDDEN, 403, "해당 병원에 소속된 의사가 아닙니다."),
+    _RESET_ONLY_EMPTY(HttpStatus.BAD_REQUEST, 400, "대기 중인 접수가 없을 때만 번호를 초기화 할 수 있습니다."),
+    _ONLY_WAITING_CAN_CHANGED(HttpStatus.BAD_REQUEST, 400, "대기중인 접수만 상태를 변경할 수 있습니다."),
+    _INVALID_CHECK_IN_STATUS(HttpStatus.BAD_REQUEST, 400, "잘못된 접수 상태입니다.");
+
 
     private final HttpStatus httpStatus;
     private final Integer statusCode;
