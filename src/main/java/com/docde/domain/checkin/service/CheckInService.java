@@ -5,6 +5,7 @@ import com.docde.common.exceptions.ApiException;
 import com.docde.domain.auth.entity.AuthUser;
 import com.docde.domain.checkin.dto.CheckInRequest;
 import com.docde.domain.checkin.dto.CheckInResponse;
+import com.docde.domain.checkin.dto.CheckInResponseOfPatient;
 import com.docde.domain.checkin.entity.CheckIn;
 import com.docde.domain.checkin.entity.CheckinStatus;
 import com.docde.domain.checkin.repository.CheckInRepository;
@@ -46,7 +47,7 @@ public class CheckInService {
                 .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_HOSPITAL));
 
         // 이미 진행중인 접수가 있으면 예외처리
-        if (checkInRepository.findPatientId().contains(authUser.getPatientId())) {
+        if (checkInRepository.checkCheckInExist(authUser.getPatientId())) {
             throw new ApiException(ErrorStatus._BAD_REQUEST_ALREADY_CHECKED_IN);
         }
 
@@ -104,14 +105,18 @@ public class CheckInService {
     }
 
     // 자신의 접수 상태 확인(사용자)
-    public CheckInResponse getMyCheckIn(AuthUser authUser) {
-        Patient patient = patientRepository.findByUser_Id(authUser.getId())
-                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
+    public CheckInResponseOfPatient getMyCheckIn(AuthUser authUser, Long hospitalId) {
+
         // 로그인된 유저 id로 접수 찾기
-        CheckIn checkIn = checkInRepository.findByPatientId(patient.getId())
+        CheckIn checkIn = checkInRepository.findByPatientId(authUser.getPatientId())
                 .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_CHECK_IN));
 
-        return checkInResponseFromCheckIn(checkIn);
+        Long queue = redisTemplate.opsForList().indexOf(
+                "checkin queue of hospital " + hospitalId,
+                checkIn.getPatient().getName() + checkIn.getPatient().getId()
+        );
+
+        return patientDtoFromCheckIn(checkIn, queue);
     }
 
     // 접수 목록만 확인(병원)
@@ -124,7 +129,7 @@ public class CheckInService {
             throw new ApiException(ErrorStatus._FORBIDDEN_DOCTOR_NOT_BELONG_TO_HOSPITAL);
         }
 
-        return redisTemplate.opsForList().range("checkin queue", 0, -1);
+        return redisTemplate.opsForList().range("checkin queue of hospital " + hospitalId, 0, -1);
     }
 
     // 접수 상태 확인(병원)
@@ -251,6 +256,16 @@ public class CheckInService {
         );
     }
 
+    // 환자용
+    private CheckInResponseOfPatient patientDtoFromCheckIn(CheckIn checkIn, Long queue) {
+        return new CheckInResponseOfPatient(
+                checkIn.getPatient().getName(),
+                checkIn.getDoctor() != null ? checkIn.getDoctor().getName() : "의사 배정 필요",
+                checkIn.getCreatedAt(),
+                queue
+        );
+    }
+
     private Long getNum(String key) {
         String value = (String) redisTemplate.opsForValue().get(key);
         if (value == null) {
@@ -263,6 +278,10 @@ public class CheckInService {
         redisTemplate.opsForValue().set(key, value.toString());
     }
 
+    /**
+     * 큐 규칙 : checkin queue of hospital 1 , 환자이름 1
+     * 1은 각각 병원 아이디, 환자 아이디
+     **/
     private void joinQueue(Long hospitalId, String value) {
         redisTemplate.opsForList().rightPush("checkin queue of hospital " + hospitalId, value);
     }
