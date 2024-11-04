@@ -4,6 +4,7 @@ import com.docde.common.Apiresponse.ApiResponse;
 import com.docde.domain.auth.entity.AuthUser;
 import com.docde.domain.checkin.dto.CheckInRequest;
 import com.docde.domain.checkin.dto.CheckInResponse;
+import com.docde.domain.checkin.dto.CheckInResponseOfPatient;
 import com.docde.domain.checkin.service.CheckInService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -29,9 +30,12 @@ public class CheckInController {
     }
 
     // 자신의 접수 상태 확인(사용자)
-    @GetMapping("/checkin")
-    public ApiResponse<CheckInResponse> getMyCheckIn(@AuthenticationPrincipal AuthUser authUser) {
-        return ApiResponse.onSuccess(checkInService.getMyCheckIn(authUser));
+    @GetMapping("{hospitalId}/checkin")
+    public ApiResponse<CheckInResponseOfPatient> getMyCheckIn(
+            @AuthenticationPrincipal AuthUser authUser,
+            @PathVariable Long hospitalId
+    ) {
+        return ApiResponse.onSuccess(checkInService.getMyCheckIn(authUser, hospitalId));
     }
 
     // 접수 목록만 확인(병원)
