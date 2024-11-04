@@ -150,7 +150,7 @@ public class HospitalTest {
 
             Mockito.when(hospitalRepository.findById(1L)).thenReturn(Optional.of(hospital));
 
-            HospitalUpdateResponseDto responseDto = hospitalService.putHospital(putRequestDto, authUser);
+            HospitalUpdateResponseDto responseDto = hospitalService.putHospital(putRequestDto, 1L, authUser);
 
             assertEquals(responseDto.getHospitalName(), "testputHospitalName");
             assertEquals(responseDto.getHospitalAddress(), "testputHospitalAddress");
@@ -167,7 +167,7 @@ public class HospitalTest {
             Mockito.when(hospitalRepository.findById(1L)).thenReturn(Optional.of(hospital));
             ReflectionTestUtils.setField(patchRequestDto, "hospitalName", "patchName");
             ReflectionTestUtils.setField(patchRequestDto, "hospitalAddress", "patchAddress");
-            HospitalUpdateResponseDto responseDto = hospitalService.patchHospital(patchRequestDto, authUser);
+            HospitalUpdateResponseDto responseDto = hospitalService.patchHospital(patchRequestDto, hospital.getId(), authUser);
 
             assertEquals(responseDto.getHospitalName(), "patchName");
             assertEquals(responseDto.getHospitalAddress(), "patchAddress");
@@ -181,7 +181,7 @@ public class HospitalTest {
             Mockito.when(hospitalRepository.findById(authUser.getHospitalId())).thenReturn(Optional.empty());
 
             ApiException exception = assertThrows(ApiException.class, () -> {
-                hospitalService.putHospital(putRequestDto, authUser);
+                hospitalService.putHospital(putRequestDto, 1L, authUser);
             });
 
             assertEquals("병원을 찾을 수 없습니다", exception.getErrorCode().getReasonHttpStatus().getMessage());
