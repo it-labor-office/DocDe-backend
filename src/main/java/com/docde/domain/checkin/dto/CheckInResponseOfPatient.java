@@ -5,19 +5,16 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
-public class CheckInResponse {
-    private final Long id;
+public class CheckInResponseOfPatient {
     private final String patientName;
     private final String doctorName;
     private final LocalDateTime checkedInAt;
-    private final String status;
+    private final Long queue;
 
-
-    public CheckInResponse(Long id, String patientName, String doctorName, LocalDateTime checkedInAt, String status) {
-        this.id = id;
+    public CheckInResponseOfPatient(String patientName, String doctorName, LocalDateTime checkedInAt, Long queue) {
         this.patientName = patientName;
         this.doctorName = doctorName;
         this.checkedInAt = checkedInAt;
-        this.status = status;
+        this.queue = queue;
     }
 }
