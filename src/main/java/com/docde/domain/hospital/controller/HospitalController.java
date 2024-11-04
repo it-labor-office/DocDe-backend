@@ -38,13 +38,13 @@ public class HospitalController {
 
     @PostMapping("/{hospitalId}")
     //추가하려는 병원과 유저의 소속병원은 같아야함.
-    @PreAuthorize("#hospitalId==authUser.hospitalId and hasRole('ROLE_DOCTOR_PRESIDENT')")
-    public ApiResponse<HospitalPostDoctorResponseDto> addDoctorToHospital(
+    @PreAuthorize("#authUser.hospitalId == #hospitalId and hasRole('ROLE_DOCTOR_PRESIDENT')")
+    public ResponseEntity<ApiResponse<HospitalPostDoctorResponseDto>> addDoctorToHospital(
             @PathVariable Long hospitalId,
             @RequestBody HospitalPostDoctorRequestDto requestDto
             , @AuthenticationPrincipal AuthUser authUser) {
         HospitalPostDoctorResponseDto responseDto = hospitalService.addDoctorToHospital(hospitalId, requestDto, authUser);
-        return ApiResponse.onCreated(responseDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.onCreated(responseDto));
     }
 
     //병원 정보 읽어 오기
@@ -56,28 +56,32 @@ public class HospitalController {
     }
 
     //병원 정보 수정
-    @PutMapping
+    @PutMapping("/{hospitalId}")
     @Secured(UserRole.Authority.DOCTOR_PRESIDENT)
+    @PreAuthorize("#authUser.hospitalId == #hospitalId and hasRole('ROLE_DOCTOR_PRESIDENT')")
     public ApiResponse<HospitalUpdateResponseDto> putHospitalInfo(@RequestBody HospitalUpdateRequestDto requestDto,
+                                                                  @PathVariable Long hospitalId,
                                                                   @AuthenticationPrincipal AuthUser authUser) {
-        HospitalUpdateResponseDto responseDto = hospitalService.putHospital(requestDto, authUser);
+        HospitalUpdateResponseDto responseDto = hospitalService.putHospital(requestDto, hospitalId, authUser);
         return ApiResponse.onSuccess(responseDto);
     }
 
 
-    @PatchMapping
+    @PatchMapping("/{hospitalId}")
     @Secured(UserRole.Authority.DOCTOR_PRESIDENT)
+    @PreAuthorize("#authUser.hospitalId == #hospitalId and hasRole('ROLE_DOCTOR_PRESIDENT')")
     public ApiResponse<HospitalUpdateResponseDto> patchHospitalInfo(@RequestBody HospitalUpdateRequestDto requestDto,
+                                                                    @PathVariable Long hospitalId,
                                                                     @AuthenticationPrincipal AuthUser authUser) {
-        HospitalUpdateResponseDto responseDto = hospitalService.patchHospital(requestDto, authUser);
+        HospitalUpdateResponseDto responseDto = hospitalService.patchHospital(requestDto, hospitalId, authUser);
         return ApiResponse.onSuccess(responseDto);
     }
 
     //병원 시간표 생성
     @PostMapping("/{hospitalId}/time-table")
     //본인 병원의 병원장만 생성,수정 가능
-    @PreAuthorize("#hospitalId==authUser.hospitalId and hasRole('ROLE_DOCTOR_PRESIDENT')")
-    public ApiResponse<HospitalWeeklyTimetablePostResponseDto> postWeeklyTimetables(
+    @PreAuthorize("#hospitalId==#authUser.hospitalId and hasRole('ROLE_DOCTOR_PRESIDENT')")
+    public ResponseEntity<ApiResponse<HospitalWeeklyTimetablePostResponseDto>> postWeeklyTimetables(
             @PathVariable Long hospitalId,
             @RequestBody HospitalWeeklyTimetablePostRequestDto requestDto,
             @AuthenticationPrincipal AuthUser authUser) {
@@ -85,13 +89,13 @@ public class HospitalController {
                 requestDto,
                 authUser,
                 hospitalId);
-        return ApiResponse.onCreated(responseDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.onCreated(responseDto));
     }
 
     //병원 시간표 수정
     @PatchMapping("/{hospitalId}/time-table")
-    @PreAuthorize("#hospitalId==authUser.hospitalId and hasRole('ROLE_DOCTOR_PRESIDENT')")
-    public ApiResponse<HospitalWeeklyTimetableUpdateResponseDto> patchWeeklyTimetables(
+    @PreAuthorize("#hospitalId==#authUser.hospitalId and hasRole('ROLE_DOCTOR_PRESIDENT')")
+    public ResponseEntity<ApiResponse<HospitalWeeklyTimetableUpdateResponseDto>> patchWeeklyTimetables(
             @PathVariable Long hospitalId,
             @RequestBody HospitalWeeklyTimetableUpdateRequestDto requestDto,
             @AuthenticationPrincipal AuthUser authUser) {
@@ -99,13 +103,14 @@ public class HospitalController {
                 requestDto,
                 authUser,
                 hospitalId);
-        return ApiResponse.onCreated(responseDto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.onCreated(responseDto));
     }
 
 
-    @DeleteMapping
-    @Secured(UserRole.Authority.DOCTOR_PRESIDENT)
-    public ApiResponse<HospitalDeleteResponseDto> deleteHospital(@AuthenticationPrincipal AuthUser authUser) {
+    @DeleteMapping("/{hospitalId}")
+    @PreAuthorize("#hospitalId==#authUser.hospitalId and hasRole('ROLE_DOCTOR_PRESIDENT')")
+    public ApiResponse<HospitalDeleteResponseDto> deleteHospital(@AuthenticationPrincipal AuthUser authUser,
+                                                                 @PathVariable Long hospitalId) {
         HospitalDeleteResponseDto responseDto = hospitalService.deleteHospital(authUser);
         return ApiResponse.onSuccess(responseDto);
     }
