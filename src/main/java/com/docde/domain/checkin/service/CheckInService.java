@@ -1,5 +1,6 @@
 package com.docde.domain.checkin.service;
 
+import com.docde.aop.DistributedLock;
 import com.docde.common.Apiresponse.ErrorStatus;
 import com.docde.common.exceptions.ApiException;
 import com.docde.domain.auth.entity.AuthUser;
@@ -36,6 +37,7 @@ public class CheckInService {
 
     // 접수하기
     @Transactional
+    @DistributedLock(key = "saveCheckIn", waitTime = 10, leaseTime = 5)
     public CheckInResponse saveCheckIn(
             AuthUser authUser,
             Long hospitalId,
