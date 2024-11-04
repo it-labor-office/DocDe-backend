@@ -16,6 +16,8 @@ jobs:
 #test라는 job을 실행합니다.
   push_dockerhub:
     runs-on: ubuntu-latest
+    env:
+      JWT_SECRET_TOKEN: ${{secrets.JWT_SECRET_TOKEN}}
 
     steps:
     - uses: actions/checkout@v4
