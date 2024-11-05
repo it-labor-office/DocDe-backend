@@ -84,7 +84,7 @@ public class CheckInService {
 
             return checkInResponseFromCheckIn(checkIn);
         } else {
-            Patient patient = patientRepository.findByUser_Id(authUser.getId())
+            Patient patient = patientRepository.findByUser_Id(authUser.getPatientId())
                     .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
 
             Long num = getNum("number of hospital" + hospital.getId());
@@ -196,7 +196,7 @@ public class CheckInService {
         // 접수 상태 완료 혹은 취소로 변경
         if (checkInRequest.getStatus() != null) {
 
-            if (!checkInRequest.getStatus().equals("COMPLETED") && !checkInRequest.getStatus().equals("CANCELED")) {
+            if (checkInRequest.getStatus().equals("COMPLETED") || checkInRequest.getStatus().equals("CANCELED")) {
                 throw new ApiException(ErrorStatus._INVALID_CHECK_IN_STATUS);
             }
 
@@ -269,7 +269,7 @@ public class CheckInService {
     }
 
     private Long getNum(String key) {
-        String value = (String) redisTemplate.opsForValue().get(key);
+        String value = String.valueOf(redisTemplate.opsForValue().get(key));
         if (value == null) {
             value = "0";
         }
