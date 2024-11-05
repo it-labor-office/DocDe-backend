@@ -3,6 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: multiverse22/docde:latest
     ports:
       - "8080:8080"
     environment:
@@ -10,12 +11,12 @@ services:
     env_file:
       - .env
     depends_on:
-      db:
+      mysql:
         condition: service_healthy
       redis:
         condition: service_healthy
 
-  db:
+  mysql:
     image: mysql:8.0
     environment:
       MYSQL_DATABASE: ${MYSQL_DATABASE}
@@ -28,7 +29,7 @@ services:
       retries: 10
 
   redis:
-    image: redis:latest
+    image: redis:6.2
     ports:
       - "6379:6379"
     healthcheck:
