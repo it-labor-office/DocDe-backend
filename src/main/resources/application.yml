@@ -32,3 +32,6 @@ spring:
     redis:
       host: localhost
       port: 6379
+    elasticsearch:
+      repositories:
+        enabled: true
