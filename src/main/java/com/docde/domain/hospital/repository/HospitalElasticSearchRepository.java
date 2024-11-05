@@ -9,5 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface HospitalElasticSearchRepository extends ElasticsearchRepository<HospitalDocument, Long> {
     // 병원 이름 검색하는 쿼리
-    Page<HospitalDocument> findAllByName(String name, Pageable pageable);
+    Page<HospitalDocument> findAllByNameContaining(String name, Pageable pageable);
 }
