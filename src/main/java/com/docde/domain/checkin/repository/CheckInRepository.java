@@ -11,6 +11,7 @@ public interface CheckInRepository extends JpaRepository<CheckIn, Long> {
     @Query("SELECT c.patient.id FROM CheckIn c")
     List<Long> findPatientId();
 
+    @Query("SELECT c FROM CheckIn c WHERE c.patient.id = :patientId AND c.checkinStatus = 0L")
     Optional<CheckIn> findByPatientId(Long patientId);
 
     // 특정 환자의 접수 기록 중 진행중인 것 있는지 찾기
@@ -20,14 +21,7 @@ public interface CheckInRepository extends JpaRepository<CheckIn, Long> {
     @Query("SELECT c FROM CheckIn c WHERE c.doctor.hospital.id = :hospitalId")
     List<CheckIn> findAllByHospitalId(Long hospitalId);
 
-    // 넘버가 가장 큰 것을 찾고 널이면 0을 반환
-    @Query("SELECT COALESCE(MAX (c.number), 0) FROM CheckIn c")
-    Long maxNum();
-
-    @Query("UPDATE CheckIn c SET c.number = 0")
-    void resetNum();
-
     // 특정 병원의 대기 중인 접수 모두 찾기
-    @Query("SELECT c FROM CheckIn c WHERE c.doctor.hospital.id = :hospitalId AND c.checkinStatus = :WATING")
+    @Query("SELECT c FROM CheckIn c WHERE c.doctor.hospital.id = :hospitalId AND c.checkinStatus = 0L")
     List<CheckIn> findAllWaitingByHospitalId(Long hospitalId);
 }
