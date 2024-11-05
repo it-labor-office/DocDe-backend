@@ -24,11 +24,11 @@ public class HospitalPostResponseDto {
     private String announcement;
 
     public HospitalPostResponseDto(Hospital hospital) {
-        this.hospitalName=hospital.getName();
-        this.hospitalAddress=hospital.getAddress();
-        this.hospitalContact=hospital.getContact();
-        this.openTime=hospital.getOpen_time();
-        this.closingTime=hospital.getClosing_time();
-        this.announcement=hospital.getAnnouncement();
+        this.hospitalName = hospital.getName();
+        this.hospitalAddress = hospital.getAddress();
+        this.hospitalContact = hospital.getContact();
+        this.openTime = hospital.getOpenTime();
+        this.closingTime = hospital.getClosingTime();
+        this.announcement = hospital.getAnnouncement();
     }
 }

@@ -9,7 +9,9 @@ import com.docde.domain.hospital.dto.TimetableDto;
 import com.docde.domain.hospital.dto.request.*;
 import com.docde.domain.hospital.dto.response.*;
 import com.docde.domain.hospital.entity.Hospital;
+import com.docde.domain.hospital.entity.HospitalDocument;
 import com.docde.domain.hospital.entity.HospitalTimetable;
+import com.docde.domain.hospital.repository.HospitalElasticSearchRepository;
 import com.docde.domain.hospital.repository.HospitalRepository;
 import com.docde.domain.hospital.repository.HospitalTimetableRepository;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +28,7 @@ public class HospitalService {
     private final HospitalRepository hospitalRepository;
     private final HospitalTimetableRepository hospitalTimetableRepository;
     private final DoctorRepository doctorRepository;
+    private final HospitalElasticSearchRepository hospitalElasticSearchRepository;
 
 //    @Transactional
 //    public void ModifyingTest() {
@@ -52,6 +55,9 @@ public class HospitalService {
         //병원 생성 후 저장
         Hospital hospital = new Hospital(requestDto);
         Hospital savedHospital = hospitalRepository.save(hospital);
+        HospitalDocument hospitalDocument = HospitalDocument.from(hospital);
+        hospitalElasticSearchRepository.save(hospitalDocument);
+
         //해당의사(병원장)은 이제부터 저장된병원소속
         doctor.addDoctorToHospital(savedHospital);
         return new HospitalPostResponseDto(hospital);
@@ -205,8 +211,4 @@ public class HospitalService {
 
         return new HospitalPostDoctorResponseDto(doctor.getId(), doctor.getName(), hospital.getId(), hospital.getName());
     }
-
-//    public boolean check(AuthUser authUser) {
-//
-//    }
 }

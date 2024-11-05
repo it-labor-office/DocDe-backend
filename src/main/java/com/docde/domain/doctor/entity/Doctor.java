@@ -30,13 +30,13 @@ public class Doctor extends Timestamped {
     String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(nullable = true, name = "hospital_id")
+    @JoinColumn
     private Hospital hospital;
 
     @OneToMany(mappedBy = "doctor")
     private List<MedicalRecord> medicalRecords;
 
-    @OneToOne(mappedBy = "doctor")
+    @OneToOne(mappedBy = "doctor", fetch = FetchType.LAZY)
     private User user;
 
     @Column(nullable = false)
@@ -49,6 +49,7 @@ public class Doctor extends Timestamped {
         this.hospital = hospital;
         this.user = user;
         this.deleted = false;
+        this.medicalRecords = List.of();
     }
 
     //병원정보 업데이트하는 용도의 메서드
