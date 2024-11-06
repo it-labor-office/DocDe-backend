@@ -1,4 +1,4 @@
-package com.docde.common.aspect;
+package com.docde.common.aop;
 
 
 import java.lang.annotation.ElementType;
