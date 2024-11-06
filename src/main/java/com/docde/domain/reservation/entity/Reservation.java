@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @NoArgsConstructor
@@ -29,6 +31,9 @@ public class Reservation extends Timestamped {
     @Setter
     private String rejectReason;
 
+    @Column(nullable = false)
+    private LocalDateTime reservationTime;
+
     @ManyToOne
     @JoinColumn(name = "doctor_id", nullable = false)
     private Doctor doctor;
@@ -38,11 +43,12 @@ public class Reservation extends Timestamped {
     private Patient patient;
 
     @Builder
-    public Reservation(String reservationReason, ReservationStatus status, String rejectReason, Doctor doctor, Patient patient) {
+    public Reservation(String reservationReason, ReservationStatus status, String rejectReason, Doctor doctor, Patient patient, LocalDateTime reservationTime) {
         this.reservationReason = reservationReason;
         this.status = status;
         this.rejectReason = rejectReason;
         this.doctor = doctor;
         this.patient = patient;
+        this.reservationTime = reservationTime;
     }
 }
