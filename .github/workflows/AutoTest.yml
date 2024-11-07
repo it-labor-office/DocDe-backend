@@ -26,7 +26,7 @@ jobs:
         distribution: 'temurin'
     - name: Create .env file
       run: |
-        echo "JWT_SECRET_TOKEN=${{secrets.JWT_SECRET_TOKEN}}" >>.env
+        echo "JWT_SECRET_TOKEN=${{secrets.JWT_SECRET_TOKEN}}" >> .env
         echo "RDS_MYSQL_URL=${{secrets.RDS_MYSQL_URL}}" >> .env
         echo "RDS_MYSQL_USERNAME=${{secrets.RDS_MYSQL_USERNAME}}" >> .env
         echo "RDS_MYSQL_PASSWORD=${{secrets.RDS_MYSQL_PASSWORD}}" >> .env
