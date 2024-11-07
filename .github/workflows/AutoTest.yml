@@ -32,6 +32,7 @@ jobs:
         echo "RDS_MYSQL_PASSWORD=${{secrets.RDS_MYSQL_PASSWORD}}" >> .env
         echo "GOOGLE_ACCOUNT_EMAIL=${{secrets.GOOGLE_ACCOUNT_EMAIL}}" >> .env
         echo "GOOGLE_ACCOUNT_APP_PASSWORD=${{secrets.GOOGLE_ACCOUNT_APP_PASSWORD}}" >> .env
+        echo "AWS_ELASTICACHE_URL=${{secrets.AWS_ELASTICACHE_URL}}" >> .env
         
         
     - name: Grant execute permission for gradlew
