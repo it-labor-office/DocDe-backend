@@ -15,8 +15,6 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
-
 @RestController
 @RequiredArgsConstructor
 public class ReservationPatientController {
@@ -30,8 +28,8 @@ public class ReservationPatientController {
 
         Reservation reservation = reservationPatientService.createReservation(
                 createReservationRequestDto.doctorId(),
+                createReservationRequestDto.reservationTime(),
                 createReservationRequestDto.reservationReason(),
-                createReservationRequestDto.reservationDate(),
                 authUser);
 
         return ApiResponse.onCreated(new ReservationPatientResponse.ReservationWithPatientAndDoctor(reservation.getId(),
