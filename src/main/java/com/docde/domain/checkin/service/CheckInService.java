@@ -1,6 +1,7 @@
 package com.docde.domain.checkin.service;
 
 import com.docde.common.Apiresponse.ErrorStatus;
+import com.docde.common.aop.DistributedLock;
 import com.docde.common.exceptions.ApiException;
 import com.docde.domain.auth.entity.AuthUser;
 import com.docde.domain.checkin.dto.CheckInRequest;
@@ -36,6 +37,7 @@ public class CheckInService {
 
     // 접수하기
     @Transactional
+    @DistributedLock(key = "saveCheckIn", waitTime = 10, leaseTime = 5)
     public CheckInResponse saveCheckIn(
             AuthUser authUser,
             Long hospitalId,
@@ -82,7 +84,7 @@ public class CheckInService {
 
             return checkInResponseFromCheckIn(checkIn);
         } else {
-            Patient patient = patientRepository.findByUser_Id(authUser.getId())
+            Patient patient = patientRepository.findByUser_Id(authUser.getPatientId())
                     .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
 
             Long num = getNum("number of hospital" + hospital.getId());
@@ -194,7 +196,7 @@ public class CheckInService {
         // 접수 상태 완료 혹은 취소로 변경
         if (checkInRequest.getStatus() != null) {
 
-            if (!checkInRequest.getStatus().equals("COMPLETED") && !checkInRequest.getStatus().equals("CANCELED")) {
+            if (checkInRequest.getStatus().equals("COMPLETED") || checkInRequest.getStatus().equals("CANCELED")) {
                 throw new ApiException(ErrorStatus._INVALID_CHECK_IN_STATUS);
             }
 
@@ -267,7 +269,7 @@ public class CheckInService {
     }
 
     private Long getNum(String key) {
-        String value = (String) redisTemplate.opsForValue().get(key);
+        String value = String.valueOf(redisTemplate.opsForValue().get(key));
         if (value == null) {
             value = "0";
         }
