@@ -1,3 +1,5 @@
+JWT_SECRET_TOKEN: ${JWT_SECRET_TOKEN}
+
 spring:
   application:
     name: doc-de
