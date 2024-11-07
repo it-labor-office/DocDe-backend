@@ -1,10 +1,12 @@
 package com.docde.domain.medicalRecord.dto.request;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Getter
+@NoArgsConstructor
 public class DoctorMedicalRecordRequestDto {
 
     private Long doctorId;              // 의사 ID
