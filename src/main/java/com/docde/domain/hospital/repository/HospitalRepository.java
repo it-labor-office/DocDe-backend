@@ -7,6 +7,6 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface HospitalRepository extends JpaRepository<Hospital, Long> {
     @Modifying(clearAutomatically = true)
-    @Query("update Hospital h set h.name = :newName where h.Id = :Id")
+    @Query("update Hospital h set h.name = :newName where h.id = :Id")
     void updateHospitalName(Long Id, String newName);
 }
