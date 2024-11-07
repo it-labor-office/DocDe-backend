@@ -26,14 +26,17 @@ jobs:
         distribution: 'temurin'
     - name: Create .env file
       run: |
-        echo "MYSQL_DATABASE=${{secrets.MYSQL_DATABASE}}" >> .env
-        echo "MYSQL_ROOT_PASSWORD=${{secrets.MYSQL_ROOT_PASSWORD}}" >> .env
-        echo "SPRING_DATASOURCE_URL=${{secrets.SPRING_DATASOURCE_URL}}" >> .env
-        echo "SPRING_DATASOURCE_USERNAME=${{secrets.SPRING_DATASOURCE_USERNAME}}" >> .env
-        echo "SPRING_DATASOURCE_PASSWORD=${{secrets.SPRING_DATASOURCE_PASSWORD}}" >> .env
+        echo "JWT_SECRET_TOKEN=${{secrets.JWT_SECRET_TOKEN}}" >> .env
+        echo "RDS_MYSQL_URL=${{secrets.RDS_MYSQL_URL}}" >> .env
+        echo "RDS_MYSQL_USERNAME=${{secrets.RDS_MYSQL_USERNAME}}" >> .env
+        echo "RDS_MYSQL_PASSWORD=${{secrets.RDS_MYSQL_PASSWORD}}" >> .env
         echo "GOOGLE_ACCOUNT_EMAIL=${{secrets.GOOGLE_ACCOUNT_EMAIL}}" >> .env
         echo "GOOGLE_ACCOUNT_APP_PASSWORD=${{secrets.GOOGLE_ACCOUNT_APP_PASSWORD}}" >> .env
-        
+        echo "AWS_ELASTICACHE_URL=${{secrets.AWS_ELASTICACHE_URL}}" >> .env
+
+
+    - name: Display .env file contents
+      run: cat .env
         
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
@@ -52,7 +55,7 @@ jobs:
 
        
     - name: Build Docker image
-      run: docker build -t multiverse22/docde:latest .
+      run: docker build -f Dockerfile-prod -t multiverse22/docde:latest .
     - name: Push Docker image
       run: |
          docker push multiverse22/docde:latest
