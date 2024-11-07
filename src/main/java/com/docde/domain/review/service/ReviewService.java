@@ -110,49 +110,35 @@ public class ReviewService {
     }
 
 
-    // 리뷰 수정
-        @Transactional
-        public ReviewResponseDto updateReview(Long reviewId, ReviewUpdateRequestDto requestDto,
-                                              AuthUser authUser) {
+    @Transactional
+    public ReviewResponseDto updateReview(Long reviewId, ReviewUpdateRequestDto requestDto, AuthUser authUser) {
 
+        Review existingReview = reviewRepository.findById(reviewId)
+                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_REVIEW));
 
-            // 기존 리뷰 조회
-            Review review = reviewRepository.findById(reviewId)
-                    .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_REVIEW));
+        User user = userRepository.findById(authUser.getId())
+                .orElseThrow(() -> new ApiException(ErrorStatus._BAD_REQUEST_NOT_FOUND_USER));
+        MedicalRecord medicalRecord = medicalRecordRepository.findById(requestDto.getMedicalRecordId())
+                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_MEDICAL_RECORD));
 
+        // 업데이트할 필드만 설정하여 새로운 Review 객체 생성 (ID는 자동 관리)
+        Review updatedReview = new Review(
+                requestDto.getStar(),
+                requestDto.getContents(),
+                user,
+                medicalRecord
+        );
 
-            User user = userRepository.findById(authUser.getId())
-                    .orElseThrow(() -> new ApiException(ErrorStatus._BAD_REQUEST_NOT_FOUND_USER));
+        Review savedReview = reviewRepository.save(updatedReview);
 
-            MedicalRecord medicalRecord = medicalRecordRepository.findById(requestDto.getMedicalRecordId())
-                    .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_MEDICAL_RECORD));
-
-            Review updatedReview = new Review(
-                    review.getReviewId(),
-                    requestDto.getStar(),
-                    requestDto.getContents(),
-                    user,
-                    medicalRecord
-            );
-
-            Review savedReview = reviewRepository.save(updatedReview);
-
-            if (savedReview.getMedicalRecord() == null) {
-                    throw new ApiException(ErrorStatus._NOT_FOUND_MEDICAL_RECORD);
-            }
-            if (savedReview.getMedicalRecord().getPatient() == null) {
-                throw new ApiException(ErrorStatus._NOT_FOUND_PATIENT);
-            }
-
-
-            return new ReviewResponseDto(
-                    savedReview.getMedicalRecord().getMedicalRecordId(),
-                    savedReview.getUser().getId(),
-                    savedReview.getStar(),
-                    savedReview.getContents(),
-                    savedReview.getMedicalRecord().getPatient().getName()
-            );
-        }
+        return new ReviewResponseDto(
+                savedReview.getMedicalRecord().getMedicalRecordId(),
+                savedReview.getUser().getId(),
+                savedReview.getStar(),
+                savedReview.getContents(),
+                savedReview.getMedicalRecord().getPatient().getName()
+        );
+    }
 
 
     // 리뷰 삭제
