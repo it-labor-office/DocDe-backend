@@ -5,9 +5,11 @@ import com.docde.config.JwtAuthenticationToken;
 import com.docde.config.JwtUtil;
 import com.docde.config.SecurityConfig;
 import com.docde.domain.auth.entity.AuthUser;
+import com.docde.domain.auth.service.AuthService;
 import com.docde.domain.checkin.dto.CheckInRequest;
 import com.docde.domain.checkin.dto.CheckInResponse;
 import com.docde.domain.checkin.service.CheckInService;
+import com.docde.domain.hospital.controller.HospitalController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,7 +31,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest
+@WebMvcTest(CheckInController.class)
 @AutoConfigureMockMvc
 @Import({SecurityConfig.class, JwtUtil.class})
 class CheckInControllerTest {
@@ -72,7 +74,7 @@ class CheckInControllerTest {
         Mockito.when(checkInService.saveCheckIn(patientAuthUser, 1L, checkInRequest))
                 .thenReturn(checkInResponse);
 
-        mockMvc.perform(MockMvcRequestBuilders.post("/hospitals/{hospitalId}/checkin")
+        mockMvc.perform(MockMvcRequestBuilders.post("/hospitals/1/checkin")
                 .with(SecurityMockMvcRequestPostProcessors.authentication(jwtAuthenticationToken))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jacksonObjectMapper.writeValueAsString(checkInRequest))
