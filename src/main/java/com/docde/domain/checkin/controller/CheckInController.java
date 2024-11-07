@@ -7,6 +7,8 @@ import com.docde.domain.checkin.dto.CheckInResponse;
 import com.docde.domain.checkin.dto.CheckInResponseOfPatient;
 import com.docde.domain.checkin.service.CheckInService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -21,12 +23,13 @@ public class CheckInController {
 
     // 접수하기
     @PostMapping("/{hospitalId}/checkin")
-    public ApiResponse<CheckInResponse> saveCheckIn(
+    public ResponseEntity<ApiResponse<CheckInResponse>> saveCheckIn(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long hospitalId,
             @RequestBody CheckInRequest checkInRequest
     ) {
-        return ApiResponse.onCreated(checkInService.saveCheckIn(authUser, hospitalId, checkInRequest));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ApiResponse.onCreated(checkInService.saveCheckIn(authUser, hospitalId, checkInRequest)));
     }
 
     // 자신의 접수 상태 확인(사용자)
