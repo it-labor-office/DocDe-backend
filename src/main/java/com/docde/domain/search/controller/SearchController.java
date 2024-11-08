@@ -1,6 +1,5 @@
 package com.docde.domain.search.controller;
 
-import com.docde.domain.doctor.dto.DoctorResponse;
 import com.docde.domain.hospital.entity.Hospital;
 import com.docde.domain.hospital.entity.HospitalDocument;
 import com.docde.domain.search.dto.SearchResponse;
@@ -19,7 +18,7 @@ public class SearchController {
     @GetMapping("/hospitals/legacy/search")
     public Page<SearchResponse.SearchHospital> searchHospitalLegacy(@RequestParam("q") String query, @RequestParam(value = "page", defaultValue = "0") Integer page, @RequestParam(value = "size", defaultValue = "10") Integer size) {
         Page<Hospital> hospitals = searchService.searchHospitalLegacy(query, page, size);
-        return hospitals.map(v -> new SearchResponse.SearchHospital(v.getId(), v.getName(), v.getAddress(), v.getContact(), v.getOpenTime(), v.getClosingTime(), v.getDoctors().stream().map(DoctorResponse::new).toList()));
+        return hospitals.map(v -> new SearchResponse.SearchHospital(v.getId(), v.getName(), v.getAddress(), v.getContact(), v.getOpenTime(), v.getClosingTime()));
     }
 
     @GetMapping("/hospitals/search")
