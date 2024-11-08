@@ -11,10 +11,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 import java.util.List;
 import java.util.function.LongSupplier;
 
-import static com.docde.domain.doctor.entity.QDoctor.doctor;
 import static com.docde.domain.hospital.entity.QHospital.hospital;
-import static com.docde.domain.patient.entity.QPatient.patient;
-import static com.docde.domain.user.entity.QUser.user;
 
 
 @RequiredArgsConstructor
@@ -33,12 +30,6 @@ public class HospitalCustomRepositoryImpl implements HospitalCustomRepository {
     private List<Hospital> getContent(String query, Pageable pageable) {
         return jpaQueryFactory
                 .selectFrom(hospital)
-                .leftJoin(hospital.doctors, doctor)
-                .fetchJoin()
-                .leftJoin(doctor.user, user)
-                .fetchJoin()
-                .leftJoin(user.patient, patient)
-                .fetchJoin()
                 .where(hospital.deleted.eq(Boolean.FALSE),
                         hospital.name.contains(query))
                 .offset(pageable.getOffset())

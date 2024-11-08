@@ -152,6 +152,8 @@ public class HospitalService {
         Hospital hospital = findHospitalByHospitalIdAndCheckIsDeleted(authUser.getHospitalId());
 
         hospital.updateAll(requestDto);
+        HospitalDocument hospitalDocument = HospitalDocument.from(hospital);
+        hospitalElasticSearchRepository.save(hospitalDocument);
 
         return new HospitalUpdateResponseDto(hospital);
     }
@@ -161,6 +163,10 @@ public class HospitalService {
         Hospital hospital = findHospitalByHospitalIdAndCheckIsDeleted(authUser.getHospitalId());
         //소프트 삭제
         hospital.delete();
+
+        HospitalDocument hospitalDocument = HospitalDocument.from(hospital);
+        hospitalElasticSearchRepository.save(hospitalDocument);
+
         return new HospitalDeleteResponseDto(hospital);
     }
 
@@ -196,6 +202,10 @@ public class HospitalService {
         if (requestDto.getAnnouncement() != null) {
             hospital.updateAnnouncement(requestDto.getAnnouncement());
         }
+        
+        HospitalDocument hospitalDocument = HospitalDocument.from(hospital);
+        hospitalElasticSearchRepository.save(hospitalDocument);
+
         return new HospitalUpdateResponseDto(hospital);
     }
 
