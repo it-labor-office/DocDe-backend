@@ -1,10 +1,10 @@
 package com.docde.domain.review.dto.request;
 
 import lombok.Getter;
-
-import java.time.LocalDateTime;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
 public class ReviewRequestDto {
 
     private Long medicalRecordId;

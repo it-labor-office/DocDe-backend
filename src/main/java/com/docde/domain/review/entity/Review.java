@@ -2,6 +2,7 @@ package com.docde.domain.review.entity;
 
 import com.docde.common.entity.Timestamped;
 import com.docde.domain.medicalRecord.entity.MedicalRecord;
+import com.docde.domain.review.dto.request.ReviewRequestDto;
 import com.docde.domain.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Max;
@@ -9,8 +10,6 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "Reviews")
@@ -27,7 +26,6 @@ public class Review extends Timestamped {
     private Long star;
 
     @NotBlank(message = "내용은 비어있을 수 없습니다.")
-
     private String contents;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -52,5 +50,13 @@ public class Review extends Timestamped {
     this.contents = contents;
     this.user = user;
     this.medicalRecord = medicalRecord;
+    }
+
+
+    public Review(ReviewRequestDto reviewRequestDto, User user, MedicalRecord medicalRecord) {
+        this.star = reviewRequestDto.getStar();
+        this.contents = reviewRequestDto.getContents();
+        this.user = user;
+        this.medicalRecord = medicalRecord;
     }
 }

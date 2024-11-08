@@ -11,11 +11,11 @@ import com.docde.domain.reservation.dto.ReservationPatientResponse;
 import com.docde.domain.reservation.entity.Reservation;
 import com.docde.domain.reservation.service.ReservationPatientService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
-
-import java.time.LocalDate;
 
 @RestController
 @RequiredArgsConstructor
@@ -24,23 +24,28 @@ public class ReservationPatientController {
 
     @PostMapping("/reservations")
     @Secured(UserRole.Authority.PATIENT)
-    public ApiResponse<ReservationPatientResponse.ReservationWithPatientAndDoctor> createReservation(
+    public ResponseEntity<ApiResponse<ReservationPatientResponse.ReservationWithPatientAndDoctor>> createReservation(
             @RequestBody ReservationPatientRequest.CreateReservation createReservationRequestDto,
             @AuthenticationPrincipal AuthUser authUser) {
 
         Reservation reservation = reservationPatientService.createReservation(
                 createReservationRequestDto.doctorId(),
+                createReservationRequestDto.reservationTime(),
                 createReservationRequestDto.reservationReason(),
-                createReservationRequestDto.reservationDate(),
                 authUser);
 
-        return ApiResponse.onCreated(new ReservationPatientResponse.ReservationWithPatientAndDoctor(reservation.getId(),
-                reservation.getReservationReason(),
-                reservation.getStatus(),
-                reservation.getRejectReason(),
-                new PatientResponse(reservation.getPatient()),
-                new DoctorResponse(reservation.getDoctor()
-                )));
+        ApiResponse<ReservationPatientResponse.ReservationWithPatientAndDoctor> response = ApiResponse.onCreated(
+                new ReservationPatientResponse.ReservationWithPatientAndDoctor(
+                        reservation.getId(),
+                        reservation.getReservationReason(),
+                        reservation.getStatus(),
+                        reservation.getRejectReason(),
+                        new PatientResponse(reservation.getPatient()),
+                        new DoctorResponse(reservation.getDoctor())
+                )
+        );
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/reservations/{reservationId}/cancel")

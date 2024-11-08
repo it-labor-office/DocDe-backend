@@ -26,15 +26,12 @@ jobs:
         distribution: 'temurin'
     - name: Create .env file
       run: |
-        echo "MYSQL_DATABASE=${{secrets.MYSQL_DATABASE}}" >> .env
-        echo "MYSQL_ROOT_PASSWORD=${{secrets.MYSQL_ROOT_PASSWORD}}" >> .env
-        echo "SPRING_DATASOURCE_URL=${{secrets.SPRING_DATASOURCE_URL}}" >> .env
-        echo "SPRING_DATASOURCE_USERNAME=${{secrets.SPRING_DATASOURCE_USERNAME}}" >> .env
-        echo "SPRING_DATASOURCE_PASSWORD=${{secrets.SPRING_DATASOURCE_PASSWORD}}" >> .env
-        echo "GOOGLE_ACCOUNT_EMAIL=${{secrets.GOOGLE_ACCOUNT_EMAIL}}" >> .env
-        echo "GOOGLE_ACCOUNT_APP_PASSWORD=${{secrets.GOOGLE_ACCOUNT_APP_PASSWORD}}" >> .env
-        
-        
+        touch ./.env
+        echo "${{secrets.ENV_VARIABLES}}" >> .env
+
+    - name: display env
+      run: cat .env
+
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     
@@ -42,6 +39,10 @@ jobs:
       uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
     - name: Build with Gradle
       run: ./gradlew clean build --exclude-task test
+    - name: Install Docker Compose
+      run: |
+        sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
     
       
     - name: Log in to Docker Hub
@@ -51,11 +52,12 @@ jobs:
        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
        
-    - name: Build Docker image
-      run: docker build -t multiverse22/docde:latest .
-    - name: Push Docker image
+    - name: Build
       run: |
-         docker push multiverse22/docde:latest
+        docker-compose -f docker-compose-prod.yml build
+    - name: push
+      run: |
+        docker-compose -f docker-compose-prod.yml push docde
   test:
     #test가 돌아가는 환경을 설정합니다.
     runs-on: ubuntu-latest

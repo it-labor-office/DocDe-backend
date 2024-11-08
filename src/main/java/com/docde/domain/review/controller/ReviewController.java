@@ -7,6 +7,8 @@ import com.docde.domain.review.dto.request.ReviewUpdateRequestDto;
 import com.docde.domain.review.dto.response.ReviewResponseDto;
 import com.docde.domain.review.service.ReviewService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,13 +21,12 @@ public class ReviewController {
     private final ReviewService reviewService;
 
     @PostMapping("/reviews")
-    public ApiResponse<ReviewResponseDto> createReview(@AuthenticationPrincipal AuthUser authUser,
-                                                       @RequestBody ReviewRequestDto reviewRequestDto) {
+    public ResponseEntity<ApiResponse<ReviewResponseDto>> createReview(
+            @AuthenticationPrincipal AuthUser authUser,
+            @RequestBody ReviewRequestDto reviewRequestDto) {
 
         ReviewResponseDto responseDto = reviewService.createReview(authUser, reviewRequestDto);
-
-        return ApiResponse.createSuccess("리뷰 작성이 성공적으로 생성되었습니다.", 200, responseDto);
-
+        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.onSuccess(responseDto));
     }
 
 
