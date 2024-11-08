@@ -1,8 +1,8 @@
 name: Deploy to EC2
 
 on:
-  push:
-    branches: ["CDTest/LGH"]
+  pull_request:
+    branches: [ "develop" ]
 
 jobs:
   deploy:
