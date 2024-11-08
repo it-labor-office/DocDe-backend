@@ -27,7 +27,6 @@ import org.mockito.BDDMockito;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.internal.matchers.Any;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -105,8 +104,8 @@ class CheckInServiceTest {
         setField(mokHospital, "name", "병원이름");
         setField(mokHospital, "address", "병원주소");
         setField(mokHospital, "contact", "이게뭔지모르겠어요");
-        setField(mokHospital, "open_time", LocalTime.of(9, 30));
-        setField(mokHospital, "closing_time", LocalTime.of(21, 30));
+        setField(mokHospital, "openTime", LocalTime.of(9, 30));
+        setField(mokHospital, "closingTime", LocalTime.of(21, 30));
         setField(mokHospital, "announcement", "병원안내");
 
         setField(mokDoctor, "id", 1L);
@@ -220,8 +219,8 @@ class CheckInServiceTest {
         setField(mokHospital2, "name", "병원이름");
         setField(mokHospital2, "address", "병원주소");
         setField(mokHospital2, "contact", "이게뭔지모르겠어요");
-        setField(mokHospital2, "open_time", LocalTime.of(9, 30));
-        setField(mokHospital2, "closing_time", LocalTime.of(21, 30));
+        setField(mokHospital2, "openTime", LocalTime.of(9, 30));
+        setField(mokHospital2, "closingTime", LocalTime.of(21, 30));
         setField(mokHospital2, "announcement", "병원안내");
 
         Doctor doctor = Doctor.builder().name("의사이름2").description("설명").hospital(mokHospital2).build();
