@@ -27,7 +27,7 @@ jobs:
     - name: Create .env file
       run: |
         touch ./.env
-        echo "${{secrets.ENV_VARABLES}}" >> .env
+        echo "${{secrets.ENV_VARIABLES}}" >> .env
 
     - name: display env
       run: cat .env
