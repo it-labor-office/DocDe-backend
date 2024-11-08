@@ -27,7 +27,7 @@ jobs:
           echo "Creating .env file..."
           echo "${{secrets.ENV_VARIABLES}}" > ./.env
           echo ".env file created successfully"
-          echo "docker run --env-file .env -d --name my-app multiverse22/docde:latest"
+          docker run --env-file .env -d --name my-app multiverse22/docde:latest
 
           
         
