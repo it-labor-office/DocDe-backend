@@ -34,10 +34,6 @@ jobs:
         echo "GOOGLE_ACCOUNT_APP_PASSWORD=${{secrets.GOOGLE_ACCOUNT_APP_PASSWORD}}" >> .env
         echo "AWS_ELASTICACHE_URL=${{secrets.AWS_ELASTICACHE_URL}}" >> .env
 
-
-    - name: Display .env file contents
-      run: cat .env
-        
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
     
@@ -54,11 +50,10 @@ jobs:
        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
        
-    - name: Build Docker image
-      run: docker build -f Dockerfile-prod -t multiverse22/docde:latest .
-    - name: Push Docker image
+    - name: Build and push image
       run: |
-         docker push multiverse22/docde:latest
+        docker-compose -f docker-compose-prod.yml build
+        docker-compose -f docker-compose-prod.yml push
   test:
     #test가 돌아가는 환경을 설정합니다.
     runs-on: ubuntu-latest
