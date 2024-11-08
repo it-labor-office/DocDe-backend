@@ -54,7 +54,7 @@ jobs:
        
     - name: Build Docker image
       run: |
-        docker build --env-file .env -t ${{ secrets.DOCKER_HUB_USERNAME }}/docde:latest -f Dockerfile-prod .
+        docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/docde:latest -f Dockerfile-prod .
 
       # 5. Docker Hub에 이미지 푸시
     - name: Push Docker image
