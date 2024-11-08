@@ -14,3 +14,4 @@ services:
     environment:
       - TZ=Asia/Seoul
       - SPRING_PROFILES_ACTIVE=prod
+    image: multiverse22/docde:latest
