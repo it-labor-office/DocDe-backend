@@ -1,6 +1,6 @@
 version: '1'
 services:
-  spring:
+  docde:
     build:
       context: .
       dockerfile: Dockerfile-prod
