@@ -74,8 +74,8 @@ public class MedicalRecordControllerTest {
                 .name("Test Hospital")
                 .address("hospital address")
                 .contact("111-2222")
-                .open_time(LocalTime.of(9, 0))
-                .closing_time(LocalTime.of(17, 0))
+                .openTime(LocalTime.of(9, 0))
+                .closingTime(LocalTime.of(17, 0))
                 .announcement("announcement")
                 .build();
         ReflectionTestUtils.setField(hospital, "id", 1L);
@@ -194,7 +194,8 @@ public class MedicalRecordControllerTest {
                         .andExpect(jsonPath("$.data.description").value("test description"))
                         .andExpect(jsonPath("$.data.patientName").value("Patient A"))
                         .andExpect(jsonPath("$.data.treatmentPlan").value("test treatmentPlan"))
-                        .andExpect(jsonPath("$.data.doctorComment").value("test doctor comment"));            }
+                        .andExpect(jsonPath("$.data.doctorComment").value("test doctor comment"));
+            }
         }
 
 
@@ -230,7 +231,8 @@ public class MedicalRecordControllerTest {
                     .andExpect(jsonPath("$.data[1].description").value("description 2"))
                     .andExpect(jsonPath("$.data[1].patientName").value("Patient B"))
                     .andExpect(jsonPath("$.data[1].treatmentPlan").value("treatment plan 2"))
-                    .andExpect(jsonPath("$.data[1].doctorComment").value("doctor comment 2"));        }
+                    .andExpect(jsonPath("$.data[1].doctorComment").value("doctor comment 2"));
+        }
 
 
         @Test
