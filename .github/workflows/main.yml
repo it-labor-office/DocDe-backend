@@ -25,9 +25,7 @@ jobs:
         port: 22
         script: |
           echo "Creating .env file..."
-          echo "SECRET_API_KEY=${{ secrets.SECRET_API_KEY }}" > /path/to/your/project/.env
-          echo "DATABASE_URL=${{ secrets.DATABASE_URL }}" >> /path/to/your/project/.env
-          # 필요한 다른 환경 변수를 추가할 수 있습니다
+          echo "${{secrets.ENV_VARIABLES}}" > ./.env
           echo ".env file created successfully"
 
           
