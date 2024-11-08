@@ -54,10 +54,12 @@ jobs:
        
     - name: Build
       run: |
-        docker-compose -f docker-compose-prod.yml build
-    - name: push
+        docker-compose --env-file ./.env -f docker-compose-prod.yml build
+
+    - name: Push
       run: |
-        docker-compose -f docker-compose-prod.yml push docde
+        docker-compose --env-file ./.env -f docker-compose-prod.yml push docde
+
   test:
     #test가 돌아가는 환경을 설정합니다.
     runs-on: ubuntu-latest
