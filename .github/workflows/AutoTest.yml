@@ -27,7 +27,7 @@ jobs:
     - name: Create .env file
       run: |
         touch ./.env
-        ehco "${{secrets.ENV_VARABLES}}" >> .env
+        echo "${{secrets.ENV_VARABLES}}" >> .env
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
