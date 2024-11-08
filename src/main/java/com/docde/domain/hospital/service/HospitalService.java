@@ -55,7 +55,7 @@ public class HospitalService {
         //병원 생성 후 저장
         Hospital hospital = new Hospital(requestDto);
         Hospital savedHospital = hospitalRepository.save(hospital);
-        HospitalDocument hospitalDocument = HospitalDocument.from(hospital);
+        HospitalDocument hospitalDocument = HospitalDocument.from(savedHospital);
         hospitalElasticSearchRepository.save(hospitalDocument);
 
         //해당의사(병원장)은 이제부터 저장된병원소속
@@ -202,7 +202,7 @@ public class HospitalService {
         if (requestDto.getAnnouncement() != null) {
             hospital.updateAnnouncement(requestDto.getAnnouncement());
         }
-        
+
         HospitalDocument hospitalDocument = HospitalDocument.from(hospital);
         hospitalElasticSearchRepository.save(hospitalDocument);
 
