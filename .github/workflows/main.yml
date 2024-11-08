@@ -22,8 +22,9 @@ jobs:
         key: ${{ secrets.EC2_SSH_KEY }} # 내가 변수로 저장한 pem key
         host: ${{secrets.AWS_INSTANCE_IP}} # 내가 변수로 저장한 ip
         username: ${{secrets.USER}} # 내가 변수로 저장한 User
+        port: 22
         script: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.USER }}@${{ secrets.AWS_INSTANCE_IP }} << 'EOF'
+          ssh -T -i ${{ secrets.EC2_SSH_KEY }} ${{ secrets.USER }}@${{ secrets.AWS_INSTANCE_IP }} << 'EOF'
           echo "Hello, world!" > /tmp/hello.txt
           # 여기에 여러 개의 명령어를 추가하여 원격 EC2에서 실행할 수 있습니다.
           EOF
