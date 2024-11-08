@@ -27,7 +27,7 @@ jobs:
     - name: Create .env file
       run: |
         touch ./.env
-        echo "${{secrets.ENV_VARIABLES}}" >> ./.env
+        echo "${{secrets.ENV_VARIABLES}}" >> .env
 
     - name: display env
       run: cat .env
@@ -52,13 +52,15 @@ jobs:
        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
        
-    - name: Build
+    - name: Build Docker image
       run: |
-        docker-compose --env-file ./.env -f docker-compose-prod.yml build
+        docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/docde:latest -f Dockerfile-prod .
 
-    - name: Push
+      # 5. Docker Hub에 이미지 푸시
+    - name: Push Docker image
       run: |
-        docker-compose --env-file ./.env -f docker-compose-prod.yml push docde
+        docker push ${{ secrets.DOCKER_HUB_USERNAME }}/docde:latest
+        
 
   test:
     #test가 돌아가는 환경을 설정합니다.
