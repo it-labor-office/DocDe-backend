@@ -52,7 +52,7 @@ jobs:
     - name: Build and push image
       run: |
         docker-compose -f docker-compose-prod.yml build
-        docker-compose -f docker-compose-prod.yml push
+        docker-compose -f docker-compose-prod.yml push multiverse22/docde
   test:
     #test가 돌아가는 환경을 설정합니다.
     runs-on: ubuntu-latest
