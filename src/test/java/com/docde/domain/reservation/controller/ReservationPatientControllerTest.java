@@ -37,13 +37,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-
-
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -81,8 +77,8 @@ public class ReservationPatientControllerTest {
                 .name("Test Hospital")
                 .address("hospital address")
                 .contact("111-2222")
-                .open_time(LocalTime.of(9, 0))
-                .closing_time(LocalTime.of(17, 0))
+                .openTime(LocalTime.of(9, 0))
+                .closingTime(LocalTime.of(17, 0))
                 .announcement("announcement")
                 .build();
         ReflectionTestUtils.setField(hospital, "id", 1L);
