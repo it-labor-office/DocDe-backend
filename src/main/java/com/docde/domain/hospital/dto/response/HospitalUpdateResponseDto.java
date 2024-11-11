@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalTime;
+
 @Getter
 @NoArgsConstructor
 public class HospitalUpdateResponseDto {
@@ -24,8 +25,8 @@ public class HospitalUpdateResponseDto {
         this.hospitalName = hospital.getName();
         this.hospitalAddress = hospital.getAddress();
         this.hospitalContact = hospital.getContact();
-        this.openTime = hospital.getOpen_time();
-        this.closingTime = hospital.getClosing_time();
+        this.openTime = hospital.getOpenTime();
+        this.closingTime = hospital.getClosingTime();
         this.announcement = hospital.getAnnouncement();
     }
 }

@@ -1,5 +1,7 @@
 package com.docde.domain.hospital.entity;
 
+import com.docde.common.entity.Timestamped;
+import com.docde.domain.doctor.entity.Doctor;
 import com.docde.domain.hospital.dto.request.HospitalPostRequestDto;
 import com.docde.domain.hospital.dto.request.HospitalUpdateRequestDto;
 import jakarta.persistence.*;
@@ -8,11 +10,15 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 @Getter
 @Entity
 @NoArgsConstructor
-public class Hospital {
+@Table(indexes = @Index(name = "idx_name", columnList = "name"))
+public class Hospital extends Timestamped {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -27,19 +33,16 @@ public class Hospital {
     private String contact;
 
     @Column(nullable = false)
-    private LocalTime open_time;
+    private LocalTime openTime;
 
     @Column(nullable = false)
-    private LocalTime closing_time;
+    private LocalTime closingTime;
 
     @Column(nullable = false)
     private boolean deleted = false;
 
-
-//    @OneToMany(mappedBy = "hospital", cascade = CascadeType.PERSIST)
-//    private List<HospitalTimetable> timetables = new ArrayList<>();
-//    //병원은 승인을 받아야 한다.
-//    private boolean isApprove=false;
+    @OneToMany(mappedBy = "hospital", fetch = FetchType.LAZY)
+    private List<Doctor> doctors;
 
     @Column(nullable = false)
     private String announcement;
@@ -60,55 +63,63 @@ public class Hospital {
         this.contact = contact;
     }
 
-    public void updateOpenTime(LocalTime open_time) {
-        this.open_time = open_time;
+    public void updateOpenTime(LocalTime openTime) {
+        this.openTime = openTime;
     }
 
-    public void updateClosingTime(LocalTime closing_time) {
-        this.closing_time = closing_time;
+    public void updateClosingTime(LocalTime closingTime) {
+        this.closingTime = closingTime;
     }
 
     public void updateAnnouncement(String announcement) {
         this.announcement = announcement;
     }
 
-    public Hospital(String name, String address, LocalTime open_time, LocalTime closing_time, String contact, String announcement) {
+    public void addDoctor(Doctor doctor) {
+        List<Doctor> updatedDoctors = new ArrayList<>(this.doctors); // 기존 doctors 복사
+        updatedDoctors.add(doctor); // 새로운 doctor 추가
+        this.doctors = Collections.unmodifiableList(updatedDoctors); // 불변 리스트로 설정
+    }
+
+    public Hospital(String name, String address, LocalTime openTime, LocalTime closingTime, String contact, String announcement) {
         this.name = name;
         this.address = address;
-        this.open_time = open_time;
+        this.openTime = openTime;
         this.contact = contact;
-        this.closing_time = closing_time;
+        this.closingTime = closingTime;
         this.announcement = announcement;
+        this.doctors = List.of();
     }
 
     public Hospital(HospitalPostRequestDto requestDto) {
         this.name = requestDto.getHospitalName();
         this.address = requestDto.getHospitalAddress();
         this.contact = requestDto.getHospitalContact();
-        this.open_time = requestDto.getOpenTime();
-        this.closing_time = requestDto.getClosingTime();
+        this.openTime = requestDto.getOpenTime();
+        this.closingTime = requestDto.getClosingTime();
         this.announcement = requestDto.getAnnouncement();
+        this.doctors = List.of();
     }
 
     public void updateAll(HospitalUpdateRequestDto requestDto) {
         this.name = requestDto.getHospitalName();
         this.address = requestDto.getHospitalAddress();
         this.contact = requestDto.getHospitalContact();
-        this.open_time = requestDto.getOpenTime();
-        this.closing_time = requestDto.getClosingTime();
+        this.openTime = requestDto.getOpenTime();
+        this.closingTime = requestDto.getClosingTime();
         this.announcement = requestDto.getAnnouncement();
+        this.doctors = List.of();
     }
 
     @Builder
-    public Hospital(String name, String address, String contact, LocalTime open_time, LocalTime closing_time, String announcement) {
+    public Hospital(String name, String address, String contact, LocalTime openTime, LocalTime closingTime, String announcement) {
         this.name = name;
         this.address = address;
         this.contact = contact;
-        this.open_time = open_time;
-        this.closing_time = closing_time;
+        this.openTime = openTime;
+        this.closingTime = closingTime;
+        this.deleted = false;
+        this.doctors = List.of();
         this.announcement = announcement;
     }
-//    public void updateTimetables(List<HospitalTimetable> timetables) {
-//        this.timetables = timetables;
-//    }
 }

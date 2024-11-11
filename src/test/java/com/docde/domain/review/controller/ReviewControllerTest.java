@@ -79,8 +79,8 @@ public class ReviewControllerTest {
                     .name("Test Hospital")
                     .address("hospital address")
                     .contact("111-2222")
-                    .open_time(LocalTime.of(9, 0))
-                    .closing_time(LocalTime.of(17, 0))
+                    .openTime(LocalTime.of(9, 0))
+                    .closingTime(LocalTime.of(17, 0))
                     .announcement("announcement")
                     .build();
             ReflectionTestUtils.setField(hospital, "id", 1L);
@@ -88,7 +88,7 @@ public class ReviewControllerTest {
 
             Doctor doctor = Doctor.builder()
                     .name("name")
-                    .description("description")
+                    .medicalDepartment("medicalDepartment")
                     .hospital(hospital)
                     .build();
             ReflectionTestUtils.setField(doctor, "id", 1L);
@@ -230,8 +230,8 @@ public class ReviewControllerTest {
                     .name("Test Hospital")
                     .address("hospital address")
                     .contact("111-2222")
-                    .open_time(LocalTime.of(9, 0))
-                    .closing_time(LocalTime.of(17, 0))
+                    .openTime(LocalTime.of(9, 0))
+                    .closingTime(LocalTime.of(17, 0))
                     .announcement("announcement")
                     .build();
             ReflectionTestUtils.setField(hospital, "id", 1L);
@@ -239,7 +239,7 @@ public class ReviewControllerTest {
 
             Doctor doctor = Doctor.builder()
                     .name("name")
-                    .description("description")
+                    .medicalDepartment("medicalDepartment")
                     .hospital(hospital)
                     .build();
             ReflectionTestUtils.setField(doctor, "id", 1L);

@@ -39,37 +39,34 @@ public class JwtSecurityFilter extends OncePerRequestFilter {
         }
 
         try {
-            try {
-                String token = jwtUtil.substringToken(authorization);
-                TokenType tokenType = jwtUtil.getTokenType(token);
-                if (!tokenType.equals(TokenType.ACCESS)) throw new ApiException(ErrorStatus._NOT_ACCESS_TOKEN);
+            String token = jwtUtil.substringToken(authorization);
+            TokenType tokenType = jwtUtil.getTokenType(token);
+            if (!tokenType.equals(TokenType.ACCESS))
+                handlerExceptionResolver.resolveException(request, response, null, new ApiException(ErrorStatus._NOT_ACCESS_TOKEN));
 
-                Claims claims = jwtUtil.extractClaims(token);
+            Claims claims = jwtUtil.extractClaims(token);
 
-                if (claims == null) throw new ApiException(ErrorStatus._BAD_REQUEST_ILLEGAL_TOKEN);
+            if (claims == null)
+                handlerExceptionResolver.resolveException(request, response, null, new ApiException(ErrorStatus._BAD_REQUEST_ILLEGAL_TOKEN));
 
-                Long id = Long.parseLong(claims.getSubject());
-                String email = claims.get(JwtUtil.CLAIM_EMAIL, String.class);
-                Long patientId = claims.get(JwtUtil.CLAIM_PATIENT_ID, Long.class);
-                Long doctorId = claims.get(JwtUtil.CLAIM_DOCTOR_ID, Long.class);
-                Long hospitalId = claims.get(JwtUtil.CLAIM_HOSPITAL_ID, Long.class);
-                UserRole userRole = UserRole.of(claims.get(JwtUtil.CLAIM_USER_ROLE, String.class));
-                AuthUser authUser = AuthUser.builder().id(id).email(email).userRole(userRole).patientId(patientId).doctorId(doctorId).hospitalId(hospitalId).build();
-                JwtAuthenticationToken authenticationToken = new JwtAuthenticationToken(authUser);
-                authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            } catch (SecurityException | MalformedJwtException e) {
-                throw new ApiException(ErrorStatus._UNAUTHORIZED_INVALID_TOKEN, e);
-            } catch (ExpiredJwtException e) {
-                throw new ApiException(ErrorStatus._UNAUTHORIZED_EXPIRED_TOKEN, e);
-            } catch (UnsupportedJwtException e) {
-                throw new ApiException(ErrorStatus._BAD_REQUEST_UNSUPPORTED_TOKEN, e);
-            } catch (Exception e) {
-                throw new ApiException(ErrorStatus._ERROR_WHILE_CREATE_TOKEN, e);
-            }
+            Long id = Long.parseLong(claims.getSubject());
+            String email = claims.get(JwtUtil.CLAIM_EMAIL, String.class);
+            Long patientId = claims.get(JwtUtil.CLAIM_PATIENT_ID, Long.class);
+            Long doctorId = claims.get(JwtUtil.CLAIM_DOCTOR_ID, Long.class);
+            Long hospitalId = claims.get(JwtUtil.CLAIM_HOSPITAL_ID, Long.class);
+            UserRole userRole = UserRole.of(claims.get(JwtUtil.CLAIM_USER_ROLE, String.class));
+            AuthUser authUser = AuthUser.builder().id(id).email(email).userRole(userRole).patientId(patientId).doctorId(doctorId).hospitalId(hospitalId).build();
+            JwtAuthenticationToken authenticationToken = new JwtAuthenticationToken(authUser);
+            authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+            SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+        } catch (SecurityException | MalformedJwtException e) {
+            handlerExceptionResolver.resolveException(request, response, null, new ApiException(ErrorStatus._UNAUTHORIZED_INVALID_TOKEN, e));
+        } catch (ExpiredJwtException e) {
+            handlerExceptionResolver.resolveException(request, response, null, new ApiException(ErrorStatus._UNAUTHORIZED_EXPIRED_TOKEN, e));
+        } catch (UnsupportedJwtException e) {
+            handlerExceptionResolver.resolveException(request, response, null, new ApiException(ErrorStatus._BAD_REQUEST_UNSUPPORTED_TOKEN, e));
         } catch (Exception e) {
-            System.out.println(e);
-            handlerExceptionResolver.resolveException(request, response, null, e);
+            handlerExceptionResolver.resolveException(request, response, null, new ApiException(ErrorStatus._ERROR_WHILE_CREATE_TOKEN, e));
         }
         filterChain.doFilter(request, response);
     }

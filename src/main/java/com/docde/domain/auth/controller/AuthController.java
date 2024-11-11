@@ -30,7 +30,7 @@ public class AuthController {
     @PostMapping("/auth/signup/doctor")
     @ResponseStatus(HttpStatus.CREATED)
     public ApiResponse<AuthResponse.DoctorSignUp> doctorSignUp(@RequestBody @Valid AuthRequest.DoctorSignUp signUpRequestDto) {
-        User user = authService.doctorSignUp(signUpRequestDto.email(), signUpRequestDto.password(), signUpRequestDto.name(), signUpRequestDto.description(), signUpRequestDto.isDoctorPresident(), signUpRequestDto.code());
+        User user = authService.doctorSignUp(signUpRequestDto.email(), signUpRequestDto.password(), signUpRequestDto.name(), signUpRequestDto.medicalDepartment(), signUpRequestDto.isDoctorPresident(), signUpRequestDto.code());
         return ApiResponse.onCreated(new AuthResponse.DoctorSignUp(user.getId(), user.getEmail(), user.getUserRole(), new DoctorResponse(user.getDoctor())));
     }
 

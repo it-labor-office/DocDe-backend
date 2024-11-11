@@ -90,17 +90,17 @@ public class AuthControllerTest {
         String email = "a@a.com";
         String password = "Password1234@";
         String name = "dlfma";
-        String description = "tkdtp";
+        String medicalDepartment = "medicalDepartment";
         String code = "code";
         boolean isDoctorPresident = false;
         Long doctorId = 1L;
         Long userId = 1L;
-        AuthRequest.DoctorSignUp doctorSignUp = new AuthRequest.DoctorSignUp(email, password, name, description, isDoctorPresident, code);
-        Doctor doctor = Doctor.builder().name(name).description(description).build();
+        AuthRequest.DoctorSignUp doctorSignUp = new AuthRequest.DoctorSignUp(email, password, name, medicalDepartment, isDoctorPresident, code);
+        Doctor doctor = Doctor.builder().name(name).medicalDepartment(medicalDepartment).build();
         User user = User.builder().email(email).password(password).userRole(UserRole.ROLE_DOCTOR).doctor(doctor).build();
         ReflectionTestUtils.setField(doctor, "id", doctorId);
         ReflectionTestUtils.setField(user, "id", userId);
-        when(authService.doctorSignUp(email, password, name, description, isDoctorPresident, code)).thenReturn(user);
+        when(authService.doctorSignUp(email, password, name, medicalDepartment, isDoctorPresident, code)).thenReturn(user);
         String content = objectMapper.writeValueAsString(doctorSignUp);
 
         // when & then
@@ -115,7 +115,7 @@ public class AuthControllerTest {
                 .andExpect(jsonPath("$.data.email").value(email))
                 .andExpect(jsonPath("$.data.userRole").value("ROLE_DOCTOR"))
                 .andExpect(jsonPath("$.data.doctor.name").value(name))
-                .andExpect(jsonPath("$.data.doctor.description").value(description));
+                .andExpect(jsonPath("$.data.doctor.medicalDepartment").value(medicalDepartment));
     }
 
     @Test

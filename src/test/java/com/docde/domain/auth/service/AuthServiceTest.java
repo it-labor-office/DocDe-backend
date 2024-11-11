@@ -295,7 +295,7 @@ public class AuthServiceTest {
             // then
             assertEquals(user.getUserRole(), UserRole.ROLE_DOCTOR);
             assertEquals(user.getEmail(), email);
-            assertEquals(user.getDoctor().getDescription(), description);
+            assertEquals(user.getDoctor().getMedicalDepartment(), description);
             assertEquals(user.getDoctor().getName(), name);
 
             // when
@@ -304,7 +304,7 @@ public class AuthServiceTest {
             // then
             assertEquals(user.getUserRole(), UserRole.ROLE_DOCTOR_PRESIDENT);
             assertEquals(user.getEmail(), email);
-            assertEquals(user.getDoctor().getDescription(), description);
+            assertEquals(user.getDoctor().getMedicalDepartment(), description);
             assertEquals(user.getDoctor().getName(), name);
         }
     }
