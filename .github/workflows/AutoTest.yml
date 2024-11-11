@@ -52,12 +52,23 @@ jobs:
        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
 
        
-    - name: Build
+    - name: Build Docker image
       run: |
         docker-compose -f docker-compose-prod.yml build
-    - name: push
+
+      # 5. Docker Hub에 이미지 푸시
+    - name: Push Docker image
       run: |
         docker-compose -f docker-compose-prod.yml push docde
+
+
+    - uses: appleboy/ssh-action@master
+      with:
+         key: ${{ secrets.EC2_SSH_KEY }} # 내가 변수로 저장한 pem key
+         host: ${{secrets.AWS_INSTANCE_IP}} # 내가 변수로 저장한 ip
+         username: ${{secrets.USER}} # 내가 변수로 저장한 User
+         script: |
+
   test:
     #test가 돌아가는 환경을 설정합니다.
     runs-on: ubuntu-latest
