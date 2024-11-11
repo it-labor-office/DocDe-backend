@@ -25,7 +25,7 @@ jobs:
         port: 22
         script: |
           echo "Creating .env file..."
-          echo "${{secrets.ENV_VARIABLES}}" > ./.env
+          echo "${{secrets.ENV_PROD}}" > ./.env
           echo ".env file created successfully"
           docker run --env-file .env -d --name my-app multiverse22/docde:latest
 
