@@ -25,7 +25,7 @@ public class RedisConfig {
     public RedissonClient redissonClient() {
         Config config = new Config();
         // Redis 서버 주소 설정
-        config.useSingleServer().setAddress("redis://127.0.0.1:6379");
+        config.useSingleServer().setAddress("redis://clustercfg.redis.dawc2m.apn2.cache.amazonaws.com:6379");
 
         return Redisson.create(config);
     }
