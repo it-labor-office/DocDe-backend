@@ -1,0 +1,36 @@
+name: Deploy to EC2
+
+on:
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+     - uses: actions/checkout@v3
+     
+     - name: Log in to Docker Hub
+       uses: docker/login-action@v3.3.0
+       with:
+         username: ${{ secrets.DOCKER_HUB_USERNAME }}
+         password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
+         
+     - uses: appleboy/ssh-action@master
+       with:
+        key: ${{ secrets.EC2_SSH_KEY }} # 내가 변수로 저장한 pem key
+        host: ${{secrets.AWS_INSTANCE_IP}} # 내가 변수로 저장한 ip
+        username: ${{secrets.USER}} # 내가 변수로 저장한 User
+        port: 22
+        script: |
+          echo "Creating .env file..."
+          echo "${{secrets.ENV_PROD}}" > ./.env
+          echo ".env file created successfully"
+          docker run --env-file .env -d --name my-app multiverse22/docde:latest
+
+          
+        
+        
+
+        
