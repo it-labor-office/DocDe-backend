@@ -106,7 +106,6 @@ public class HospitalController {
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.onCreated(responseDto));
     }
 
-
     @DeleteMapping("/{hospitalId}")
     @PreAuthorize("#hospitalId==#authUser.hospitalId and hasRole('ROLE_DOCTOR_PRESIDENT')")
     public ApiResponse<HospitalDeleteResponseDto> deleteHospital(@AuthenticationPrincipal AuthUser authUser,

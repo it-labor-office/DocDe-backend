@@ -62,13 +62,13 @@ public class AuthService {
     }
 
     @Transactional
-    public User doctorSignUp(String email, String password, String name, String description, Boolean isDoctorPresident, String code) {
+    public User doctorSignUp(String email, String password, String name, String medicalDepartment, Boolean isDoctorPresident, String code) {
         if (userRepository.existsByEmail(email)) throw new ApiException(ErrorStatus._DUPLICATED_EMAIL);
         if (!_isValidPassword(password)) throw new ApiException(ErrorStatus._INVALID_PASSWORD_FORM);
         if (!_isAuthenticatedEmail(email, code)) throw new ApiException(ErrorStatus._EMAIL_MUST_BE_AUTHENTICATED);
 
         String encodedPassword = passwordEncoder.encode(password);
-        Doctor doctor = Doctor.builder().name(name).description(description).build();
+        Doctor doctor = Doctor.builder().name(name).medicalDepartment(medicalDepartment).build();
         User user = User.builder().email(email).password(encodedPassword).doctor(doctor).userRole(isDoctorPresident ? UserRole.ROLE_DOCTOR_PRESIDENT : UserRole.ROLE_DOCTOR).build();
         return userRepository.save(user);
     }

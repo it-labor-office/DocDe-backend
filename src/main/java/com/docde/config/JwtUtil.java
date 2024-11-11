@@ -25,7 +25,6 @@ public class JwtUtil {
     public static final String CLAIM_HOSPITAL_ID = "hospitalId";
     public static final String CLAIM_TOKEN_TYPE = "tokenType";
 
-
     @Value("${JWT_SECRET_TOKEN}")
     private String secretKey;
 
