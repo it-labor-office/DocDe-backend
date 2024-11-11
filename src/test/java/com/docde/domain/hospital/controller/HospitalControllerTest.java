@@ -456,7 +456,8 @@ public class HospitalControllerTest {
     }
 
     @Nested
-    public class 병원_삭제 {
+    @DisplayName("병원 삭제")
+    public class DeleteHospital {
         @Test
         @DisplayName("병원 삭제 성공")
         public void test16() throws Exception {
