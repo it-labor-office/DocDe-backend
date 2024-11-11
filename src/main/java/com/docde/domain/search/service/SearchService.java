@@ -23,6 +23,6 @@ public class SearchService {
 
     public Page<HospitalDocument> searchHospital(String query, Integer page, Integer size) {
         Pageable pageable = PageRequest.of(page, size);
-        return hospitalElasticSearchRepository.findAllByNameContaining(query, pageable);
+        return hospitalElasticSearchRepository.findAllByQuery(query, pageable);
     }
 }

@@ -10,6 +10,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Getter
@@ -71,6 +73,12 @@ public class Hospital extends Timestamped {
 
     public void updateAnnouncement(String announcement) {
         this.announcement = announcement;
+    }
+
+    public void addDoctor(Doctor doctor) {
+        List<Doctor> updatedDoctors = new ArrayList<>(this.doctors); // 기존 doctors 복사
+        updatedDoctors.add(doctor); // 새로운 doctor 추가
+        this.doctors = Collections.unmodifiableList(updatedDoctors); // 불변 리스트로 설정
     }
 
     public Hospital(String name, String address, LocalTime openTime, LocalTime closingTime, String contact, String announcement) {

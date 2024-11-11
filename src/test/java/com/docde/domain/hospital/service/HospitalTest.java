@@ -70,11 +70,12 @@ public class HospitalTest {
             Doctor doctor = new Doctor();
             ReflectionTestUtils.setField(doctor, "id", 1L);
             ReflectionTestUtils.setField(doctor, "name", "testDoctorname");
-            ReflectionTestUtils.setField(doctor, "description", "testDoctordescription");
+            ReflectionTestUtils.setField(doctor, "medicalDepartment", "testDoctormedicalDepartment");
             User user = new User("testemail", "testpassword", UserRole.ROLE_DOCTOR_PRESIDENT, doctor, null);
             ReflectionTestUtils.setField(doctor, "user", user);
             //W
             when(doctorRepository.findById(authUser.getDoctorId())).thenReturn(Optional.of(doctor));
+            when(hospitalRepository.save(any())).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
             Hospital hospital = new Hospital(requestDto);
             ReflectionTestUtils.setField(hospital, "id", 1L);
             when(hospitalRepository.save(any(Hospital.class))).thenReturn(hospital);
@@ -91,7 +92,7 @@ public class HospitalTest {
             Doctor doctor = new Doctor();
             ReflectionTestUtils.setField(doctor, "id", 1L);
             ReflectionTestUtils.setField(doctor, "name", "testDoctorname");
-            ReflectionTestUtils.setField(doctor, "description", "testDoctordescription");
+            ReflectionTestUtils.setField(doctor, "medicalDepartment", "testDoctormedicalDepartment");
             User user = new User("testemail", "testpassword", UserRole.ROLE_DOCTOR_PRESIDENT, doctor, null);
             ReflectionTestUtils.setField(doctor, "user", user);
 
@@ -195,7 +196,6 @@ public class HospitalTest {
 
     @Nested
     class 병원삭제 {
-
         @Test
         public void 병원삭제성공() {
             ReflectionTestUtils.setField(authUser, "hospitalId", 1L);
@@ -313,14 +313,16 @@ public class HospitalTest {
             User adduser = new User("addDoctor", "addDcotor", UserRole.ROLE_DOCTOR, addDoctor, null);
 
             Hospital hospital = new Hospital(requestDto);
+            ReflectionTestUtils.setField(hospital, "id", 1L);
+
 
             when(hospitalRepository.findById(authUser.getHospitalId())).thenReturn(Optional.of(hospital));
             when(doctorRepository.findByUser_Email(addDoctorRequestDto.getDoctorEmail())).thenReturn(Optional.of(addDoctor));
+            when(hospitalRepository.save(any())).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
 
             HospitalPostDoctorResponseDto responseDto = hospitalService.addDoctorToHospital(1L, addDoctorRequestDto, authUser);
 
             assertEquals(responseDto.getDoctorId(), addDoctor.getId());
-
         }
     }
 }
