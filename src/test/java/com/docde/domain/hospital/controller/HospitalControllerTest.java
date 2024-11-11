@@ -41,6 +41,8 @@ public class HospitalControllerTest {
     private MockMvc mockMvc;
     @MockBean
     private HospitalService hospitalService;
+    @MockBean
+    private JwtUtil jwtUtil;
 
     HospitalPostRequestDto requestDto = new HospitalPostRequestDto(
             "testname",

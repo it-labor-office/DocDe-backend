@@ -50,6 +50,9 @@ public class ReviewControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
+    private JwtUtil jwtUtil;
+
+    @MockBean
     private ReviewService reviewService;
 
     @Autowired
