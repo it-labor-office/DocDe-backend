@@ -24,12 +24,12 @@ public class Doctor extends Timestamped {
     private Long id;
 
     @Column(nullable = false)
-    String name;
+    private String name;
 
     @Column(nullable = false)
-    String description;
+    private String medicalDepartment;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
     @JoinColumn
     private Hospital hospital;
 
@@ -40,12 +40,12 @@ public class Doctor extends Timestamped {
     private User user;
 
     @Column(nullable = false)
-    Boolean deleted;
+    private Boolean deleted;
 
     @Builder
-    public Doctor(String name, String description, Hospital hospital, User user) {
+    public Doctor(String name, String medicalDepartment, Hospital hospital, User user) {
         this.name = name;
-        this.description = description;
+        this.medicalDepartment = medicalDepartment;
         this.hospital = hospital;
         this.user = user;
         this.deleted = false;

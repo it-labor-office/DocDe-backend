@@ -112,7 +112,7 @@ class CheckInServiceTest {
         mokDoctor = Doctor.builder()
                 .name("의사이름")
                 .hospital(mokHospital)
-                .description("의사설명")
+                .medicalDepartment("진료과")
                 .build();
 
         setField(mokPatient, "id", 1L);
@@ -223,7 +223,7 @@ class CheckInServiceTest {
         setField(mokHospital2, "closingTime", LocalTime.of(21, 30));
         setField(mokHospital2, "announcement", "병원안내");
 
-        Doctor doctor = Doctor.builder().name("의사이름2").description("설명").hospital(mokHospital2).build();
+        Doctor doctor = Doctor.builder().name("의사이름2").medicalDepartment("진료과").hospital(mokHospital2).build();
 
         // w
         ApiException exception = assertThrows(ApiException.class, () -> {

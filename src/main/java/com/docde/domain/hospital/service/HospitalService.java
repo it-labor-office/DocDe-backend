@@ -52,15 +52,21 @@ public class HospitalService {
         Doctor doctor = doctorRepository.findById(authUser.getDoctorId()).orElseThrow(
                 () -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR)
         );
+        if (doctor.getHospital() != null) throw new ApiException(ErrorStatus._ALREADY_CREATED);
+
         //병원 생성 후 저장
         Hospital hospital = new Hospital(requestDto);
         Hospital savedHospital = hospitalRepository.save(hospital);
-        HospitalDocument hospitalDocument = HospitalDocument.from(savedHospital);
-        hospitalElasticSearchRepository.save(hospitalDocument);
 
         //해당의사(병원장)은 이제부터 저장된병원소속
         doctor.addDoctorToHospital(savedHospital);
-        return new HospitalPostResponseDto(hospital);
+        doctorRepository.save(doctor);
+        hospital.addDoctor(doctor);
+
+        HospitalDocument hospitalDocument = HospitalDocument.from(savedHospital);
+        hospitalElasticSearchRepository.save(hospitalDocument);
+
+        return new HospitalPostResponseDto(savedHospital);
     }
 
     public HospitalGetResponseDto getHospital(Long hospitalId, AuthUser authUser) {
@@ -163,9 +169,7 @@ public class HospitalService {
         Hospital hospital = findHospitalByHospitalIdAndCheckIsDeleted(authUser.getHospitalId());
         //소프트 삭제
         hospital.delete();
-
-        HospitalDocument hospitalDocument = HospitalDocument.from(hospital);
-        hospitalElasticSearchRepository.save(hospitalDocument);
+        hospitalElasticSearchRepository.deleteById(hospital.getId().toString());
 
         return new HospitalDeleteResponseDto(hospital);
     }
@@ -219,6 +223,12 @@ public class HospitalService {
         //의사를 병원에 추가한다. 연관관계 설정
         doctor.addDoctorToHospital(hospital);
 
-        return new HospitalPostDoctorResponseDto(doctor.getId(), doctor.getName(), hospital.getId(), hospital.getName());
+        doctorRepository.save(doctor);
+        Hospital savedHospital = hospitalRepository.save(hospital);
+        savedHospital.addDoctor(doctor);
+        HospitalDocument hospitalDocument = HospitalDocument.from(savedHospital);
+        hospitalElasticSearchRepository.save(hospitalDocument);
+
+        return new HospitalPostDoctorResponseDto(doctor.getId(), doctor.getName(), savedHospital.getId(), savedHospital.getName());
     }
 }

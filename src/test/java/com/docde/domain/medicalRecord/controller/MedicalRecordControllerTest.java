@@ -82,7 +82,7 @@ public class MedicalRecordControllerTest {
 
         doctor = Doctor.builder()
                 .name("name")
-                .description("description")
+                .medicalDepartment("medicalDepartment")
                 .hospital(hospital)
                 .build();
         ReflectionTestUtils.setField(doctor, "id", 1L);

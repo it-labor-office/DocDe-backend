@@ -85,7 +85,7 @@ public class ReservationPatientControllerTest {
 
         doctor = Doctor.builder()
                 .name("doctor name")
-                .description("description")
+                .medicalDepartment("medicalDepartment")
                 .hospital(hospital)
                 .build();
         ReflectionTestUtils.setField(doctor, "id", 1L);
@@ -122,7 +122,7 @@ public class ReservationPatientControllerTest {
 
             PatientResponse patientResponse = new PatientResponse(patient.getId(), patient.getName(), patient.getAddress(), patient.getPhone(), patient.getGender());
 
-            DoctorResponse doctorResponse = new DoctorResponse(doctor.getId(), doctor.getName(), doctor.getDescription());
+            DoctorResponse doctorResponse = new DoctorResponse(doctor.getId(), doctor.getName(), doctor.getMedicalDepartment());
 
             ReservationPatientResponse.ReservationWithPatientAndDoctor responseDto = new ReservationPatientResponse.ReservationWithPatientAndDoctor(
                     1L, "reservationReason", ReservationStatus.WAITING_RESERVATION, null, patientResponse, doctorResponse);
@@ -156,7 +156,7 @@ public class ReservationPatientControllerTest {
                     .andExpect(jsonPath("$.data.patient.address").value("address"))
                     .andExpect(jsonPath("$.data.patient.gender").value("M"))
                     .andExpect(jsonPath("$.data.doctor.name").value("doctor name"))
-                    .andExpect(jsonPath("$.data.doctor.description").value("description"));
+                    .andExpect(jsonPath("$.data.doctor.medicalDepartment").value("medicalDepartment"));
         }
     }
 
@@ -183,7 +183,7 @@ public class ReservationPatientControllerTest {
         reservation.setStatus(ReservationStatus.RESERVATION_CANCELED); // 예약 상태를 취소로 변경
 
         PatientResponse patientResponse = new PatientResponse(patient.getId(), patient.getName(), patient.getAddress(), patient.getPhone(), patient.getGender());
-        DoctorResponse doctorResponse = new DoctorResponse(doctor.getId(), doctor.getName(), doctor.getDescription());
+        DoctorResponse doctorResponse = new DoctorResponse(doctor.getId(), doctor.getName(), doctor.getMedicalDepartment());
         ReservationPatientResponse.ReservationWithPatientAndDoctor responseDto = new ReservationPatientResponse.ReservationWithPatientAndDoctor(
                 reservation.getId(), reservation.getReservationReason(), reservation.getStatus(), reservation.getRejectReason(), patientResponse, doctorResponse);
 
@@ -202,7 +202,7 @@ public class ReservationPatientControllerTest {
                 .andExpect(jsonPath("$.data.patient.address").value(patient.getAddress()))
                 .andExpect(jsonPath("$.data.patient.gender").value(patient.getGender().toString()))
                 .andExpect(jsonPath("$.data.doctor.name").value(doctor.getName()))
-                .andExpect(jsonPath("$.data.doctor.description").value(doctor.getDescription()));
+                .andExpect(jsonPath("$.data.doctor.medicalDepartment").value(doctor.getMedicalDepartment()));
     }
 
     @Test
@@ -225,7 +225,7 @@ public class ReservationPatientControllerTest {
         ReflectionTestUtils.setField(reservation, "id", reservationId);
 
         PatientResponse patientResponse = new PatientResponse(patient.getId(), patient.getName(), patient.getAddress(), patient.getPhone(), patient.getGender());
-        DoctorResponse doctorResponse = new DoctorResponse(doctor.getId(), doctor.getName(), doctor.getDescription());
+        DoctorResponse doctorResponse = new DoctorResponse(doctor.getId(), doctor.getName(), doctor.getMedicalDepartment());
         ReservationPatientResponse.ReservationWithPatientAndDoctor responseDto = new ReservationPatientResponse.ReservationWithPatientAndDoctor(
                 reservation.getId(), reservation.getReservationReason(), reservation.getStatus(), reservation.getRejectReason(), patientResponse, doctorResponse);
 
@@ -244,7 +244,7 @@ public class ReservationPatientControllerTest {
                 .andExpect(jsonPath("$.data.patient.address").value(patient.getAddress()))
                 .andExpect(jsonPath("$.data.patient.gender").value(patient.getGender().toString()))
                 .andExpect(jsonPath("$.data.doctor.name").value(doctor.getName()))
-                .andExpect(jsonPath("$.data.doctor.description").value(doctor.getDescription()));
+                .andExpect(jsonPath("$.data.doctor.medicalDepartment").value(doctor.getMedicalDepartment()));
     }
 
 }

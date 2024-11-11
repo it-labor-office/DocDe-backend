@@ -59,7 +59,6 @@ public class JwtSecurityFilter extends OncePerRequestFilter {
             JwtAuthenticationToken authenticationToken = new JwtAuthenticationToken(authUser);
             authenticationToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
             SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-            filterChain.doFilter(request, response);
         } catch (SecurityException | MalformedJwtException e) {
             handlerExceptionResolver.resolveException(request, response, null, new ApiException(ErrorStatus._UNAUTHORIZED_INVALID_TOKEN, e));
         } catch (ExpiredJwtException e) {
@@ -69,6 +68,7 @@ public class JwtSecurityFilter extends OncePerRequestFilter {
         } catch (Exception e) {
             handlerExceptionResolver.resolveException(request, response, null, new ApiException(ErrorStatus._ERROR_WHILE_CREATE_TOKEN, e));
         }
+        filterChain.doFilter(request, response);
     }
 
     @Override

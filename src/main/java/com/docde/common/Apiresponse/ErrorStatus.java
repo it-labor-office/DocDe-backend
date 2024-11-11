@@ -42,6 +42,7 @@ public enum ErrorStatus implements BaseCode {
 
     //병원 관련 코드
     _NOT_FOUND_HOSPITAL(HttpStatus.BAD_REQUEST, 400, "병원을 찾을 수 없습니다"),
+    _ALREADY_CREATED(HttpStatus.BAD_REQUEST, 400, "이미 병원을 만들었습니다. 병원장은 하나의 병원만 생성할 수 있습니다."),
     //삭제된 병원은 어떤 스테이터스를 반환해야하는가?
     _DELETED_HOSPITAL(HttpStatus.BAD_REQUEST, 400, "삭제된 병원입니다."),
 
@@ -55,7 +56,7 @@ public enum ErrorStatus implements BaseCode {
     _DENIED_RESERVATION(HttpStatus.BAD_REQUEST, 400, "진료가 거부된 예약입니다."),
     _ALREADY_RESERVED_RESERVATION(HttpStatus.BAD_REQUEST, 400, "이미 예약이 승인 되었습니다."),
     _INVALID_RESERVATION_DATE(HttpStatus.BAD_REQUEST, 400, "예약 날짜는 오늘 또는 내일로 설정해야 합니다."),
-    _DUPLICATE_RESERVATION(HttpStatus.CONFLICT,409,"이미 해당 시간에 예약이 존재합니다."),
+    _DUPLICATE_RESERVATION(HttpStatus.CONFLICT, 409, "이미 해당 시간에 예약이 존재합니다."),
 
     // 의사 관련 코드
     _NOT_FOUND_DOCTOR(HttpStatus.NOT_FOUND, 404, "의사를 찾을 수 없습니다."),
