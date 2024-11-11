@@ -11,6 +11,7 @@ import com.docde.domain.hospital.dto.response.*;
 import com.docde.domain.hospital.entity.DayOfTheWeek;
 import com.docde.domain.hospital.entity.Hospital;
 import com.docde.domain.hospital.entity.HospitalTimetable;
+import com.docde.domain.hospital.repository.HospitalElasticSearchRepository;
 import com.docde.domain.hospital.repository.HospitalRepository;
 import com.docde.domain.hospital.repository.HospitalTimetableRepository;
 import com.docde.domain.user.entity.User;
@@ -20,7 +21,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
@@ -31,6 +31,7 @@ import java.util.Optional;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
 
 
 @ExtendWith(MockitoExtension.class)
@@ -43,6 +44,9 @@ public class HospitalTest {
     private HospitalTimetableRepository timetableRepository;
     @Mock
     private DoctorRepository doctorRepository;
+
+    @Mock
+    private HospitalElasticSearchRepository hospitalElasticSearchRepository;
 
     AuthUser authUser = new AuthUser(1L, "testDoctor@gmail.com", UserRole.ROLE_DOCTOR_PRESIDENT, null, null, null);
 
@@ -66,13 +70,15 @@ public class HospitalTest {
             Doctor doctor = new Doctor();
             ReflectionTestUtils.setField(doctor, "id", 1L);
             ReflectionTestUtils.setField(doctor, "name", "testDoctorname");
-            ReflectionTestUtils.setField(doctor, "description", "testDoctordescription");
+            ReflectionTestUtils.setField(doctor, "medicalDepartment", "testDoctormedicalDepartment");
             User user = new User("testemail", "testpassword", UserRole.ROLE_DOCTOR_PRESIDENT, doctor, null);
             ReflectionTestUtils.setField(doctor, "user", user);
             //W
-            Mockito.when(doctorRepository.findById(authUser.getDoctorId())).thenReturn(Optional.of(doctor));
+            when(doctorRepository.findById(authUser.getDoctorId())).thenReturn(Optional.of(doctor));
+            when(hospitalRepository.save(any())).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
             Hospital hospital = new Hospital(requestDto);
-            Mockito.when(hospitalRepository.save(any(Hospital.class))).thenReturn(hospital);
+            ReflectionTestUtils.setField(hospital, "id", 1L);
+            when(hospitalRepository.save(any(Hospital.class))).thenReturn(hospital);
             //T
             HospitalPostResponseDto responseDto = hospitalService.postHospital(requestDto, authUser);
 
@@ -86,11 +92,11 @@ public class HospitalTest {
             Doctor doctor = new Doctor();
             ReflectionTestUtils.setField(doctor, "id", 1L);
             ReflectionTestUtils.setField(doctor, "name", "testDoctorname");
-            ReflectionTestUtils.setField(doctor, "description", "testDoctordescription");
+            ReflectionTestUtils.setField(doctor, "medicalDepartment", "testDoctormedicalDepartment");
             User user = new User("testemail", "testpassword", UserRole.ROLE_DOCTOR_PRESIDENT, doctor, null);
             ReflectionTestUtils.setField(doctor, "user", user);
 
-            Mockito.when(doctorRepository.findById(authUser.getDoctorId())).thenReturn(Optional.empty());
+            when(doctorRepository.findById(authUser.getDoctorId())).thenReturn(Optional.empty());
 
             ApiException exception = assertThrows(ApiException.class, () -> hospitalService.postHospital(requestDto, authUser));
 
@@ -107,7 +113,7 @@ public class HospitalTest {
             Hospital hospital = new Hospital(requestDto);
             ReflectionTestUtils.setField(hospital, "id", 1L);
 
-            Mockito.when(hospitalRepository.findById(hospital.getId())).thenReturn(Optional.of(hospital));
+            when(hospitalRepository.findById(hospital.getId())).thenReturn(Optional.of(hospital));
 
             HospitalGetResponseDto responseDto = hospitalService.getHospital(hospital.getId(), authUser);
 
@@ -117,7 +123,7 @@ public class HospitalTest {
 
         @Test
         public void 병원을_찾지못해_조회_실패() {
-            Mockito.when(hospitalRepository.findById(1L)).thenReturn(Optional.empty());
+            when(hospitalRepository.findById(1L)).thenReturn(Optional.empty());
 
             ApiException exception = assertThrows(ApiException.class, () -> {
                 hospitalService.getHospital(1L, authUser);
@@ -148,7 +154,7 @@ public class HospitalTest {
             Hospital hospital = new Hospital(requestDto);
             ReflectionTestUtils.setField(hospital, "id", 1L);
 
-            Mockito.when(hospitalRepository.findById(1L)).thenReturn(Optional.of(hospital));
+            when(hospitalRepository.findById(1L)).thenReturn(Optional.of(hospital));
 
             HospitalUpdateResponseDto responseDto = hospitalService.putHospital(putRequestDto, 1L, authUser);
 
@@ -164,7 +170,7 @@ public class HospitalTest {
             Hospital hospital = new Hospital(requestDto);
             ReflectionTestUtils.setField(hospital, "id", 1L);
 
-            Mockito.when(hospitalRepository.findById(1L)).thenReturn(Optional.of(hospital));
+            when(hospitalRepository.findById(1L)).thenReturn(Optional.of(hospital));
             ReflectionTestUtils.setField(patchRequestDto, "hospitalName", "patchName");
             ReflectionTestUtils.setField(patchRequestDto, "hospitalAddress", "patchAddress");
             HospitalUpdateResponseDto responseDto = hospitalService.patchHospital(patchRequestDto, hospital.getId(), authUser);
@@ -178,7 +184,7 @@ public class HospitalTest {
         @Test
         public void 병원을_찾지_못해_병원_수정_실패() {
             ReflectionTestUtils.setField(authUser, "hospitalId", 1L);
-            Mockito.when(hospitalRepository.findById(authUser.getHospitalId())).thenReturn(Optional.empty());
+            when(hospitalRepository.findById(authUser.getHospitalId())).thenReturn(Optional.empty());
 
             ApiException exception = assertThrows(ApiException.class, () -> {
                 hospitalService.putHospital(putRequestDto, 1L, authUser);
@@ -190,12 +196,12 @@ public class HospitalTest {
 
     @Nested
     class 병원삭제 {
-
         @Test
         public void 병원삭제성공() {
             ReflectionTestUtils.setField(authUser, "hospitalId", 1L);
             Hospital hospital = new Hospital(requestDto);
-            Mockito.when(hospitalRepository.findById(authUser.getHospitalId())).thenReturn(Optional.of(hospital));
+            ReflectionTestUtils.setField(hospital, "id", 1L);
+            when(hospitalRepository.findById(authUser.getHospitalId())).thenReturn(Optional.of(hospital));
 
             HospitalDeleteResponseDto responseDto = hospitalService.deleteHospital(authUser);
 
@@ -205,7 +211,7 @@ public class HospitalTest {
         @Test
         public void 병원을_찾지_못해_병원_삭제_실패() {
             ReflectionTestUtils.setField(authUser, "hospitalId", 1L);
-            Mockito.when(hospitalRepository.findById(authUser.getHospitalId())).thenReturn(Optional.empty());
+            when(hospitalRepository.findById(authUser.getHospitalId())).thenReturn(Optional.empty());
 
             ApiException exception = assertThrows(ApiException.class, () -> {
                 hospitalService.deleteHospital(authUser);
@@ -237,7 +243,7 @@ public class HospitalTest {
             ReflectionTestUtils.setField(hospital, "id", 1L);
             HospitalWeeklyTimetablePostRequestDto timetablePostRequestDto =
                     new HospitalWeeklyTimetablePostRequestDto(timetableDtoList);
-            Mockito.when(hospitalRepository.findById(authUser.getHospitalId())).thenReturn(Optional.of(hospital));
+            when(hospitalRepository.findById(authUser.getHospitalId())).thenReturn(Optional.of(hospital));
 
             HospitalWeeklyTimetablePostResponseDto responseDto = hospitalService.postWeeklyTimetable(
                     timetablePostRequestDto, authUser, 1L
@@ -275,8 +281,8 @@ public class HospitalTest {
 
                     }).toList();
 
-            Mockito.when(timetableRepository.findAllByHospitalId(hospital.getId())).thenReturn(timetables);
-            Mockito.when(hospitalRepository.findById(authUser.getHospitalId())).thenReturn(Optional.of(hospital));
+            when(timetableRepository.findAllByHospitalId(hospital.getId())).thenReturn(timetables);
+            when(hospitalRepository.findById(authUser.getHospitalId())).thenReturn(Optional.of(hospital));
             HospitalWeeklyTimetableUpdateResponseDto responseDto = hospitalService.updateWeeklyTimetable(
                     updateRequestDto, authUser, 1L
             );
@@ -307,14 +313,16 @@ public class HospitalTest {
             User adduser = new User("addDoctor", "addDcotor", UserRole.ROLE_DOCTOR, addDoctor, null);
 
             Hospital hospital = new Hospital(requestDto);
+            ReflectionTestUtils.setField(hospital, "id", 1L);
 
-            Mockito.when(hospitalRepository.findById(authUser.getHospitalId())).thenReturn(Optional.of(hospital));
-            Mockito.when(doctorRepository.findByUser_Email(addDoctorRequestDto.getDoctorEmail())).thenReturn(Optional.of(addDoctor));
+
+            when(hospitalRepository.findById(authUser.getHospitalId())).thenReturn(Optional.of(hospital));
+            when(doctorRepository.findByUser_Email(addDoctorRequestDto.getDoctorEmail())).thenReturn(Optional.of(addDoctor));
+            when(hospitalRepository.save(any())).thenAnswer(invocationOnMock -> invocationOnMock.getArgument(0));
 
             HospitalPostDoctorResponseDto responseDto = hospitalService.addDoctorToHospital(1L, addDoctorRequestDto, authUser);
 
             assertEquals(responseDto.getDoctorId(), addDoctor.getId());
-
         }
     }
 }

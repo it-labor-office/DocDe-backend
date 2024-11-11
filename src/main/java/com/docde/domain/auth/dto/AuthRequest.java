@@ -13,7 +13,7 @@ public sealed interface AuthRequest permits PatientSignUp, DoctorSignUp, SignIn,
     }
 
     record DoctorSignUp(@NotBlank @Email String email, @NotBlank String password, @NotBlank String name,
-                        @NotBlank String description, @NotNull Boolean isDoctorPresident,
+                        @NotBlank String medicalDepartment, @NotNull Boolean isDoctorPresident,
                         @NotBlank String code) implements AuthRequest {
     }
 
