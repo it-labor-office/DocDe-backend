@@ -25,7 +25,7 @@ public class MedicalRecordController {
     @PostMapping("/medical-records")
     public ResponseEntity<ApiResponse<MedicalRecordResponseDto>> createMedicalRecord(
             @RequestBody DoctorMedicalRecordRequestDto requestDto,
-            @AuthenticationPrincipal AuthUser authUser) {
+            @AuthenticationPrincipal AuthUser authUser) throws Exception {
 
         // 진료 기록 생성
         MedicalRecordResponseDto responseDto = medicalRecordService.createMedicalRecord(requestDto, authUser);
@@ -44,7 +44,7 @@ public class MedicalRecordController {
             @PathVariable Long medicalRecordId,
             @RequestParam(required = false) String description,
             @RequestParam(required = false) String treatmentPlan,
-            @RequestParam(required = false) String doctorComment) {
+            @RequestParam(required = false) String doctorComment) throws Exception {
 
         DoctorMedicalRecordResponseDto responseDto = medicalRecordService
                 .getSpecificDoctorMedicalRecord(authUser, medicalRecordId, description, treatmentPlan, doctorComment);
@@ -77,7 +77,7 @@ public class MedicalRecordController {
     public ApiResponse<MedicalRecordResponseDto> updateMedicalRecord(
             @PathVariable Long medicalRecordId,
             @RequestBody DoctorMedicalRecordRequestDto doctorRequestDto,
-            @AuthenticationPrincipal AuthUser authUser) {
+            @AuthenticationPrincipal AuthUser authUser) throws Exception {
 
         MedicalRecordResponseDto responseDto = medicalRecordService.updateMedicalRecord(
                 medicalRecordId,
