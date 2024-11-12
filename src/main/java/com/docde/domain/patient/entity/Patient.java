@@ -39,7 +39,7 @@ public class Patient extends Timestamped {
     @OneToMany(mappedBy = "patient", fetch = FetchType.LAZY)
     private List<MedicalRecord> medicalRecord;
 
-    @OneToOne(mappedBy = "patient")
+    @OneToOne(mappedBy = "patient", fetch = FetchType.LAZY)
     private User user;
 
     @Column(nullable = false)

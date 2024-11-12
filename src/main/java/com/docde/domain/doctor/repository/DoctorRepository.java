@@ -10,4 +10,6 @@ public interface DoctorRepository extends JpaRepository<Doctor, Long> {
 
     Optional<Doctor> findByUser_Email(String email);
 
+    Optional<Doctor> findFirstByOrderByIdDesc();
+
 }
