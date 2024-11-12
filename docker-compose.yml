@@ -36,7 +36,12 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-
+      setup:
+        condition: service_healthy
+      es01:
+        condition: service_healthy
+      kibana:
+        condition: service_healthy
   mysql:
     image: mysql:8.0
     environment:
@@ -48,7 +53,6 @@ services:
       test: [ "CMD-SHELL", "mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD} && sleep 5" ]
       interval: 5s
       retries: 10
-
   redis:
     image: redis:6.2
     ports:
