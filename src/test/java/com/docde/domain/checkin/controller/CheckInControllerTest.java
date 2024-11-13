@@ -44,9 +44,6 @@ class CheckInControllerTest {
     @MockBean
     private CheckInService checkInService;
 
-    @MockBean
-    private JwtUtil jwtUtil;
-
     AuthUser patientAuthUser = new AuthUser(
             1L,
             "e@ma.il",

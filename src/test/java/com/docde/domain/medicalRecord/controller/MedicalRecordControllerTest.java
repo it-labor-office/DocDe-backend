@@ -56,9 +56,6 @@ public class MedicalRecordControllerTest {
     @MockBean
     private MedicalRecordService medicalRecordService;
 
-    @MockBean
-    private JwtUtil jwtUtil;
-
     @Mock
     private Hospital hospital;
 
