@@ -6,7 +6,6 @@ import com.docde.domain.patient.entity.Patient;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 
 import java.time.LocalDateTime;
 
@@ -23,8 +22,7 @@ public class MedicalRecord extends Timestamped {
 
     private String description;
 
-    @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime consultation; // 진료 날짜
+    private LocalDateTime  treatmentDate; // 진료 날짜
 
     private String treatmentPlan; // 치료 계획
 
@@ -38,33 +36,34 @@ public class MedicalRecord extends Timestamped {
     @JoinColumn(name = "doctor_id")
     private Doctor doctor;
 
-    public MedicalRecord(String description, LocalDateTime consultation,
+
+    public MedicalRecord(String description, LocalDateTime  treatmentDate ,
                          Patient patient, Doctor doctor, String treatmentPlan, String doctorComment) {
 
         this.description = description;
-        this.consultation = consultation;
+        this.treatmentDate  = treatmentDate ;
         this.patient = patient;
         this.doctor = doctor;
         this.treatmentPlan = treatmentPlan;
         this.doctorComment = doctorComment;
     }
 
-    public MedicalRecord(Long medicalRecordId, String description, LocalDateTime consultation,
+    public MedicalRecord(Long medicalRecordId, String description, LocalDateTime  treatmentDate ,
                          Patient patient, Doctor doctor) {
 
         this.medicalRecordId = medicalRecordId;
         this.description = description;
-        this.consultation = consultation;
+        this.treatmentDate = treatmentDate;
         this.patient = patient;
         this.doctor = doctor;
     }
 
-    public MedicalRecord(Long medicalRecordId, String description, LocalDateTime consultation,
+    public MedicalRecord(Long medicalRecordId, String description, LocalDateTime  treatmentDate,
                          Patient patient, Doctor doctor, String treatmentPlan, String doctorComment) {
 
         this.medicalRecordId = medicalRecordId;
         this.description = description;
-        this.consultation = consultation;
+        this.treatmentDate = treatmentDate;
         this.patient = patient;
         this.doctor = doctor;
         this.treatmentPlan = treatmentPlan;

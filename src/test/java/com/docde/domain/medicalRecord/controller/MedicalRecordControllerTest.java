@@ -16,6 +16,7 @@ import com.docde.domain.medicalRecord.service.MedicalRecordService;
 import com.docde.domain.patient.entity.Patient;
 import com.docde.domain.user.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
