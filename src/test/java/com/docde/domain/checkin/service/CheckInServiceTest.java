@@ -78,7 +78,7 @@ class CheckInServiceTest {
     private AuthUser mockPatientAuthUser = new AuthUser(2L, "asdf@asdf.asdf", UserRole.ROLE_PATIENT, null, 1L, null);
     private AuthUser mockDoctorAuthUser = new AuthUser(1L, "zxcv@zxcv.zxcv", UserRole.ROLE_DOCTOR, 1L, null, 1L);
 
-    private CheckInRequest mokCheckInRequest = new CheckInRequest();
+    private CheckInRequest mokCheckInRequest = new CheckInRequest(1L, null);
 
 
     @BeforeEach

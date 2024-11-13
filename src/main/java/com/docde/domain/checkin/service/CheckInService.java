@@ -84,6 +84,9 @@ public class CheckInService {
 
             checkInRepository.save(checkIn);
 
+            // '지금 작업 중인 인원 카운트' 감소
+            queueService.finishRequest();
+
             return checkInResponseFromCheckIn(checkIn);
         } else {
             Patient patient = patientRepository.findByUser_Id(authUser.getPatientId())
@@ -103,6 +106,9 @@ public class CheckInService {
             setNum("number of hospital" + hospital.getId(), num + 1L);
 
             checkInRepository.save(checkIn);
+
+            // '지금 작업 중인 인원 카운트' 감소
+            queueService.finishRequest();
 
             return checkInResponseFromCheckIn(checkIn);
         }

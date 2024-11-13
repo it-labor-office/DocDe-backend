@@ -30,7 +30,7 @@ public class CheckInController {
             @PathVariable Long hospitalId,
             @RequestBody CheckInRequest checkInRequest
     ) {
-        if(queueService.processRequest(authUser.getId().toString())){
+        if(queueService.processRequest(authUser, hospitalId, checkInRequest)){
             return ResponseEntity.status(HttpStatus.CREATED)
                     .body(ApiResponse.onCreated(checkInService.saveCheckIn(authUser, hospitalId, checkInRequest)));
         } else {

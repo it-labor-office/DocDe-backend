@@ -1,8 +1,12 @@
 package com.docde.domain.queue.service;
 
+import com.docde.domain.auth.entity.AuthUser;
+import com.docde.domain.checkin.dto.CheckInRequest;
+import com.docde.domain.checkin.service.CheckInService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
@@ -13,6 +17,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class QueueService {
 
+    private final CheckInService checkInService;
     private final RedisTemplate<String, String> redisTemplate;
     private static final String CURRENT_COUNT_KEY = "current_count";
     private static final String WAITING_QUEUE_KEY = "waiting_queue";
@@ -20,15 +25,16 @@ public class QueueService {
     private static final long QUEUE_ITEM_TTL_SECONDS = 300;
 
     // 요청 처리
-    public boolean processRequest(String userId){
+    public boolean processRequest(AuthUser authUser, Long hospitalId, CheckInRequest checkInRequest){
         Integer currentCount = getCurrentCount();
 
-        // 처리 중인 인원이 최대치보다 작을 때
-        if(currentCount<MAX_CONCURRENT_USERS){
+        // 처리 중인 인원이 최대치보다 작고, 대기열이 없을 때 바로 통과
+        if(currentCount<MAX_CONCURRENT_USERS && redisTemplate.opsForList().size(WAITING_QUEUE_KEY) != 0){
             incrementCurrentCount();
             return true;
         } else {
-            addToWaitingQueue(userId);
+            addToWaitingQueue(authUser.getId().toString());
+            recordRequest(authUser, hospitalId, checkInRequest);
             return false;
         }
     }
@@ -36,11 +42,6 @@ public class QueueService {
     // 작업 완료 후 처리
     public void finishRequest(){
         decrementCurrentCount();
-        String nextUser = popFromWaitingQueue();
-        if(nextUser != null){
-            // 다음 유저에게 알림
-            notifyUser(nextUser);
-        }
     }
 
     /* 반복 재시도
@@ -77,30 +78,41 @@ public class QueueService {
 
      1. 이 클래스(서비스)에서 컨트롤러 메서드를 실행시켜도 되나요? 서비스 레이어에선 컨트롤러에 대해 몰라야 하니 안 되는게 맞나요?
 
-     2. 여기서 접수 서비스 메서드를 실행시켜 접수를 저장해도 되나요? 그렇게 해도 된다면 결과는 웹소켓으로 알려도 되나요?
+     2. 여기서(이 클래스) 접수 서비스 메서드를 실행시켜 접수를 저장해도 되나요?
 
      3. 혹시 이런 문제는 클라이언트(프론트)가 처리하는 것이 '국룰' 인가요? 서버 쪽에서 처리해도 괜찮을까요?
      */
 
 
+    // 상세 수치는 테스트 해 보고 수정하기
     @Scheduled(fixedRate = 10000)
-    public void retry(){
-        // 현 접속자가 50명 미만이면
-        if(getCurrentCount()<50){
-            // 대기열 0~49명 집어 넣기
+    public void retry(@AuthenticationPrincipal AuthUser authUser){
 
+        List<String> queue = redisTemplate.opsForList().range(WAITING_QUEUE_KEY, 0, 49);
+
+        // 현 작업자가 50명 미만이면
+        if(getCurrentCount()<50){
+            // 대기열의 0~49번째 집어 넣기
+            for(String userId : queue){
+                // 저장해 놓은 요청을 가져와서
+                String value = redisTemplate.opsForValue().get("check in request of user " + userId);
+
+                Long hospitalId = Long.valueOf(value.substring(0, value.indexOf("병")));
+                Long doctorId = Long.valueOf(value.substring(value.indexOf("병"), value.indexOf("의")));
+                String status = value.substring(value.indexOf("의"));
+                CheckInRequest checkInRequest = new CheckInRequest(doctorId, status);
+
+                // 작업 중인 유저 카운트 올리고
+                incrementCurrentCount();
+
+                // 바로 집어넣기
+                checkInService.saveCheckIn(authUser, hospitalId, checkInRequest);
+            }
         }
     }
 
 
-
-
-
-
-
-
-
-    // 전에꺼
+    /*// 전에꺼
     @Scheduled(fixedRate = 10000)
     public void retryOld(){
         List<String> queue = redisTemplate.opsForList().range(WAITING_QUEUE_KEY, 0, -1);
@@ -113,7 +125,7 @@ public class QueueService {
                 redisTemplate.opsForList().leftPop(WAITING_QUEUE_KEY);
             }
         }
-    }
+    }*/
 
     // 현재 사용자 수 증가
     private void incrementCurrentCount() {
@@ -135,6 +147,24 @@ public class QueueService {
     private void addToWaitingQueue(String userId) {
         redisTemplate.opsForList().rightPush(WAITING_QUEUE_KEY, userId);
         redisTemplate.expire(WAITING_QUEUE_KEY, Duration.ofSeconds(QUEUE_ITEM_TTL_SECONDS));
+    }
+
+    // 대기열에 들어갈 때 요청 내용 저장하기
+    private void recordRequest(AuthUser authUser, Long hospitalId, CheckInRequest checkInRequest){
+
+        String value = hospitalId.toString()
+                + "병"
+                + checkInRequest.getDoctorId().toString()
+                + "의"
+                + checkInRequest.getStatus();
+
+        redisTemplate.opsForValue().set("check in request of user " + authUser.getId().toString(), value);
+
+        /*String 예를들어 = "3452345병987654의WATING";
+        // 다시 풀기 연습
+        Long hosid = Long.valueOf(value.substring(0, value.indexOf("병")));
+        Long docid = Long.valueOf(value.substring(value.indexOf("병"), value.indexOf("의")));
+        String status = value.substring(value.indexOf("의"));*/
     }
 
     // 대기열에서 사용자 꺼내기
