@@ -6,6 +6,7 @@ import com.docde.domain.checkin.dto.CheckInRequest;
 import com.docde.domain.checkin.dto.CheckInResponse;
 import com.docde.domain.checkin.dto.CheckInResponseOfPatient;
 import com.docde.domain.checkin.service.CheckInService;
+import com.docde.domain.queue.service.QueueService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +21,7 @@ import java.util.List;
 public class CheckInController {
 
     private final CheckInService checkInService;
+    private final QueueService queueService;
 
     // 접수하기
     @PostMapping("/{hospitalId}/checkin")
@@ -28,8 +30,13 @@ public class CheckInController {
             @PathVariable Long hospitalId,
             @RequestBody CheckInRequest checkInRequest
     ) {
-        return ResponseEntity.status(HttpStatus.CREATED)
-                .body(ApiResponse.onCreated(checkInService.saveCheckIn(authUser, hospitalId, checkInRequest)));
+        if(queueService.processRequest(authUser.getId().toString())){
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(ApiResponse.onCreated(checkInService.saveCheckIn(authUser, hospitalId, checkInRequest)));
+        } else {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .body(ApiResponse.createError("사용자가 너무 많아 서비스가 지연되고 있습니다.", 429));
+        }
     }
 
     // 자신의 접수 상태 확인(사용자)
