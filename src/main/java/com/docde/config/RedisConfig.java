@@ -14,7 +14,7 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 @Configuration
 public class RedisConfig {
 
-    @Value("${AWS_ELASTICACHE_URL}")
+    @Value("${spring.data.redis.host}")
     private String host;
 
     @Bean
@@ -30,7 +30,7 @@ public class RedisConfig {
     public RedissonClient redissonClient() {
         Config config = new Config();
         // Redis 서버 주소 설정
-        config.useSingleServer().setAddress("redis://" + host);
+        config.useSingleServer().setAddress("redis://" + host + ":6379");
 
         return Redisson.create(config);
     }
