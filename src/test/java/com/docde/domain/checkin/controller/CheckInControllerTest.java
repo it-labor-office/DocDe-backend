@@ -64,7 +64,7 @@ class CheckInControllerTest {
     );
     JwtAuthenticationToken doctorToken = new JwtAuthenticationToken(doctorAuthUser);
 
-    CheckInRequest checkInRequest = new CheckInRequest();
+    CheckInRequest checkInRequest = new CheckInRequest(1L, null);
 
     CheckInResponse checkInResponse = new CheckInResponse(
             1L,
