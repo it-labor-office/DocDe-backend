@@ -16,6 +16,7 @@ import com.docde.domain.hospital.entity.Hospital;
 import com.docde.domain.hospital.repository.HospitalRepository;
 import com.docde.domain.patient.entity.Patient;
 import com.docde.domain.patient.repository.PatientRepository;
+import com.docde.domain.queue.service.QueueService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -34,6 +35,7 @@ public class CheckInService {
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
     private final RedisTemplate<String, Object> redisTemplate;
+    private final QueueService queueService;
 
     // 접수하기
     @Transactional
