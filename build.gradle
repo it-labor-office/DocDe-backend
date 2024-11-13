@@ -65,6 +65,9 @@ dependencies {
     implementation 'org.redisson:redisson-spring-boot-starter:3.37.0' // 레디슨
 
     implementation 'org.springframework.boot:spring-boot-starter-data-elasticsearch'
+
+    // Spring Boot 웹소켓 스타터
+    implementation 'org.springframework.boot:spring-boot-starter-websocket'
 }
 
 tasks.named('test') {
