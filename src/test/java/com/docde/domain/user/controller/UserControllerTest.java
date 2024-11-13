@@ -32,9 +32,6 @@ public class UserControllerTest {
     @MockBean(name = "userService")
     private UserService userService;
 
-    @MockBean
-    private JwtUtil jwtUtil;
-
     @Test
     @DisplayName("[DELETE] /users/{userId}")
     @WithMockAuthUser()

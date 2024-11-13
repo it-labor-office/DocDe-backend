@@ -58,9 +58,6 @@ public class ReservationPatientControllerTest {
     @MockBean
     private ReservationPatientService reservationPatientService;
 
-    @MockBean
-    private JwtUtil jwtUtil;
-
     @Mock
     private Hospital hospital;
 
