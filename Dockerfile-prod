@@ -19,3 +19,4 @@ ENV SPRING_PROFILES_ACTIVE=prod
 
 # 3. JAR 파일 실행
 ENTRYPOINT ["java", "-jar", "/app.jar"]
+CMD ["${JAVA_OPTS}"]
