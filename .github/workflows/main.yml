@@ -69,7 +69,6 @@ jobs:
           echo "Creating .env file..."
           echo "${{secrets.ENV_PROD}}" > ./.env
           echo ".env file created successfully"
-          aws s3 cp s3://${{secrets.S3_BUCKET_NAME}}/ca/ca.crt ./ca.crt
           docker-compose -f docker-compose-prod.yml down
           docker pull multiverse22/docde
           docker-compose -f ./docker-compose-prod.yml up -d
