@@ -1,4 +1,5 @@
-NAME:testtest
+name: testtest
+
 on:
   pull_request:
     branches: [ "develop" ]
