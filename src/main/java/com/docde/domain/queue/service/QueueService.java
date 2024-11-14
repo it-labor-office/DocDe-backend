@@ -2,6 +2,7 @@ package com.docde.domain.queue.service;
 
 import com.docde.domain.auth.entity.AuthUser;
 import com.docde.domain.checkin.dto.CheckInRequest;
+import com.docde.domain.checkin.dto.CheckInResponse;
 import com.docde.domain.checkin.service.CheckInService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
@@ -62,7 +63,7 @@ public class QueueService {
                 AuthUser authUser = AuthUser.builder().id(authUserId).patientId(patientId).build();
 
                 // 바로 집어넣기
-                checkInService.saveCheckIn(authUser, hospitalId, checkInRequest);
+                CheckInResponse checkInResponse = checkInService.saveCheckIn(authUser, hospitalId, checkInRequest);
             }
         }
     }
@@ -113,6 +114,11 @@ public class QueueService {
     
     // 1. ★★순서가 되어 작업으로 들어간 유저 대기열에서 제거하는 로직 만들기★★ - 완료
     // 2. 재시도 하면서 남은 대기인원에게 남은 대기 인원 수(내 앞 사람의 수) 보내 주기
+    // 내 위치 조회 후 그 값을 전송하면 될 듯
+    // 사용자가 채널을 구독하게 해야 될 것 같은데...
+    // 대기열 진입 시에 넣으면 될 듯
+    // 이 클래스에서 웹소켓 연결 url로 요청을 넣으면 되나?
+    // 요청 넣기 -> 구독 메시지 보내기 순서로 진행하면 될 듯
     // 3. 계속 기다리던 유저가 순번을 완료했을 때 접수 결과 혹은 오류 메시지를 보여 주기
     // 4. 웹소켓 관련 코드 흐름 숙지하기
 
