@@ -6,6 +6,7 @@ COPY ./ca.crt /usr/local/share/ca-certificates/ca.crt
 # 2. JAR 파일 복사
 ARG JAR_FILE=build/libs/*.jar
 COPY ${JAR_FILE} app.jar
+RUN mkdir -p /usr/local/share/ca-certificates
 COPY ./ca.crt /etc/ssl/certs
 
 #RUN keytool -importcert -file /tmp/ca.crt -keystore /tmp/truststore.p12 -storetype PKCS12 -alias "ca" -noprompt -storepass changeit
