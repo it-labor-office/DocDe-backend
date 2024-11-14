@@ -17,4 +17,5 @@ jobs:
         #${{secrets.USER}} # 내가 변수로 저장한 User
         port: ${{secrets.SSH_PORT}}
         script: |
+          ssh -i ~/.ssh/authorized_keys ec2-user@$host
           echo "Creating .env file..."
