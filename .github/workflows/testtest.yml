@@ -11,10 +11,10 @@ jobs:
       uses: appleboy/ssh-action@master
       with:
         key: ${{secrets.EC2_SSH_KEY}} # 내가 변수로 저장한 pem key
-        host: 15.165.202.96 
+        host: ${{secrets.AWS_INSTANCE_IP}}
         #${{secrets.AWS_INSTANCE_IP}} # 내가 변수로 저장한 ip
-        username: ubuntu
+        username: ${{secrets.USER}}
         #${{secrets.USER}} # 내가 변수로 저장한 User
-        port: 22
+        port: ${{secrets.SSH_PORT}}
         script: |
           echo "Creating .env file..."
