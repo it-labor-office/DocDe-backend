@@ -1,13 +1,16 @@
 spring:
   application:
     name: doc-de
+
   config:
     import: optional:file:.env[.properties]
+
   datasource:
     url: ${RDS_MYSQL_URL}
     username: ${RDS_MYSQL_USERNAME}
     password: ${RDS_MYSQL_PASSWORD}
     driver-class-name: com.mysql.cj.jdbc.Driver
+
   jpa:
     show-sql: true
     hibernate:
@@ -15,9 +18,10 @@ spring:
     properties:
       hibernate:
         jdbc:
-        format_sql: true
+          format_sql: true
         show_sql: true
         use_sql_comments: true
+
   mail:
     host: smtp.gmail.com
     port: 465
@@ -28,7 +32,13 @@ spring:
         smtp:
           auth: true
     protocol: smtps
+
   data:
     redis:
       host: ${AWS_ELASTICACHE_URL}
       port: 6379
+
+server:
+  ssl:
+    trust-store: /etc/ssl/certs/ca.crt
+    trust-store-password: changeit
