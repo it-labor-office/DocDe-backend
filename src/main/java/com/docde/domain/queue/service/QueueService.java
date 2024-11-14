@@ -22,6 +22,7 @@ public class QueueService {
     public static final String CURRENT_COUNT_KEY = "current_count";
     private static final String WAITING_QUEUE_KEY = "waiting_queue";
     private static final int MAX_CONCURRENT_USERS = 1000;
+    private static final int DUMPED_USERS_TO_SERVICE = 500;
 
     // 요청 처리
     public boolean processRequest(AuthUser authUser, Long hospitalId, CheckInRequest checkInRequest){
@@ -43,12 +44,12 @@ public class QueueService {
     @Scheduled(fixedRate = 10000)
     public void retry(){
 
-        List<String> queue = redisTemplate.opsForList().range(WAITING_QUEUE_KEY, 0, 500);
+        List<String> queue = redisTemplate.opsForList().range(WAITING_QUEUE_KEY, 0, DUMPED_USERS_TO_SERVICE);
 
         // 현 작업자가 500명 미만이고 대기열에 사람이 있으면
-        if(getCurrentCount()<500 && queue != null){
+        if(getCurrentCount()<DUMPED_USERS_TO_SERVICE && queue != null){
             // 대기열의 500번과 그 이상인 유저만 남기고 모두 제거
-            redisTemplate.opsForList().trim(WAITING_QUEUE_KEY, 500, -1);
+            redisTemplate.opsForList().trim(WAITING_QUEUE_KEY, DUMPED_USERS_TO_SERVICE, -1);
             // 대기열의 0~499번째 집어 넣기
             for(String userId : queue){
                 // 저장해 놓은 요청을 가져와서
