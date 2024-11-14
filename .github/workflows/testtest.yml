@@ -7,7 +7,8 @@ jobs:
   push_dockerhub:
     runs-on: ubuntu-latest
     steps:
-    - uses: appleboy/ssh-action@master
+    - name: access to ec2
+      uses: appleboy/ssh-action@master
       with:
         key: ${{ secrets.EC2_SSH_KEY }} # 내가 변수로 저장한 pem key
         host: ${{secrets.AWS_INSTANCE_IP}} # 내가 변수로 저장한 ip
