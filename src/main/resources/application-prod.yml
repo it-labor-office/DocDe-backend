@@ -40,6 +40,6 @@ spring:
 
 server:
   ssl:
-    trust-store: /etc/ssl/certs
+    trust-store: /etc/ssl/certs/truststore.p12
     trust-store-password: changeit
     trust-store-type: PKCS12

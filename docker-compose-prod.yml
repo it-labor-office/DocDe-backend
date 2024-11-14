@@ -16,5 +16,5 @@ services:
       - SPRING_PROFILES_ACTIVE=prod
     image: multiverse22/docde:latest
     volumes:
-      - ./ca.crt:/etc/ssl/certs/ca.crt
+      - ./truststore.p12:/etc/ssl/certs/truststore.p12
     command: sh -c "update-ca-certificates && java -jar /app/myapp.jar"
