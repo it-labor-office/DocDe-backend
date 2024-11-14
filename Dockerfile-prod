@@ -1,5 +1,5 @@
 # 1. JDK 이미지 선택 (예: OpenJDK 17)
-FROM openjdk:17-jdk-alpine
+FROM openjdk:17-jdk
 
 RUN apt-get update && apt-get install -y ca-certificates && apt-get install -y openjdk-17-jdk
 # 2. JAR 파일 복사
