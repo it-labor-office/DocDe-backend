@@ -21,7 +21,7 @@ public class QueueService {
     private final RedisTemplate<String, String> redisTemplate;
     public static final String CURRENT_COUNT_KEY = "current_count";
     private static final String WAITING_QUEUE_KEY = "waiting_queue";
-    private static final int MAX_CONCURRENT_USERS = 100;
+    private static final int MAX_CONCURRENT_USERS = 1000;
     private static final long QUEUE_ITEM_TTL_SECONDS = 300;
 
     // 요청 처리
