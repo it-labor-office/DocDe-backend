@@ -17,6 +17,7 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY_ID }}
       run: |
         sudo apt-get update && sudo apt-get install -y awscli
+        aws configure set default.region "ap-northeast-2"
         aws configure list
         aws s3 ls
 
