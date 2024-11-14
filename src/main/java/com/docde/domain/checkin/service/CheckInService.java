@@ -1,6 +1,7 @@
 package com.docde.domain.checkin.service;
 
 import com.docde.common.Apiresponse.ErrorStatus;
+import com.docde.common.aop.CurrentCount;
 import com.docde.common.aop.DistributedLock;
 import com.docde.common.exceptions.ApiException;
 import com.docde.domain.auth.entity.AuthUser;
@@ -35,11 +36,11 @@ public class CheckInService {
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
     private final RedisTemplate<String, Object> redisTemplate;
-    private final QueueService queueService;
 
     // 접수하기
     @Transactional
     @DistributedLock(key = "saveCheckIn", waitTime = 10, leaseTime = 5)
+    @CurrentCount
     public CheckInResponse saveCheckIn(
             AuthUser authUser,
             Long hospitalId,
@@ -84,9 +85,6 @@ public class CheckInService {
 
             checkInRepository.save(checkIn);
 
-            // '지금 작업 중인 인원 카운트' 감소
-            queueService.finishRequest();
-
             return checkInResponseFromCheckIn(checkIn);
         } else {
             Patient patient = patientRepository.findByUser_Id(authUser.getPatientId())
@@ -106,9 +104,6 @@ public class CheckInService {
             setNum("number of hospital" + hospital.getId(), num + 1L);
 
             checkInRepository.save(checkIn);
-
-            // '지금 작업 중인 인원 카운트' 감소
-            queueService.finishRequest();
 
             return checkInResponseFromCheckIn(checkIn);
         }
