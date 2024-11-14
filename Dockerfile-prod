@@ -8,7 +8,7 @@ ARG JAR_FILE=build/libs/*.jar
 COPY ${JAR_FILE} app.jar
 COPY ./ca.crt /tmp/ca.crt
 
-RUN keytool -importcert -file /tmp/ca.crt -keystore /tmp/truststore.p12 -storetype PKCS12 -alias "ca" -noprompt
+RUN keytool -importcert -file /tmp/ca.crt -keystore /tmp/truststore.p12 -storetype PKCS12 -alias "ca" -noprompt -storepass changeit
 RUN cp /tmp/truststore.p12 /etc/ssl/certs/truststore.p12
 
 
