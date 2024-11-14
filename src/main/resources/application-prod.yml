@@ -37,9 +37,3 @@ spring:
     redis:
       host: ${AWS_ELASTICACHE_URL}
       port: 6379
-
-server:
-  ssl:
-    trust-store: /etc/ssl/certs/truststore.p12
-    trust-store-password: changeit
-    trust-store-type: PKCS12
