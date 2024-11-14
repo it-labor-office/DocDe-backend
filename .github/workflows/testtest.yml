@@ -16,4 +16,5 @@ jobs:
         key: ${{secrets.EC2_SSH_KEY}} # 내가 변수로 저장한 pem key
         debug: true
         script: |
+          ssh -i ~/.ssh/authorized_keys $username@$host
           whoami
