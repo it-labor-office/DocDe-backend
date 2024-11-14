@@ -17,6 +17,4 @@ services:
       - JAVA_OPTS=-Djavax.net.ssl.trustStore=/usr/local/openjdk-17/lib/security/cacerts -Djavax.net.ssl.trustStorePassword=changeit
 
     image: multiverse22/docde:latest
-    volumes:
-      - /home/ubuntu/ca.crt:/usr/local/share/ca-certificates/ca.crt
 

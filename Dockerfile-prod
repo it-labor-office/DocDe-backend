@@ -7,9 +7,6 @@ COPY ./ca.crt /usr/local/share/ca-certificates/ca.crt
 ARG JAR_FILE=build/libs/*.jar
 COPY ${JAR_FILE} app.jar
 
-RUN mkdir -p /usr/local/share/ca-certificates
-COPY ./ca.crt /usr/local/share/ca-certificates/ca.crt
-
 #RUN keytool -importcert -file /tmp/ca.crt -keystore /tmp/truststore.p12 -storetype PKCS12 -alias "ca" -noprompt -storepass changeit
 #RUN keytool -import -trustcacerts -keystore /etc/ssl/certs/java/cacerts -storepass changeit -noprompt -alias customcert -file /etc/ssl/certs/cert.pem
 #RUN cp /tmp/truststore.p12 /etc/ssl/certs/truststore.p12
