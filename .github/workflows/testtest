@@ -1,0 +1,15 @@
+on:
+  pull_request:
+    branches: [ "develop" ]
+jobs:
+  push_dockerhub:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: appleboy/ssh-action@master
+      with:
+        key: ${{ secrets.EC2_SSH_KEY }} # 내가 변수로 저장한 pem key
+        host: ${{secrets.AWS_INSTANCE_IP}} # 내가 변수로 저장한 ip
+        username: ${{secrets.USER}} # 내가 변수로 저장한 User
+        port: 22
+        script: |
+          echo "Creating .env file..."
