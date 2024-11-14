@@ -1,7 +1,8 @@
 # 1. JDK 이미지 선택 (예: OpenJDK 17)
-FROM openjdk:17
+FROM openjdk:17-alpine
 
-RUN apt-get update && apt-get install -y ca-certificates && apt-get install -y openjdk-17-jdk
+RUN apk update && apk add --no-cache ca-certificates
+
 # 2. JAR 파일 복사
 ARG JAR_FILE=build/libs/*.jar
 COPY ${JAR_FILE} app.jar
