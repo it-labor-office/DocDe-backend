@@ -1,5 +1,6 @@
 package com.docde.domain.queue.service;
 
+import com.docde.common.exceptions.ApiException;
 import com.docde.domain.auth.entity.AuthUser;
 import com.docde.domain.checkin.dto.CheckInRequest;
 import com.docde.domain.checkin.dto.CheckInResponse;
@@ -63,8 +64,21 @@ public class QueueService {
                 AuthUser authUser = AuthUser.builder().id(authUserId).patientId(patientId).build();
 
                 // 바로 집어넣기
-                CheckInResponse checkInResponse = checkInService.saveCheckIn(authUser, hospitalId, checkInRequest);
+                try {
+                    checkInService.saveCheckIn(authUser, hospitalId, checkInRequest);
+                    notifyUser(userId, "접수 성공");
+                } catch (ApiException e){
+                    notifyUser(userId, e.getMessage());
+                    throw e;
+                }
             }
+        }
+
+        for(String userId : queue){
+            int position = queue.indexOf(userId);
+            redisTemplate.convertAndSend(
+                    "/queue/position", Map.of("userId", userId, "position", position)
+            );
         }
     }
 
@@ -109,6 +123,8 @@ public class QueueService {
     // 대기열 나가기도 없어도 될 듯??
     // 나가지 않고 계속 기다렸다면 접수 완료 혹은 실패 결과를 보여 줘야 할 듯
     // 웹소켓으로 보여 주면 될 듯
+    // 웹소켓 연결은 프론트가 하는 거라고 함.
+    // 그냥 /ws로 연결하나봄
     
     // 할 일 정리
     
@@ -128,9 +144,9 @@ public class QueueService {
     // V
 
     // 대기가 끝났을 때 사용자에게 알림 전송
-    private void notifyUser(String userId) {
+    private void notifyUser(String userId, String message) {
         // 웹소켓을 통해 사용자에게 알림
-        redisTemplate.convertAndSend("/queue/status", Map.of("userId", userId, "status", "READY"));
+        redisTemplate.convertAndSend("/queue/status", Map.of("userId", userId, "status", message));
     }
 
     // 사용자에게 대기열 순번 정보를 웹소켓으로 전송
