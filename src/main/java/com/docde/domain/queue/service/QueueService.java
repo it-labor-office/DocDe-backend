@@ -22,7 +22,6 @@ public class QueueService {
     public static final String CURRENT_COUNT_KEY = "current_count";
     private static final String WAITING_QUEUE_KEY = "waiting_queue";
     private static final int MAX_CONCURRENT_USERS = 1000;
-    private static final long QUEUE_ITEM_TTL_SECONDS = 300;
 
     // 요청 처리
     public boolean processRequest(AuthUser authUser, Long hospitalId, CheckInRequest checkInRequest){
@@ -79,7 +78,6 @@ public class QueueService {
     // 대기열에 사용자 추가
     private void addToWaitingQueue(String userId) {
         redisTemplate.opsForList().rightPush(WAITING_QUEUE_KEY, userId);
-        redisTemplate.expire(WAITING_QUEUE_KEY, Duration.ofSeconds(QUEUE_ITEM_TTL_SECONDS));
     }
 
     // 대기열에 들어갈 때 요청 내용 저장하기
