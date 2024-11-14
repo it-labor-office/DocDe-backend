@@ -40,12 +40,13 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY_ID }}
       run: |
         sudo apt-get update && sudo apt-get install -y awscli
-        aws configure set aws_access_key_id $AWS_ACCESS_KEY_ID
-        aws configure set aws_secret_access_key $AWS_SECRET_ACCESS_KEY
+        aws configure set aws_access_key_id "$AWS_ACCESS_KEY_ID"
+        aws configure set aws_secret_access_key "$AWS_SECRET_ACCESS_KEY"
+        
       # 
     - name: Download certificate from S3
       run: |
-        aws s3 cp s3://${{secrets.S3_BUCKET_NAME}}/ca/ca.crt ./ca.crt
+        aws s3 cp s3://${{secrets.S3_BUCKET_NAME}}/ca/ca.crt ./ca.crt --debug
         
     - name: Build Docker image
       run: |
