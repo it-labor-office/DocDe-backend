@@ -1,10 +1,15 @@
 # 1. JDK 이미지 선택 (예: OpenJDK 17)
 FROM openjdk:17-jdk-alpine
 
+RUN apt-get update && apt-get install -y ca-certificates && apt-get install -y openjdk-17-jdk
 # 2. JAR 파일 복사
 ARG JAR_FILE=build/libs/*.jar
 COPY ${JAR_FILE} app.jar
-COPY ./ca.crt /etc/ssl/certs/ca.crt
+COPY ./ca.crt /tmp/ca.crt
+
+RUN keytool -importcert -file /tmp/ca.crt -keystore /tmp/truststore.p12 -storetype PKCS12 -alias "ca" -noprompt
+RUN cp /tmp/truststore.p12 /etc/ssl/certs/truststore.p12
+
 
 
 ENV SPRING_PROFILES_ACTIVE=prod
