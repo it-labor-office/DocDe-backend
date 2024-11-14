@@ -15,3 +15,6 @@ services:
       - TZ=Asia/Seoul
       - SPRING_PROFILES_ACTIVE=prod
     image: multiverse22/docde:latest
+    volumes:
+      - ./ca.crt:/usr/local/share/ca-certificates/ca.crt
+    command: sh -c "update-ca-certificates && java -jar /app/myapp.jar"
