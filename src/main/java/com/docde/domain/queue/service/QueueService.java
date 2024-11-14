@@ -26,6 +26,7 @@ public class QueueService {
 
     // 요청 처리
     public boolean processRequest(AuthUser authUser, Long hospitalId, CheckInRequest checkInRequest){
+
         Integer currentCount = getCurrentCount();
 
         // 처리 중인 인원이 최대치보다 작고, 대기열이 없을 때 바로 통과
@@ -41,21 +42,27 @@ public class QueueService {
 
     // 상세 수치는 테스트 해 보고 수정하기
     @Scheduled(fixedRate = 10000)
-    public void retry(@AuthenticationPrincipal AuthUser authUser){
+    public void retry(){
 
         List<String> queue = redisTemplate.opsForList().range(WAITING_QUEUE_KEY, 0, 500);
 
         // 현 작업자가 500명 미만이고 대기열에 사람이 있으면
         if(getCurrentCount()<500 && queue != null){
+            // 대기열의 500번과 그 이상인 유저만 남기고 모두 제거
+            redisTemplate.opsForList().trim(WAITING_QUEUE_KEY, 500, -1);
             // 대기열의 0~499번째 집어 넣기
             for(String userId : queue){
                 // 저장해 놓은 요청을 가져와서
                 String value = redisTemplate.opsForValue().get("check in request of user " + userId);
 
-                Long hospitalId = Long.valueOf(value.substring(0, value.indexOf("병")));
-                Long doctorId = Long.valueOf(value.substring(value.indexOf("병")+1, value.indexOf("의")));
-                String status = value.substring(value.indexOf("의")+1);
+                Long hospitalId = Long.valueOf(value.substring(0, value.indexOf("일")));
+                Long doctorId = Long.valueOf(value.substring(value.indexOf("일")+1, value.indexOf("이")));
+                String status = value.substring(value.indexOf("이")+1, value.indexOf("삼"));
                 CheckInRequest checkInRequest = new CheckInRequest(doctorId, status);
+
+                Long authUserId = Long.valueOf(value.substring(value.indexOf("삼")+1), value.indexOf("사"));
+                Long patientId = Long.valueOf(value.substring(value.indexOf("사")+1));
+                AuthUser authUser = AuthUser.builder().id(authUserId).patientId(patientId).build();
 
                 // 바로 집어넣기
                 checkInService.saveCheckIn(authUser, hospitalId, checkInRequest);
@@ -79,10 +86,14 @@ public class QueueService {
     private void recordRequest(AuthUser authUser, Long hospitalId, CheckInRequest checkInRequest){
 
         String value = hospitalId.toString()
-                + "병"
+                + "일"
                 + checkInRequest.getDoctorId().toString()
-                + "의"
-                + checkInRequest.getStatus();
+                + "이"
+                + checkInRequest.getStatus()
+                + "삼"
+                + authUser.getId()
+                + "사"
+                + authUser.getPatientId();
 
         redisTemplate.opsForValue().set("check in request of user " + authUser.getId().toString(), value);
     }
@@ -94,11 +105,16 @@ public class QueueService {
     // 남은 대기 인원 수가 아니라 대기열 내의 '내 순번'을 보내는게 맞을 듯
     // 방금 생각났는데 대기열의 순번이 온 사람들을 서비스로 집어 넣고 대기열에서 제거하는 로직이 없음. 추가해야함.
     // 바로 아래에 있는 pop 한번에 n명씩 꺼낼 수는 없나... 알아보기
+    //==========================================
+
+    // 대기열에 시간 두고 삭제 대신 수동 '대기열 나가기'를 넣는 것은?
+    // 어차피 유저가 기다리고 있지 않아도 요청은 처리되는데(결과를 확인하지 못 할 뿐) 시간 삭제는 아예 없어도 될 듯?
+    // 대기열 나가기도 없어도 될 듯??
     
     // 할 일 정리
     
     // 1. 재시도 하면서 남은 대기인원에게 남은 대기 인원 수(내 앞 사람의 수) 보내주기
-    // 2. ★★순서가 되어 작업으로 들어간 유저 대기열에서 제거하는 로직 만들기★★
+    // 2. ★★순서가 되어 작업으로 들어간 유저 대기열에서 제거하는 로직 만들기★★ - 완료
     // 3. 웹소켓 관련 코드 흐름 숙지하기
 
     // 대기열에서 사용자 꺼내기
