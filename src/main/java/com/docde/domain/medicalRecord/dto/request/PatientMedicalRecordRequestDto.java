@@ -9,7 +9,7 @@ public class PatientMedicalRecordRequestDto {
 
 
     private String description;
-    private LocalDateTime consultation;
+    private LocalDateTime treatmentDate;
     private String treatmentPlan;
 
 }

@@ -1,8 +1,8 @@
-name: Deploy to EC2
+name: CI/CD 
 
 on:
   pull_request:
-    branches: [ "main" ]
+    branches: [ "develop" ]
 
 jobs:
   push_dockerhub:
@@ -18,14 +18,14 @@ jobs:
     - name: Create .env file
       run: |
         touch ./.env
-        echo "${{secrets.ENV_VARIABLES}}" >> .env
+        echo "${{secrets.ENV_PROD}}" >> .env
 
     - name: display env
       run: cat .env
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
-    
+      
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@af1da67850ed9a4cedd57bfd976089dd991e2582 # v4.0.0
     - name: Build with Gradle
@@ -34,18 +34,25 @@ jobs:
       run: |
         sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep tag_name | cut -d '"' -f 4)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
         sudo chmod +x /usr/local/bin/docker-compose
-    
+    - name: Configure AWS credentials
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_S3_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_S3_SECRET_ACCESS_KEY_ID }}
+      run: |
+        sudo apt-get update && sudo apt-get install -y awscli
+        aws configure set default.region "ap-northeast-2"
+        aws s3 cp s3://${{secrets.S3_BUCKET_NAME}}/ca/ca.crt ./ca.crt
+        
+        
+    - name: Build Docker image
+      run: |
+        docker-compose -f docker-compose-prod.yml build
       
     - name: Log in to Docker Hub
       uses: docker/login-action@v3.3.0
       with:
        username: ${{ secrets.DOCKER_HUB_USERNAME }}
        password: ${{ secrets.DOCKER_HUB_ACCESS_TOKEN }}
-
-       
-    - name: Build Docker image
-      run: |
-        docker-compose -f docker-compose-prod.yml build
 
       # 5. Docker Hub에 이미지 푸시
     - name: Push Docker image
@@ -62,7 +69,9 @@ jobs:
           echo "Creating .env file..."
           echo "${{secrets.ENV_PROD}}" > ./.env
           echo ".env file created successfully"
-          docker-compose 
+          docker-compose -f docker-compose-prod.yml down
+          docker pull multiverse22/docde
+          docker-compose -f ./docker-compose-prod.yml up -d
 
           
         

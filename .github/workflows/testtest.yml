@@ -1,0 +1,20 @@
+name: testtest
+
+on:
+  pull_request:
+    branches: [ "develop" ]
+jobs:
+  push_dockerhub:
+    runs-on: ubuntu-latest
+    steps:
+    - name: access to ec2
+      uses: appleboy/ssh-action@master
+      with:
+        port: ${{secrets.SSH_PORT}}
+        host: ${{secrets.AWS_INSTANCE_IP}}
+        username: ${{secrets.USER}}
+        key: ${{secrets.EC2_SSH_KEY}} # 내가 변수로 저장한 pem key
+        debug: true
+        script: |
+          ssh -i ~/.ssh/authorized_keys $username@$host
+          whoami
