@@ -3,6 +3,7 @@ package com.docde.domain.review.service;
 import com.docde.common.Apiresponse.ErrorStatus;
 import com.docde.common.enums.UserRole;
 import com.docde.common.exceptions.ApiException;
+import com.docde.config.JwtUtil;
 import com.docde.domain.auth.entity.AuthUser;
 import com.docde.domain.medicalRecord.entity.MedicalRecord;
 import com.docde.domain.medicalRecord.repository.MedicalRecordRepository;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.lang.reflect.Field;

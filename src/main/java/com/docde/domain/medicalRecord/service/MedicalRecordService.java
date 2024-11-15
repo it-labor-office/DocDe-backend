@@ -14,6 +14,7 @@ import com.docde.domain.medicalRecord.entity.MedicalRecord;
 import com.docde.domain.medicalRecord.repository.MedicalRecordRepository;
 import com.docde.domain.patient.entity.Patient;
 import com.docde.domain.patient.repository.PatientRepository;
+import com.docde.domain.medicalRecord.encryption.EncryptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,10 +32,11 @@ public class MedicalRecordService {
     private final MedicalRecordRepository medicalRecordRepository;
     private final DoctorRepository doctorRepository;
     private final PatientRepository patientRepository;
-
+    private final EncryptionService encryptionService;
 
     @Transactional
-    public MedicalRecordResponseDto createMedicalRecord(DoctorMedicalRecordRequestDto requestDto, AuthUser authUser) {
+    public MedicalRecordResponseDto createMedicalRecord(DoctorMedicalRecordRequestDto requestDto, AuthUser authUser) throws Exception {
+
         // 로그인한 의사 정보
         Doctor doctor = doctorRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
 
@@ -42,35 +44,40 @@ public class MedicalRecordService {
         Patient patient = patientRepository.findById(requestDto.getPatientId()).orElseThrow(()
                 -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
 
+        String encryptedPatientName = patient.getName().charAt(0) + encryptionService.encrypt(patient.getName().substring(1));
+        String encryptedDoctorName = doctor.getName().charAt(0) + encryptionService.encrypt(doctor.getName().substring(1));
+        String encryptedDescription = encryptionService.encrypt(requestDto.getDescription());
+        String encryptedTreatmentPlan = encryptionService.encrypt(requestDto.getTreatmentPlan());
+        String encryptedDoctorComment = encryptionService.encrypt(requestDto.getDoctorComment());
+
+        // 암호화된 데이터로 MedicalRecord 엔티티 생성
         MedicalRecord medicalRecord = new MedicalRecord(
-                requestDto.getDescription(),
-                requestDto.getConsultation(),
+                encryptedDescription,
+                requestDto.getTreatmentDate(),
                 patient,
                 doctor,
-                requestDto.getTreatmentPlan(),
-                requestDto.getDoctorComment()
+                encryptedTreatmentPlan,
+                encryptedDoctorComment
         );
-
 
         MedicalRecord savedRecord = medicalRecordRepository.save(medicalRecord);
 
-        // 의사용 진료 기록
         DoctorMedicalRecordResponseDto doctorResponseDto = new DoctorMedicalRecordResponseDto(
                 savedRecord.getMedicalRecordId(),
-                savedRecord.getDescription(),
-                savedRecord.getConsultation(),
-                patient.getName(),
+                encryptedDescription,
+                savedRecord.getTreatmentDate(),
+                encryptedPatientName,
                 patient.getId(),
-                savedRecord.getTreatmentPlan(), // 치료 계획
-                savedRecord.getDoctorComment()  // 의사 코멘트
+                encryptedTreatmentPlan,
+                encryptedDoctorComment
         );
 
         // 환자용 진료 기록
         PatientMedicalRecordResponseDto patientResponseDto = new PatientMedicalRecordResponseDto(
                 savedRecord.getMedicalRecordId(),
-                savedRecord.getDescription(),
-                savedRecord.getConsultation(),
-                doctor.getName() // 의사 이름
+                encryptedDescription,
+                savedRecord.getTreatmentDate(),
+                encryptedDoctorName
         );
 
         return new MedicalRecordResponseDto(doctorResponseDto, patientResponseDto);
@@ -81,7 +88,7 @@ public class MedicalRecordService {
     @Transactional(readOnly = true)
     public DoctorMedicalRecordResponseDto getSpecificDoctorMedicalRecord(AuthUser authUser, Long medicalRecordId,
                                                                          String description, String treatmentPlan,
-                                                                         String doctorComment) {
+                                                                         String doctorComment) throws Exception {
 
         Doctor doctor = doctorRepository.findByUser_Id(authUser.getId())
                 .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
@@ -94,15 +101,21 @@ public class MedicalRecordService {
             throw new ApiException(ErrorStatus._UNAUTHORIZED_ACCESS_MEDICAL_RECORD);
         }
 
-        // 응답 DTO 생성
+        String decryptedPatientName = medicalRecord.getPatient().getName().charAt(0)
+                + encryptionService.decrypt(medicalRecord.getPatient().getName().substring(1));
+        String decryptedDescription = encryptionService.decrypt(medicalRecord.getDescription());
+        String decryptedTreatmentPlan = encryptionService.decrypt(medicalRecord.getTreatmentPlan());
+        String decryptedDoctorComment = encryptionService.decrypt(medicalRecord.getDoctorComment());
+
+
         return new DoctorMedicalRecordResponseDto(
                 medicalRecord.getMedicalRecordId(),
-                medicalRecord.getDescription(),
-                medicalRecord.getConsultation(),
-                medicalRecord.getPatient().getName(),
+                decryptedDescription,  // 복호화된 설명
+                medicalRecord.getTreatmentDate(),
+                decryptedPatientName,
                 medicalRecord.getPatient().getId(),
-                medicalRecord.getTreatmentPlan(),
-                medicalRecord.getDoctorComment()
+                decryptedTreatmentPlan,  // 복호화된 치료 계획
+                decryptedDoctorComment   // 복호화된 의사 코멘트
         );
     }
 
@@ -111,34 +124,93 @@ public class MedicalRecordService {
     public List<DoctorMedicalRecordResponseDto> getDoctorMedicalRecord(AuthUser authUser) {
 
         // 로그인한 의사 ID
-        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
+        Doctor doctor = doctorRepository.findByUser_Id(authUser.getId())
+                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
 
-        List<MedicalRecord> medicalRecords = medicalRecordRepository.findByDoctorId(doctor.getId()); // 의사 ID로 진료 기록 조회
+        // 의사 ID로 진료 기록 조회
+        List<MedicalRecord> medicalRecords = medicalRecordRepository.findByDoctorId(doctor.getId());
 
+        // 암호화된 필드 복호화하여 DTO 생성
+        return medicalRecords.stream().map(record -> {
+            String decryptedDescription = null;
+            try {
+                decryptedDescription = encryptionService.decrypt(record.getDescription());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
 
-        return medicalRecords.stream().map(record -> new DoctorMedicalRecordResponseDto(
-                record.getMedicalRecordId(),
-                record.getDescription(),
-                record.getConsultation(),
-                record.getPatient().getName(), // 환자 이름
-                record.getPatient().getId(), // 환자 ID
-                record.getTreatmentPlan(),
-                record.getDoctorComment())).collect(Collectors.toList());
+            String decryptedTreatmentPlan = null;
+            try {
+                decryptedTreatmentPlan = encryptionService.decrypt(record.getTreatmentPlan());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            String decryptedDoctorComment = null;
+            try {
+                decryptedDoctorComment = encryptionService.decrypt(record.getDoctorComment());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            // 환자 이름 복호화
+            String decryptedPatientName = null;
+            try {
+                decryptedPatientName = encryptionService.decrypt(record.getPatient().getName());
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+            return new DoctorMedicalRecordResponseDto(
+                    record.getMedicalRecordId(),
+                    decryptedDescription,          // 복호화된 설명
+                    record.getTreatmentDate(),      // 비암호화된 진료 날짜
+                    decryptedPatientName,          // 복호화된 환자 이름
+                    record.getPatient().getId(),    // 환자 ID
+                    decryptedTreatmentPlan,         // 복호화된 치료 계획
+                    decryptedDoctorComment          // 복호화된 의사 코멘트
+            );
+        }).collect(Collectors.toList());
+
     }
 
 
     // 환자가 자신의 진료기록 조회
     public List<PatientMedicalRecordResponseDto> getPatientMedicalRecord(AuthUser authUser) {
-        // 로그인한 환자 ID
-        Patient patient = patientRepository.findByUser_Id(authUser.getId()).orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
 
-        List<MedicalRecord> medicalRecords = medicalRecordRepository.findByPatientId(patient.getId()); // 환자 ID로 진료 기록 조회
+        // 로그인한 환자 ID로 환자 정보 조회
+        Patient patient = patientRepository.findByUser_Id(authUser.getId())
+                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
 
-        return medicalRecords.stream().map(record -> new PatientMedicalRecordResponseDto(record.getMedicalRecordId(),
-                        record.getDescription(),
-                        record.getConsultation(),
-                        record.getDoctor().getName())) // 의사 이름
-                .collect(Collectors.toList());
+        // 환자 ID로 진료 기록 조회
+        List<MedicalRecord> medicalRecords = medicalRecordRepository.findByPatientId(patient.getId());
+
+        // 암호화된 필드 복호화 후 DTO 생성
+        return medicalRecords.stream().map(record -> {
+            String decryptedDescription;
+            String decryptedDoctorName;
+
+            // 진료 설명 복호화
+            try {
+                decryptedDescription = encryptionService.decrypt(record.getDescription());
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to decrypt description", e);
+            }
+
+            // 의사 이름 복호화
+            try {
+                decryptedDoctorName = encryptionService.decrypt(record.getDoctor().getName());
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to decrypt doctor name", e);
+            }
+
+            return new PatientMedicalRecordResponseDto(
+                    record.getMedicalRecordId(),
+                    decryptedDescription,
+                    record.getTreatmentDate(),
+                    decryptedDoctorName // 복호화된 의사 이름 사용
+            );
+        }).collect(Collectors.toList());
     }
 
 
@@ -146,7 +218,7 @@ public class MedicalRecordService {
     @Transactional
     public MedicalRecordResponseDto updateMedicalRecord(Long medicalRecordId,
                                                         DoctorMedicalRecordRequestDto doctorRequestDto,
-                                                        AuthUser authUser) {
+                                                        AuthUser authUser) throws Exception {
 
         // 로그인한 의사 정보 확인
         Doctor doctor = doctorRepository.findByUser_Id(authUser.getId())
@@ -156,35 +228,54 @@ public class MedicalRecordService {
         MedicalRecord medicalRecord = medicalRecordRepository.findById(medicalRecordId)
                 .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_MEDICAL_RECORD));
 
+        // 새로운 값으로 교체하며, 필요한 경우 암호화
+        String encryptedDescription = doctorRequestDto.getDescription() != null
+                ? encryptionService.encrypt(doctorRequestDto.getDescription())
+                : medicalRecord.getDescription();
+
+        String encryptedTreatmentPlan = doctorRequestDto.getTreatmentPlan() != null
+                ? encryptionService.encrypt(doctorRequestDto.getTreatmentPlan())
+                : medicalRecord.getTreatmentPlan();
+
+        String encryptedDoctorComment = doctorRequestDto.getDoctorComment() != null
+                ? encryptionService.encrypt(doctorRequestDto.getDoctorComment())
+                : medicalRecord.getDoctorComment();
+
+        // MedicalRecord 엔티티 업데이트
         MedicalRecord updatedRecord = new MedicalRecord(
-                medicalRecord.getMedicalRecordId(), // 기존 ID 유지
-                doctorRequestDto.getDescription(),
-                doctorRequestDto.getConsultation(),
-                medicalRecord.getPatient(), // 기존 환자 유지
-                doctor, // 로그인한 의사
-                doctorRequestDto.getTreatmentPlan(),
-                doctorRequestDto.getDoctorComment()
+                medicalRecord.getMedicalRecordId(),
+                encryptedDescription,
+                doctorRequestDto.getTreatmentDate() != null ? doctorRequestDto.getTreatmentDate() : medicalRecord.getTreatmentDate(),
+                medicalRecord.getPatient(),
+                doctor,
+                encryptedTreatmentPlan,
+                encryptedDoctorComment
         );
 
         medicalRecordRepository.save(updatedRecord);
 
-
+        // 복호화하여 응답 생성
+        String decryptedDescription = encryptionService.decrypt(updatedRecord.getDescription());
+        String decryptedTreatmentPlan = encryptionService.decrypt(updatedRecord.getTreatmentPlan());
+        String decryptedDoctorComment = encryptionService.decrypt(updatedRecord.getDoctorComment());
+        String decryptedDoctorName = encryptionService.decrypt(doctor.getName());
+        String decryptedPatientName = encryptionService.decrypt(medicalRecord.getPatient().getName());
 
         DoctorMedicalRecordResponseDto doctorResponse = new DoctorMedicalRecordResponseDto(
                 updatedRecord.getMedicalRecordId(),
-                updatedRecord.getDescription(),
-                updatedRecord.getConsultation(),
-                updatedRecord.getPatient().getName(),
-                updatedRecord.getPatient().getId(),
-                updatedRecord.getTreatmentPlan(),
-                updatedRecord.getDoctorComment()
+                decryptedDescription,
+                updatedRecord.getTreatmentDate(),
+                decryptedPatientName,  // 복호화된 환자 이름 사용
+                medicalRecord.getPatient().getId(),
+                decryptedTreatmentPlan,
+                decryptedDoctorComment
         );
 
         PatientMedicalRecordResponseDto patientResponse = new PatientMedicalRecordResponseDto(
                 updatedRecord.getMedicalRecordId(),
-                updatedRecord.getDescription(),
-                updatedRecord.getConsultation(),
-                doctor.getName()
+                decryptedDescription,
+                updatedRecord.getTreatmentDate(),
+                decryptedDoctorName // 복호화된 의사 이름 사용
         );
 
         return new MedicalRecordResponseDto(doctorResponse, patientResponse);
