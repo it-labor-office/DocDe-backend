@@ -84,7 +84,7 @@ class CheckInControllerTest {
     @Test
     void saveCheckIn() throws Exception {
 
-        Mockito.when(checkInService.saveCheckIn(patientAuthUser, 1L, checkInRequest))
+        Mockito.when(checkInService.saveCheckIn(1L, 1L, 1L, checkInRequest))
                 .thenReturn(checkInResponse);
 
         mockMvc.perform(post("/hospitals/1/checkin")

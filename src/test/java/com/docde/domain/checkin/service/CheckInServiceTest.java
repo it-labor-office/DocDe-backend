@@ -168,7 +168,7 @@ class CheckInServiceTest {
         BDDMockito.given(redisTemplate.opsForList()).willReturn(listOperations);
 
         // w
-        CheckInResponse checkInResponse = checkInService.saveCheckIn(mockPatientAuthUser, 1L, mokCheckInRequest);
+        CheckInResponse checkInResponse = checkInService.saveCheckIn(1L, 1L, 1L, mokCheckInRequest);
 
         // t
         Assertions.assertNotNull(checkInResponse);
@@ -186,7 +186,7 @@ class CheckInServiceTest {
         BDDMockito.given(redisTemplate.opsForList()).willReturn(listOperations);
 
         // w
-        CheckInResponse checkInResponse = checkInService.saveCheckIn(mockPatientAuthUser, 1L, mokCheckInRequest);
+        CheckInResponse checkInResponse = checkInService.saveCheckIn(1L, 1L, 1L, mokCheckInRequest);
 
         // t
         Assertions.assertNotNull(checkInResponse);
@@ -200,7 +200,7 @@ class CheckInServiceTest {
 
         // w
         ApiException exception = assertThrows(ApiException.class, () -> {
-            checkInService.saveCheckIn(mockPatientAuthUser, 1L, mokCheckInRequest);
+            checkInService.saveCheckIn(1L, 1L, 1L, mokCheckInRequest);
         });
         // t
         Assertions.assertEquals("이미 진행중인 접수가 있습니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
@@ -227,7 +227,7 @@ class CheckInServiceTest {
 
         // w
         ApiException exception = assertThrows(ApiException.class, () -> {
-            checkInService.saveCheckIn(mockPatientAuthUser, 1L, mokCheckInRequest);
+            checkInService.saveCheckIn(1L, 1L, 1L, mokCheckInRequest);
         });
         // t
         Assertions.assertEquals("해당 병원에 소속된 의사가 아닙니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
