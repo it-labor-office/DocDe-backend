@@ -60,6 +60,16 @@ jobs:
     - name: Push Docker image
       run: |
         docker-compose -f docker-compose-prod.yml push docde
+        
+    - name: Cache
+      uses: actions/cache@v4.1.2
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
          
 
           
