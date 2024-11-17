@@ -30,9 +30,12 @@ public class CheckInController {
             @PathVariable Long hospitalId,
             @RequestBody CheckInRequest checkInRequest
     ) {
+        Long patientId = authUser.getPatientId();
+        Long userId = authUser.getId();
         if(queueService.processRequest(authUser, hospitalId, checkInRequest)){
             return ResponseEntity.status(HttpStatus.CREATED)
-                    .body(ApiResponse.onCreated(checkInService.saveCheckIn(authUser, hospitalId, checkInRequest)));
+                    .body(ApiResponse.onCreated(checkInService
+                            .saveCheckIn(patientId, userId, hospitalId, checkInRequest)));
         } else {
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
                     .body(ApiResponse.createError("사용자가 너무 많아 서비스가 지연되고 있습니다.", 429));

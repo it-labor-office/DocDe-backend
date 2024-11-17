@@ -42,7 +42,8 @@ public class CheckInService {
     @DistributedLock(key = "saveCheckIn", waitTime = 10, leaseTime = 5)
     @CurrentCount
     public CheckInResponse saveCheckIn(
-            AuthUser authUser,
+            Long patientId,
+            Long userId,
             Long hospitalId,
             CheckInRequest checkInRequest
     ) {
@@ -52,7 +53,7 @@ public class CheckInService {
                 .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_HOSPITAL));
 
         // 이미 진행중인 접수가 있으면 예외처리
-        if (checkInRepository.checkCheckInExist(authUser.getPatientId())) {
+        if (checkInRepository.checkCheckInExist(patientId)) {
             throw new ApiException(ErrorStatus._BAD_REQUEST_ALREADY_CHECKED_IN);
         }
 
@@ -66,7 +67,7 @@ public class CheckInService {
                 throw new ApiException(ErrorStatus._BAD_REQUEST_DOCTOR_NOT_BELONG_TO_HOSPITAL);
             }
 
-            Patient patient = patientRepository.findByUser_Id(authUser.getId())
+            Patient patient = patientRepository.findByUser_Id(userId)
                     .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
 
             Long num = getNum("number of hospital" + hospital.getId());
@@ -87,7 +88,7 @@ public class CheckInService {
 
             return checkInResponseFromCheckIn(checkIn);
         } else {
-            Patient patient = patientRepository.findByUser_Id(authUser.getPatientId())
+            Patient patient = patientRepository.findByUser_Id(patientId)
                     .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
 
             Long num = getNum("number of hospital" + hospital.getId());
@@ -273,10 +274,7 @@ public class CheckInService {
 
     private Long getNum(String key) {
         String value = String.valueOf(redisTemplate.opsForValue().get(key));
-        if (value == null) {
-            value = "0";
-        }
-        return Long.parseLong(value);
+        return value.equals("null") ? 0L : Long.parseLong(value);
     }
 
     private void setNum(String key, Long value) {
