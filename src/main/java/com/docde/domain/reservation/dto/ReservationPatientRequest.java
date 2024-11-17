@@ -10,6 +10,8 @@ import java.time.LocalDateTime;
 public sealed interface ReservationPatientRequest permits CreateReservation {
     record CreateReservation(@NotBlank String reservationReason,
                              @NotNull Long doctorId,
-                             @FutureOrPresent @NotNull LocalDateTime reservationTime) implements ReservationPatientRequest {
+                             @FutureOrPresent @NotNull LocalDateTime reservationTime,
+                             @NotNull Long patientId) implements ReservationPatientRequest {
+
     }
 }
