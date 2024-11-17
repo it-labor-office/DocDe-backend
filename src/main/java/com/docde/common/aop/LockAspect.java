@@ -27,25 +27,17 @@ public class LockAspect {
 
     @Around(value = "@annotation(Lockable) && args(doctorId, reservationTime, ..)", argNames = "joinPoint,doctorId,reservationTime")
     public Object around(ProceedingJoinPoint joinPoint, Long doctorId, LocalDateTime reservationTime) throws Throwable {
-        System.out.println("Lock Aspect Triggered");
-
-        // 예약 시간을 분 단위로 자르고 doctorId와 결합해 lockKey 생성
         String lockKey = LOCK_KEY_PREFIX + doctorId + ":" + reservationTime.truncatedTo(ChronoUnit.MINUTES);
         RLock lock = redissonClient.getFairLock(lockKey);
 
-        // 락 획득 시도
         if (lock.tryLock(10, 30, TimeUnit.SECONDS)) {
             try {
-                System.out.println("Lock acquired for key: " + lockKey);
-
-                return joinPoint.proceed(); // 원래 호출된 메서드 실행
+                return joinPoint.proceed();
             } finally {
-                lock.unlock(); // 작업 완료 후 락 해제
-                System.out.println("Lock released for key: " + lockKey);
-
+                lock.unlock();
             }
         } else {
-            throw new IllegalStateException("락 획득 실패: " + lockKey);
+            throw new IllegalStateException("Failed to acquire lock: " + lockKey);
         }
     }
 

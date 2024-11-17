@@ -10,6 +10,7 @@ import com.docde.domain.reservation.dto.ReservationPatientRequest;
 import com.docde.domain.reservation.dto.ReservationPatientResponse;
 import com.docde.domain.reservation.entity.Reservation;
 import com.docde.domain.reservation.service.ReservationPatientService;
+import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class ReservationPatientController {
     private final ReservationPatientService reservationPatientService;
 
@@ -33,6 +34,20 @@ public class ReservationPatientController {
                 createReservationRequestDto.reservationTime(),
                 createReservationRequestDto.reservationReason(),
                 authUser);
+
+        if (reservation == null) {
+            return ResponseEntity.status(HttpStatus.ACCEPTED)
+                    .body(ApiResponse.onSuccess(
+                            new ReservationPatientResponse.ReservationWithPatientAndDoctor(
+                                    null,
+                                    "예약 요청이 큐에 추가되었습니다.",
+                                    null,
+                                    null,
+                                    null,
+                                    null
+                            )
+                    ));
+        }
 
         ApiResponse<ReservationPatientResponse.ReservationWithPatientAndDoctor> response = ApiResponse.onCreated(
                 new ReservationPatientResponse.ReservationWithPatientAndDoctor(

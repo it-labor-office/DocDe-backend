@@ -5,68 +5,100 @@ import com.docde.common.aop.Lockable;
 import com.docde.common.enums.UserRole;
 import com.docde.common.exceptions.ApiException;
 import com.docde.domain.auth.entity.AuthUser;
-import com.docde.domain.doctor.entity.Doctor;
-import com.docde.domain.doctor.repository.DoctorRepository;
-import com.docde.domain.patient.entity.Patient;
-import com.docde.domain.patient.repository.PatientRepository;
+import com.docde.domain.reservation.cache.RedisCacheService;
+import com.docde.domain.reservation.dto.ReservationPatientRequest;
 import com.docde.domain.reservation.entity.Reservation;
 import com.docde.domain.reservation.entity.ReservationStatus;
+import com.docde.domain.reservation.queue.RedisQueueService;
 import com.docde.domain.reservation.repository.ReservationRepository;
+import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Optional;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class ReservationPatientService {
     private final ReservationRepository reservationRepository;
-    private final DoctorRepository doctorRepository;
-    private final PatientRepository patientRepository;
+    private final RedisQueueService redisQueueService;
+    private final RedisCacheService redisCacheService;
+    private final ReservationHandler reservationHandler;
+    private static final int HIGH_TRAFFIC_THRESHOLD = 50;
+    private static final long TRAFFIC_CHECK_PERIOD = 60 * 1000; // 1분 (밀리초 단위)
+    private final Queue<Long> requestTimestamps = new ConcurrentLinkedQueue<>();
+    private final MeterRegistry meterRegistry;
+
+/*    public Reservation createReservation(Long doctorId, LocalDateTime reservationTime, String reservationReason, AuthUser authUser) {
 
 
+        return createReservationWithLock(doctorId, reservationTime, reservationReason, authUser);
+    }*/
 
-    @Lockable // 다른 쓰레드에서 접근x -> 동시성 문제 방지
-    @Transactional(isolation = Isolation.SERIALIZABLE)
     public Reservation createReservation(Long doctorId, LocalDateTime reservationTime, String reservationReason, AuthUser authUser) {
 
-        LocalDate today = LocalDate.now();
-
-        // 예약 날짜 유효성 검사
-        if (reservationTime.isBefore(today.atStartOfDay()) || reservationTime.isAfter(today.plusDays(2).atStartOfDay())) {
-            throw new ApiException(ErrorStatus._INVALID_RESERVATION_DATE);
+        // 높은 트래픽 시 비동기 큐에 예약 요청 추가
+        if (HighTraffic()) {
+            ReservationPatientRequest.CreateReservation request = new ReservationPatientRequest.CreateReservation(
+                    reservationReason, doctorId, reservationTime, authUser.getPatientId());
+            redisQueueService.enqueueRequest(request);
+            return null;  // 비동기 큐에 추가되었으므로 null 반환
+            // 웹소켓 추가해야할지 고민해봐야하는 부분
         }
+        return createReservationWithLock(doctorId, reservationTime, reservationReason, authUser);
+    }
 
-        Optional<Reservation> existingReservation = reservationRepository.findByDoctorIdAndReservationTime(doctorId, reservationTime);
-        if (existingReservation.isPresent()) {
+
+    @Transactional(isolation = Isolation.SERIALIZABLE)
+    @Lockable
+    public Reservation createReservationWithLock(Long doctorId, LocalDateTime reservationTime, String reservationReason, AuthUser authUser) {
+
+        String cacheKey = "doctor:" + doctorId + ", availability:" + reservationTime;
+
+        // 낮은 트래픽 시 캐싱과 락을 사용해 예약 처리
+        String isAvailableString = (String) redisCacheService.getCachedData(cacheKey);
+        Boolean Available = isAvailableString != null ? Boolean.parseBoolean(isAvailableString) : null;
+
+
+        // null이 아니라면, 캐시에서 어떤값이 설정되어있다는 의미
+        // !Available가 true라면(Available이 true라면) 예약이 불가능
+        if (Available != null && !Available) {
             throw new ApiException(ErrorStatus._DUPLICATE_RESERVATION);
         }
 
-        Doctor doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_DOCTOR));
+        // 캐시에서 예약 가능 여부를 false로 설정
+        redisCacheService.cacheData(cacheKey, String.valueOf(false), 30);
 
-        Patient patient = patientRepository.findByUser_Id(authUser.getId())
-                .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
 
-        // 새로운 예약 객체 생성
-        Reservation reservation = Reservation.builder()
-                .status(ReservationStatus.WAITING_RESERVATION)
-                .reservationTime(reservationTime)
-                .reservationReason(reservationReason)
-                .doctor(doctor)
-                .patient(patient)
-                .build();
+        // 실제 예약 핸들러 호출
+        Reservation reservation = reservationHandler.handleReservation(doctorId, reservationTime, reservationReason, authUser.getPatientId());
 
-        // 예약 저장
-        Reservation savedReservation = reservationRepository.save(reservation);
-        System.out.println("예약요청된 ID " + savedReservation.getId());
+        return reservation;
+    }
 
-        return savedReservation;
+
+    private boolean HighTraffic() {
+        long now = System.currentTimeMillis();
+
+        // 1분이 지난 요청 타임스탬프 제거
+        while (!requestTimestamps.isEmpty() && now - requestTimestamps.peek() > TRAFFIC_CHECK_PERIOD) {
+            requestTimestamps.poll();
+        }
+
+        // 현재 요청 추가
+        requestTimestamps.add(now);
+
+        // 초당 요청 속도 계산
+        long elapsedTime = Math.max(1, (now - requestTimestamps.peek())); // 첫 요청 이후 경과 시간(ms)
+        double requestsPerSecond = (double) requestTimestamps.size() / (elapsedTime / 1000.0);
+
+        // 초당 요청 속도가 특정 기준 이상일 경우 고트래픽으로 판단
+        return requestsPerSecond > 5.0; // 초당 2개 이상의 요청이면 고트래픽
     }
 
 
