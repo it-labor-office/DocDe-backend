@@ -59,19 +59,6 @@ jobs:
       run: |
         docker-compose -f docker-compose-prod.yml push docde
          
-    - uses: appleboy/ssh-action@master
-      with:
-        key: ${{ secrets.EC2_SSH_KEY }} # 내가 변수로 저장한 pem key
-        host: ${{secrets.AWS_INSTANCE_IP}} # 내가 변수로 저장한 ip
-        username: ${{secrets.USER}} # 내가 변수로 저장한 User
-        port: 22
-        script: |
-          echo "Creating .env file..."
-          echo "${{secrets.ENV_PROD}}" > ./.env
-          echo ".env file created successfully"
-          docker-compose -f docker-compose-prod.yml down
-          docker pull multiverse22/docde
-          docker-compose -f ./docker-compose-prod.yml up -d
 
           
         
