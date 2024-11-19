@@ -15,6 +15,7 @@ import com.docde.domain.medicalRecord.entity.MedicalRecord;
 import com.docde.domain.medicalRecord.repository.MedicalRecordRepository;
 import com.docde.domain.patient.entity.Patient;
 import com.docde.domain.patient.repository.PatientRepository;
+import com.docde.domain.medicalRecord.encryption.EncryptionService;
 import com.docde.domain.user.entity.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -50,6 +51,9 @@ public class MedicalRecordServiceTest {
     @Mock
     private MedicalRecordRepository medicalRecordRepository;
 
+    @Mock
+    private EncryptionService encryptionService;
+
     private User user;
     private AuthUser authUser;
     private Doctor doctor;
@@ -65,6 +69,7 @@ public class MedicalRecordServiceTest {
         ReflectionTestUtils.setField(doctor, "id", 1L);
 
         patient = new Patient("testname", "oo시 oo구", "000-0000-0000", Gender.M, null);
+        ReflectionTestUtils.setField(patient, "id", 1L);
 
 
         user = User.builder()
@@ -105,31 +110,36 @@ public class MedicalRecordServiceTest {
     }
 
     @Test
-    public void 진료기록_생성_성공() {
+    public void 진료기록_생성_성공_암호화() throws Exception {
 
         // given
         DoctorMedicalRecordRequestDto requestDto = new DoctorMedicalRecordRequestDto(
                 doctor.getId(),
                 patient.getId(),
-                "Description",
+                "Initial description",
                 LocalDateTime.now(),
-                "Treatment Plan",
-                "Doctor Comment"
+                "Initial treatment plan",
+                "Initial comment"
         );
 
         given(doctorRepository.findByUser_Id(authUser.getId())).willReturn(Optional.of(doctor));
         given(patientRepository.findById(requestDto.getPatientId())).willReturn(Optional.of(patient));
 
+        // 암호화된 데이터 모의 반환값 설정
+        given(encryptionService.encrypt("estname")).willReturn("Encrypted estname"); // 이름의 첫 글자 제외
+        given(encryptionService.encrypt("Initial description")).willReturn("Encrypted description");
+        given(encryptionService.encrypt("Initial treatment plan")).willReturn("Encrypted treatment plan");
+        given(encryptionService.encrypt("Initial comment")).willReturn("Encrypted comment");
+
+        // 저장된 암호화된 MedicalRecord 객체
         MedicalRecord savedRecord = new MedicalRecord(
-                requestDto.getDescription(),
-                requestDto.getConsultation(),
+                "Encrypted description",
+                requestDto.getTreatmentDate(),
                 patient,
                 doctor,
-                requestDto.getTreatmentPlan(),
-                requestDto.getDoctorComment()
+                "Encrypted treatment plan",
+                "Encrypted comment"
         );
-
-
         given(medicalRecordRepository.save(any(MedicalRecord.class))).willReturn(savedRecord);
 
         // when
@@ -137,17 +147,18 @@ public class MedicalRecordServiceTest {
 
         // then
         assertEquals(savedRecord.getMedicalRecordId(), responseDto.getDoctorRecord().getMedicalRecordId());
-        assertEquals(savedRecord.getDescription(), responseDto.getDoctorRecord().getDescription());
-        assertEquals(savedRecord.getConsultation(), responseDto.getDoctorRecord().getConsultation());
-        assertEquals(patient.getName(), responseDto.getDoctorRecord().getPatientName());
+        assertEquals("Encrypted description", responseDto.getDoctorRecord().getDescription());
+        assertEquals(savedRecord.getTreatmentDate(), responseDto.getDoctorRecord().getTreatmentDate());
+        assertEquals("tEncrypted estname", responseDto.getDoctorRecord().getPatientName());
         assertEquals(patient.getId(), responseDto.getDoctorRecord().getPatientId());
-        assertEquals(savedRecord.getTreatmentPlan(), responseDto.getDoctorRecord().getTreatmentPlan());
-        assertEquals(savedRecord.getDoctorComment(), responseDto.getDoctorRecord().getDoctorComment());
+        assertEquals("Encrypted treatment plan", responseDto.getDoctorRecord().getTreatmentPlan());
+        assertEquals("Encrypted comment", responseDto.getDoctorRecord().getDoctorComment());
 
         assertEquals(savedRecord.getMedicalRecordId(), responseDto.getPatientRecord().getMedicalRecordId());
-        assertEquals(savedRecord.getDescription(), responseDto.getPatientRecord().getDescription());
-        assertEquals(savedRecord.getConsultation(), responseDto.getPatientRecord().getConsultation());
-        assertEquals(doctor.getName(), responseDto.getPatientRecord().getDoctorName());
+        assertEquals("Encrypted description", responseDto.getPatientRecord().getDescription());
+        assertEquals(savedRecord.getTreatmentDate(), responseDto.getPatientRecord().getTreatmentDate());
+        assertEquals("tEncrypted estname", responseDto.getPatientRecord().getDoctorName());
+
     }
 
 
@@ -199,12 +210,30 @@ public class MedicalRecordServiceTest {
 
 
     @Test
-    public void 특정_진료기록_정상조회() {
+    public void 특정_진료기록_정상조회() throws Exception {
         // given
         Long medicalRecordId = 1L;
         given(doctorRepository.findByUser_Id(authUser.getId())).willReturn(Optional.of(doctor));
+
+        // 암호화된 데이터를 복호화하여 설정 (환자 이름 제외)
+        given(encryptionService.decrypt("Encrypted description")).willReturn("Decrypted description");
+        given(encryptionService.decrypt("Encrypted treatment plan")).willReturn("Decrypted treatment plan");
+        given(encryptionService.decrypt("Encrypted doctor comment")).willReturn("Decrypted doctor comment");
+        given(encryptionService.decrypt("estname")).willReturn("estname"); // 이름의 일부 복호화
+
+        // 암호화된 MedicalRecord 설정
+        MedicalRecord encryptedMedicalRecord = new MedicalRecord(
+                medicalRecordId,
+                "Encrypted description",
+                medicalRecord.getTreatmentDate(),
+                patient,
+                doctor,
+                "Encrypted treatment plan",
+                "Encrypted doctor comment"
+        );
+
         given(medicalRecordRepository.findSpecificMedicalRecord(medicalRecordId, null, null, null))
-                .willReturn(Optional.of(medicalRecord));
+                .willReturn(Optional.of(encryptedMedicalRecord));
 
         // when
         DoctorMedicalRecordResponseDto response = medicalRecordService.getSpecificDoctorMedicalRecord(
@@ -212,11 +241,13 @@ public class MedicalRecordServiceTest {
 
         // then
         assertNotNull(response);
-        assertEquals(medicalRecord.getMedicalRecordId(), response.getMedicalRecordId());
-        assertEquals(medicalRecord.getDescription(), response.getDescription());
-        assertTrue(medicalRecord.getConsultation().isBefore(LocalDateTime.now().plusMinutes(1)));
-        assertEquals(medicalRecord.getTreatmentPlan(), response.getTreatmentPlan());
-        assertEquals(medicalRecord.getDoctorComment(), response.getDoctorComment());
+        assertEquals(medicalRecordId, response.getMedicalRecordId());
+        assertEquals("Decrypted description", response.getDescription()); // 복호화된 설명 확인
+        assertEquals(medicalRecord.getTreatmentDate(), response.getTreatmentDate());
+        assertEquals(patient.getName(), response.getPatientName()); // 환자 이름은 복호화하지 않은 원본 값
+        assertEquals(patient.getId(), response.getPatientId());
+        assertEquals("Decrypted treatment plan", response.getTreatmentPlan()); // 복호화된 치료 계획 확인
+        assertEquals("Decrypted doctor comment", response.getDoctorComment()); // 복호화된 의사 코멘트 확인
     }
 
 
@@ -250,7 +281,7 @@ public class MedicalRecordServiceTest {
 
 
     @Test
-    public void 의사가_의사용_진료기록_조회() {
+    public void 의사가_의사용_진료기록_조회() throws Exception {
 
         MedicalRecord medicalRecord2 = new MedicalRecord(
                 2L,
@@ -262,36 +293,45 @@ public class MedicalRecordServiceTest {
                 "Initial comment2"
         );
 
+        given(encryptionService.decrypt("Initial description")).willReturn("Decrypted description");
+        given(encryptionService.decrypt("Initial treatment plan")).willReturn("Decrypted treatment plan");
+        given(encryptionService.decrypt("Initial comment")).willReturn("Decrypted comment");
 
-        // given
+        given(encryptionService.decrypt("Initial description2")).willReturn("Decrypted description2");
+        given(encryptionService.decrypt("Initial treatment plan2")).willReturn("Decrypted treatment plan2");
+        given(encryptionService.decrypt("Initial comment2")).willReturn("Decrypted comment2");
+
+        given(encryptionService.decrypt("testname")).willReturn("Decrypted testname");
+
         given(doctorRepository.findByUser_Id(authUser.getId())).willReturn(Optional.of(doctor));
         given(medicalRecordRepository.findByDoctorId(doctor.getId())).willReturn(Arrays.asList(medicalRecord, medicalRecord2));
 
-        // when
         List<DoctorMedicalRecordResponseDto> response = medicalRecordService.getDoctorMedicalRecord(authUser);
 
-        // then
         assertNotNull(response);
         assertEquals(2, response.size());
 
+        // 첫 번째 진료 기록 검증
         DoctorMedicalRecordResponseDto record1 = response.get(0);
         assertEquals(medicalRecord.getMedicalRecordId(), record1.getMedicalRecordId());
-        assertEquals(medicalRecord.getDescription(), record1.getDescription());
-        assertEquals(medicalRecord.getConsultation(), record1.getConsultation());
-        assertEquals(medicalRecord.getPatient().getName(), record1.getPatientName());
+        assertEquals("Decrypted description", record1.getDescription());
+        assertEquals(medicalRecord.getTreatmentDate(), record1.getTreatmentDate());
+        assertEquals("Decrypted testname", record1.getPatientName());
         assertEquals(medicalRecord.getPatient().getId(), record1.getPatientId());
-        assertEquals(medicalRecord.getTreatmentPlan(), record1.getTreatmentPlan());
-        assertEquals(medicalRecord.getDoctorComment(), record1.getDoctorComment());
+        assertEquals("Decrypted treatment plan", record1.getTreatmentPlan());
+        assertEquals("Decrypted comment", record1.getDoctorComment());
 
+        // 두 번째 진료 기록 검증
         DoctorMedicalRecordResponseDto record2 = response.get(1);
         assertEquals(medicalRecord2.getMedicalRecordId(), record2.getMedicalRecordId());
-        assertEquals(medicalRecord2.getDescription(), record2.getDescription());
-        assertEquals(medicalRecord2.getConsultation(), record2.getConsultation());
-        assertEquals(medicalRecord2.getPatient().getName(), record2.getPatientName());
+        assertEquals("Decrypted description2", record2.getDescription());
+        assertEquals(medicalRecord2.getTreatmentDate(), record2.getTreatmentDate());
+        assertEquals("Decrypted testname", record2.getPatientName());
         assertEquals(medicalRecord2.getPatient().getId(), record2.getPatientId());
-        assertEquals(medicalRecord2.getTreatmentPlan(), record2.getTreatmentPlan());
-        assertEquals(medicalRecord2.getDoctorComment(), record2.getDoctorComment());
+        assertEquals("Decrypted treatment plan2", record2.getTreatmentPlan());
+        assertEquals("Decrypted comment2", record2.getDoctorComment());
     }
+
 
     @Test
     public void 의사가_의사_진료기록_조회_시_의사가_없는_경우_예외처리() {
@@ -321,7 +361,7 @@ public class MedicalRecordServiceTest {
 
 
     @Test
-    public void 환자가_자신의_진료기록을_정상적으로_조회() {
+    public void 환자가_자신의_진료기록을_정상적으로_조회() throws Exception {
 
         MedicalRecord medicalRecord2 = new MedicalRecord(
                 2L,
@@ -332,28 +372,35 @@ public class MedicalRecordServiceTest {
                 "Initial treatment plan2",
                 "Initial comment2"
         );
+
+        // 모킹
         given(patientRepository.findByUser_Id(authUser.getId())).willReturn(Optional.of(patient));
         given(medicalRecordRepository.findByPatientId(patient.getId())).willReturn(List.of(medicalRecord, medicalRecord2));
 
-        // when
+        // 복호화 설정
+        given(encryptionService.decrypt("Initial description")).willReturn("Decrypted description");
+        given(encryptionService.decrypt("Initial description2")).willReturn("Decrypted description2");
+        given(encryptionService.decrypt("testname")).willReturn("Decrypted doctor name");
+
         List<PatientMedicalRecordResponseDto> response = medicalRecordService.getPatientMedicalRecord(authUser);
 
-        // then
+        // 일치확인
         assertNotNull(response);
         assertEquals(2, response.size());
 
+        // 첫 번째 진료 기록 검증
         PatientMedicalRecordResponseDto record1 = response.get(0);
         assertEquals(medicalRecord.getMedicalRecordId(), record1.getMedicalRecordId());
-        assertEquals(medicalRecord.getDescription(), record1.getDescription());
-        assertEquals(medicalRecord.getConsultation(), record1.getConsultation());
-        assertEquals(medicalRecord.getDoctor().getName(), record1.getDoctorName());
+        assertEquals("Decrypted description", record1.getDescription());
+        assertEquals(medicalRecord.getTreatmentDate(), record1.getTreatmentDate());
+        assertEquals("Decrypted doctor name", record1.getDoctorName());
 
-        // 두 번째 진료 기록 확인
+        // 두 번째 진료 기록 검증
         PatientMedicalRecordResponseDto record2 = response.get(1);
         assertEquals(medicalRecord2.getMedicalRecordId(), record2.getMedicalRecordId());
-        assertEquals(medicalRecord2.getDescription(), record2.getDescription());
-        assertEquals(medicalRecord2.getConsultation(), record2.getConsultation());
-        assertEquals(medicalRecord2.getDoctor().getName(), record2.getDoctorName());
+        assertEquals("Decrypted description2", record2.getDescription());
+        assertEquals(medicalRecord2.getTreatmentDate(), record2.getTreatmentDate());
+        assertEquals("Decrypted doctor name", record2.getDoctorName());
     }
 
 
@@ -386,7 +433,7 @@ public class MedicalRecordServiceTest {
     }
 
     @Test
-    public void 진료기록_수정_성공() {
+    public void 진료기록_수정_성공() throws Exception {
 
         // given
         Long medicalRecordId = 1L;
@@ -399,20 +446,45 @@ public class MedicalRecordServiceTest {
                 "Updated comment"
         );
 
-        // mock 설정
+        // Mock 설정
         given(doctorRepository.findByUser_Id(authUser.getId())).willReturn(Optional.of(doctor));
         given(medicalRecordRepository.findById(medicalRecordId)).willReturn(Optional.of(medicalRecord));
-        given(medicalRecordRepository.save(any(MedicalRecord.class))).willReturn(medicalRecord);
 
-        // when
+        // 암호화된 값 설정 (저장 시 사용)
+        given(encryptionService.encrypt("Updated description")).willReturn("Encrypted description");
+        given(encryptionService.encrypt("Updated treatment plan")).willReturn("Encrypted treatment plan");
+        given(encryptionService.encrypt("Updated comment")).willReturn("Encrypted comment");
+
+        // 복호화된 값 설정 (응답 시 사용)
+        given(encryptionService.decrypt("Encrypted description")).willReturn("Updated description");
+        given(encryptionService.decrypt("Encrypted treatment plan")).willReturn("Updated treatment plan");
+        given(encryptionService.decrypt("Encrypted comment")).willReturn("Updated comment");
+
+        // 의사와 환자 이름 복호화 설정
+        given(encryptionService.decrypt(doctor.getName())).willReturn("Decrypted doctor name");
+        given(encryptionService.decrypt(medicalRecord.getPatient().getName())).willReturn("Decrypted patient name");
+
+        // MedicalRecord 객체가 save 메서드 호출 시 암호화된 값이 설정된 채로 반환되도록 설정
+        MedicalRecord savedMedicalRecord = new MedicalRecord(
+                medicalRecordId,
+                "Encrypted description",
+                requestDto.getTreatmentDate(),
+                medicalRecord.getPatient(),
+                doctor,
+                "Encrypted treatment plan",
+                "Encrypted comment"
+        );
+        given(medicalRecordRepository.save(any(MedicalRecord.class))).willReturn(savedMedicalRecord);
+
+        // When: 진료 기록 업데이트 서비스 호출
         MedicalRecordResponseDto responseDto = medicalRecordService.updateMedicalRecord(medicalRecordId, requestDto, authUser);
 
-        // then
+        // Then: 응답 값이 예상대로 복호화된 값을 가지고 있는지 확인
         assertEquals(medicalRecordId, responseDto.getDoctorRecord().getMedicalRecordId());
         assertEquals("Updated description", responseDto.getDoctorRecord().getDescription());
         assertEquals("Updated treatment plan", responseDto.getDoctorRecord().getTreatmentPlan());
         assertEquals("Updated comment", responseDto.getDoctorRecord().getDoctorComment());
-        assertEquals(doctor.getName(), responseDto.getPatientRecord().getDoctorName());
+        assertEquals("Decrypted patient name", responseDto.getDoctorRecord().getPatientName());  // 복호화된 환자 이름 확인
     }
 
 
