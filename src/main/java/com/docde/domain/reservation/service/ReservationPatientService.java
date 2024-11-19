@@ -13,6 +13,7 @@ import com.docde.domain.reservation.queue.RedisQueueService;
 import com.docde.domain.reservation.repository.ReservationRepository;
 import io.micrometer.core.instrument.MeterRegistry;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,7 +22,7 @@ import java.time.LocalDateTime;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ReservationPatientService {
@@ -29,7 +30,6 @@ public class ReservationPatientService {
     private final RedisQueueService redisQueueService;
     private final RedisCacheService redisCacheService;
     private final ReservationHandler reservationHandler;
-    private static final int HIGH_TRAFFIC_THRESHOLD = 50;
     private static final long TRAFFIC_CHECK_PERIOD = 60 * 1000; // 1분 (밀리초 단위)
     private final Queue<Long> requestTimestamps = new ConcurrentLinkedQueue<>();
     private final MeterRegistry meterRegistry;
@@ -46,13 +46,35 @@ public class ReservationPatientService {
         if (HighTraffic()) {
             ReservationPatientRequest.CreateReservation request = new ReservationPatientRequest.CreateReservation(
                     reservationReason, doctorId, reservationTime, authUser.getPatientId());
+            log.info("Adding reservation request to queue: {}", request);
+
             redisQueueService.enqueueRequest(request);
             return null;  // 비동기 큐에 추가되었으므로 null 반환
-            // 웹소켓 추가해야할지 고민해봐야하는 부분
         }
-        return createReservationWithLock(doctorId, reservationTime, reservationReason, authUser);
+        return null;
     }
 
+
+
+
+    private boolean HighTraffic() {
+        long now = System.currentTimeMillis();
+
+        // 1분이 지난 요청 타임스탬프 제거
+        while (!requestTimestamps.isEmpty() && now - requestTimestamps.peek() > TRAFFIC_CHECK_PERIOD) {
+            requestTimestamps.poll();
+        }
+
+        // 현재 요청 추가
+        requestTimestamps.add(now);
+
+        // 초당 요청 속도 계산
+        long elapsedTime = Math.max(1, (now - requestTimestamps.peek())); // 첫 요청 이후 경과 시간(ms)
+        double requestsPerSecond = (double) requestTimestamps.size() / (elapsedTime / 1000.0);
+
+        // 초당 요청 속도가 특정 기준 이상일 경우 고트래픽으로 판단
+        return requestsPerSecond > 800.0;
+    }
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     @Lockable
@@ -79,26 +101,6 @@ public class ReservationPatientService {
         Reservation reservation = reservationHandler.handleReservation(doctorId, reservationTime, reservationReason, authUser.getPatientId());
 
         return reservation;
-    }
-
-
-    private boolean HighTraffic() {
-        long now = System.currentTimeMillis();
-
-        // 1분이 지난 요청 타임스탬프 제거
-        while (!requestTimestamps.isEmpty() && now - requestTimestamps.peek() > TRAFFIC_CHECK_PERIOD) {
-            requestTimestamps.poll();
-        }
-
-        // 현재 요청 추가
-        requestTimestamps.add(now);
-
-        // 초당 요청 속도 계산
-        long elapsedTime = Math.max(1, (now - requestTimestamps.peek())); // 첫 요청 이후 경과 시간(ms)
-        double requestsPerSecond = (double) requestTimestamps.size() / (elapsedTime / 1000.0);
-
-        // 초당 요청 속도가 특정 기준 이상일 경우 고트래픽으로 판단
-        return requestsPerSecond > 5.0; // 초당 2개 이상의 요청이면 고트래픽
     }
 
 

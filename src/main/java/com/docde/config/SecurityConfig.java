@@ -31,6 +31,7 @@ public class SecurityConfig {
                 .logout(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests((authorize) -> authorize
                         .requestMatchers("/auth/**", "/error").permitAll()
+                        .requestMatchers("/actuator/prometheus").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(jwtSecurityFilter, SecurityContextHolderAwareRequestFilter.class)
