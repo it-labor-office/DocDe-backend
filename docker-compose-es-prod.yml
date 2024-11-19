@@ -20,25 +20,6 @@ networks:
     external: false
 
 services:
-  mysql:
-    image: mysql:8.0
-    environment:
-      MYSQL_DATABASE: ${MYSQL_DATABASE}
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-    ports:
-      - "3306:3306"
-    healthcheck:
-      test: [ "CMD-SHELL", "mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD} && sleep 5" ]
-      interval: 5s
-      retries: 10
-  redis:
-    image: redis:6.2
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: [ "CMD", "redis-cli", "ping" ]
-      interval: 5s
-      retries: 10
   setup:
     image: docker.elastic.co/elasticsearch/elasticsearch:${STACK_VERSION}
     volumes:
@@ -62,11 +43,12 @@ services:
           echo "Creating certs";
           echo -ne \
           "instances:\n"\
-          "  - name: es01\n"\
+          "  - name: 43.201.174.219\n"\
           "    dns:\n"\
-          "      - es01\n"\
+          "      - 43.201.174.219\n"\
           "      - localhost\n"\
           "    ip:\n"\
+          "      - 43.201.174.219\n"\
           "      - 127.0.0.1\n"\
           "  - name: kibana\n"\
           "    dns:\n"\
@@ -124,6 +106,8 @@ services:
       - xpack.license.self_generated.type=${LICENSE}
       - http.max_content_length=1024mb
       - thread_pool.write.queue_size=2000
+      - network.host=0.0.0.0
+      - http.host=0.0.0.0
     ulimits:
       memlock:
         soft: -1
