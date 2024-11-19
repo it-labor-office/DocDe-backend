@@ -1,7 +1,7 @@
 {
   "Preferences": {
-    "MinHealthyPercentage": 90,
-    "InstanceWarmup": 300,
+    "MinHealthyPercentage": 60,
+    "InstanceWarmup": 200,
     "SkipMatching": false
   },
   "Strategy": "Rolling",
