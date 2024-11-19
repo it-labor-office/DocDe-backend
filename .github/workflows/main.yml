@@ -60,6 +60,13 @@ jobs:
     - name: Push Docker image
       run: |
         docker-compose -f docker-compose-prod.yml push docde
+
+    - name: Deploy
+      run: |
+        aws autoscaling start-instance-refresh \
+        --auto-scaling-group-name <AutoScalingGroupName> \
+        --cli-input-json file://instance-refresh-config.json
+
         
     - name: Cache
       uses: actions/cache@v4.1.2
