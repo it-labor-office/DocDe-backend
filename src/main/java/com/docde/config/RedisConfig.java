@@ -1,8 +1,10 @@
 package com.docde.config;
 
+
 import org.redisson.Redisson;
 import org.redisson.api.RedissonClient;
 import org.redisson.config.Config;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -11,6 +13,9 @@ import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
 public class RedisConfig {
+
+    @Value("${spring.data.redis.host}")
+    private String host;
 
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory connectionFactory) {
@@ -25,7 +30,7 @@ public class RedisConfig {
     public RedissonClient redissonClient() {
         Config config = new Config();
         // Redis 서버 주소 설정
-        config.useSingleServer().setAddress("redis://127.0.0.1:6379");
+        config.useSingleServer().setAddress("redis://" + host + ":6379");
 
         return Redisson.create(config);
     }
