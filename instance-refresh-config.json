@@ -1,0 +1,14 @@
+{
+  "Preferences": {
+    "MinHealthyPercentage": 10,
+    "InstanceWarmup": 10,
+    "SkipMatching": false
+  },
+  "Strategy": "Rolling",
+  "DesiredConfiguration": {
+    "LaunchTemplate": {
+      "LaunchTemplateId": "lt-04a48aa9cfe6bbe35",
+      "Version": "$Default"
+    }
+  }
+}
