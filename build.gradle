@@ -68,6 +68,10 @@ dependencies {
 
     // Spring Boot 웹소켓 스타터
     implementation 'org.springframework.boot:spring-boot-starter-websocket'
+
+    // Prometheus
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
+    implementation 'io.micrometer:micrometer-registry-prometheus'
 }
 
 tasks.named('test') {
