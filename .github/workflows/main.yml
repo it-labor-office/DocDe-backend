@@ -64,7 +64,7 @@ jobs:
     - name: Deploy
       run: |
         aws autoscaling start-instance-refresh \
-        --auto-scaling-group-name <AutoScalingGroupName> \
+        --auto-scaling-group-name test \
         --cli-input-json file://instance-refresh-config.json
 
         
