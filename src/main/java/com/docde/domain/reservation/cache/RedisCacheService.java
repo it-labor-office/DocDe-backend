@@ -22,9 +22,4 @@ public class RedisCacheService {
     public Object getCachedData(String key) {
         return redisTemplate.opsForValue().get(key);
     }
-
-/*    // 만약 캐시관리기능을 확장하거나, 수동삭제가 필요하다면 사용할 것 같음.
-    public void removeCachedData(String key) {
-        redisTemplate.delete(key);
-    }*/
 }

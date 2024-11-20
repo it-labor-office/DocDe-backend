@@ -21,23 +21,31 @@ public class ReservationQueueConsumer {
     private final ReservationHandler reservationHandler;
     private final QueueMetricsService queueMetricsService;
     private final ObjectMapper objectMapper;
-    private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(4); // 병렬 워커
+    private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(32); // 병렬 워커
     private boolean isProcessorRunning = false; // 상태 플래그
 
     public synchronized void startQueueProcessor(RedisQueueService redisQueueService) {
+
         if (!isProcessorRunning) {
-            log.info("Starting Queue Processor...");
             isProcessorRunning = true;
 
-            executorService.scheduleAtFixedRate(() -> {
-                try {
-                    processQueue(50, redisQueueService); // 배치 크기
-                } catch (Exception e) {
-                    log.error("Queue processing error: {}", e.getMessage(), e);
-                }
-            }, 0, 500, TimeUnit.MILLISECONDS); // 0.5초마다 실행
-        } else {
-            log.info("Queue Processor is already running.");
+            // 고정된 병렬 워커 스레드 풀 사용
+            int numWorkers = 64; // 병렬 워커 수
+            for (int i = 0; i < numWorkers; i++) {
+                executorService.submit(() -> {
+                    while (isProcessorRunning) {
+                        try {
+                            processQueue(350, redisQueueService); // 배치 크기
+                            Thread.sleep(50);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt(); // 스레드 인터럽트 처리
+                            log.warn("큐 프로세서 스레드 인터럽트");
+                        } catch (Exception e) {
+                            log.error("JSON 역직렬화 실패: {}", e.getMessage(), e);
+                        }
+                    }
+                });
+            }
         }
     }
 
@@ -45,7 +53,6 @@ public class ReservationQueueConsumer {
         List<String> batchRequests = redisQueueService.dequeueBatch(batchSize);
 
         if (!batchRequests.isEmpty()) {
-            log.info("Processing {} requests from the queue.", batchRequests.size());
 
             batchRequests.forEach(jsonRequest -> {
                 try {
@@ -63,16 +70,13 @@ public class ReservationQueueConsumer {
 
                 } catch (JsonProcessingException e) {
                     queueMetricsService.processQueueRequest(false); // 역직렬화 실패
-
-                    log.error("Deserialization failed: {}", e.getMessage());
+                    log.error("역직렬화 실패: {}", e.getMessage());
                 } catch (Exception e) {
                     queueMetricsService.processQueueRequest(false); // 예약 처리 실패
 
-                    log.error("Failed to process reservation: {}", e.getMessage(), e);
+                    log.error("예약 처리 실패: {}", e.getMessage(), e);
                 }
             });
-        } else {
-            log.info("No requests in the queue to process.");
         }
     }
 }

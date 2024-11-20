@@ -44,12 +44,10 @@ public class ReservationHandler {
             log.info("End of allowed period: {}", endOfAllowedPeriod);
 
             if (reservationTime.isBefore(startOfToday)) {
-                log.error("Reservation validation failed: {}", ErrorStatus._INVALID_RESERVATION_DATE.getMessage());
                 throw new ApiException(ErrorStatus._INVALID_RESERVATION_DATE);
             }
 
             if (reservationTime.isAfter(endOfAllowedPeriod)) {
-                log.error("Reservation validation failed: {}", ErrorStatus._INVALID_RESERVATION_DATE.getMessage());
                 throw new ApiException(ErrorStatus._INVALID_RESERVATION_DATE);
             }
 
@@ -80,7 +78,7 @@ public class ReservationHandler {
 
         } catch (Exception e) {
             databaseMetricsService.recordDatabaseRequest(false); // DB 저장 실패
-            log.error("Failed to save reservation: {}", e.getMessage(), e);
+            log.error("예약 저장 실패: {}", e.getMessage(), e);
             throw e;
         }
     }

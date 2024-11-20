@@ -2,7 +2,9 @@ package com.docde.domain.reservation.contorller;
 
 
 import com.docde.common.Apiresponse.ApiResponse;
+import com.docde.common.Apiresponse.ErrorStatus;
 import com.docde.common.enums.UserRole;
+import com.docde.common.exceptions.ApiException;
 import com.docde.domain.auth.entity.AuthUser;
 import com.docde.domain.doctor.dto.DoctorResponse;
 import com.docde.domain.patient.dto.PatientResponse;
@@ -12,6 +14,7 @@ import com.docde.domain.reservation.entity.Reservation;
 import com.docde.domain.reservation.service.ReservationPatientService;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.IncorrectResultSizeDataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -29,38 +32,41 @@ public class ReservationPatientController {
             @RequestBody ReservationPatientRequest.CreateReservation createReservationRequestDto,
             @AuthenticationPrincipal AuthUser authUser) {
 
-        Reservation reservation = reservationPatientService.createReservation(
-                createReservationRequestDto.doctorId(),
-                createReservationRequestDto.reservationTime(),
-                createReservationRequestDto.reservationReason(),
-                authUser);
+            // 예약 로직 실행
+            Reservation reservation = reservationPatientService.createReservation(
+                    createReservationRequestDto.doctorId(),
+                    createReservationRequestDto.reservationTime(),
+                    createReservationRequestDto.reservationReason(),
+                    authUser);
 
-        if (reservation == null) {
-            return ResponseEntity.status(HttpStatus.ACCEPTED)
-                    .body(ApiResponse.onSuccess(
-                            new ReservationPatientResponse.ReservationWithPatientAndDoctor(
-                                    null,
-                                    "예약 요청이 큐에 추가되었습니다.",
-                                    null,
-                                    null,
-                                    null,
-                                    null
-                            )
-                    ));
-        }
+            // 비동기 큐에 추가된 경우
+            if (reservation == null) {
+                return ResponseEntity.status(HttpStatus.ACCEPTED)
+                        .body(ApiResponse.onSuccess(
+                                new ReservationPatientResponse.ReservationWithPatientAndDoctor(
+                                        null,
+                                        "예약 요청이 큐에 추가되었습니다.",
+                                        null,
+                                        null,
+                                        null,
+                                        null
+                                )
+                        ));
+            }
 
-        ApiResponse<ReservationPatientResponse.ReservationWithPatientAndDoctor> response = ApiResponse.onCreated(
-                new ReservationPatientResponse.ReservationWithPatientAndDoctor(
-                        reservation.getId(),
-                        reservation.getReservationReason(),
-                        reservation.getStatus(),
-                        reservation.getRejectReason(),
-                        new PatientResponse(reservation.getPatient()),
-                        new DoctorResponse(reservation.getDoctor())
-                )
-        );
+            // 예약이 성공적으로 생성된 경우
+            ApiResponse<ReservationPatientResponse.ReservationWithPatientAndDoctor> response = ApiResponse.onCreated(
+                    new ReservationPatientResponse.ReservationWithPatientAndDoctor(
+                            reservation.getId(),
+                            reservation.getReservationReason(),
+                            reservation.getStatus(),
+                            reservation.getRejectReason(),
+                            new PatientResponse(reservation.getPatient()),
+                            new DoctorResponse(reservation.getDoctor())
+                    )
+            );
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PutMapping("/reservations/{reservationId}/cancel")

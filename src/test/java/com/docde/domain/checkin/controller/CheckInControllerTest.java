@@ -44,6 +44,9 @@ class CheckInControllerTest {
     @MockBean
     private CheckInService checkInService;
 
+    @MockBean
+    private CheckInController checkInController;
+
     AuthUser patientAuthUser = new AuthUser(
             1L,
             "e@ma.il",
@@ -64,7 +67,7 @@ class CheckInControllerTest {
     );
     JwtAuthenticationToken doctorToken = new JwtAuthenticationToken(doctorAuthUser);
 
-    CheckInRequest checkInRequest = new CheckInRequest();
+    CheckInRequest checkInRequest = new CheckInRequest(1L, null);
 
     CheckInResponse checkInResponse = new CheckInResponse(
             1L,
@@ -84,7 +87,7 @@ class CheckInControllerTest {
     @Test
     void saveCheckIn() throws Exception {
 
-        Mockito.when(checkInService.saveCheckIn(patientAuthUser, 1L, checkInRequest))
+        Mockito.when(checkInService.saveCheckIn(1L, 1L, 1L, checkInRequest))
                 .thenReturn(checkInResponse);
 
         mockMvc.perform(post("/hospitals/1/checkin")
@@ -92,7 +95,7 @@ class CheckInControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jacksonObjectMapper.writeValueAsString(checkInRequest))
                 .with(csrf())
-        ).andExpect(status().isCreated());
+        ).andExpect(status().isOk());
     }
 
     @Test

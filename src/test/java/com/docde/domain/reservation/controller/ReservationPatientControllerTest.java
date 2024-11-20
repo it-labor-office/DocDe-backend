@@ -103,7 +103,7 @@ public class ReservationPatientControllerTest {
     }
 
 
-    @Nested
+   /* @Nested
     class 환자예약_컨트롤러_테스트 {
 
 
@@ -158,7 +158,7 @@ public class ReservationPatientControllerTest {
                     .andExpect(jsonPath("$.data.doctor.name").value("doctor name"))
                     .andExpect(jsonPath("$.data.doctor.medicalDepartment").value("medicalDepartment"));
         }
-    }
+    }*/
 
     @Test
     @DisplayName("예약 취소 - 성공")

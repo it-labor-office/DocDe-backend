@@ -1,11 +1,21 @@
 # 1. JDK 이미지 선택 (예: OpenJDK 17)
-FROM openjdk:17-jdk-alpine
+FROM openjdk:17-alpine
 
+RUN apk update && apk add --no-cache ca-certificates
+COPY ./ca.crt /usr/local/share/ca-certificates/ca.crt
 # 2. JAR 파일 복사
 ARG JAR_FILE=build/libs/*.jar
 COPY ${JAR_FILE} app.jar
+
+#RUN keytool -importcert -file /tmp/ca.crt -keystore /tmp/truststore.p12 -storetype PKCS12 -alias "ca" -noprompt -storepass changeit
+#RUN keytool -import -trustcacerts -keystore /etc/ssl/certs/java/cacerts -storepass changeit -noprompt -alias customcert -file /etc/ssl/certs/cert.pem
+#RUN cp /tmp/truststore.p12 /etc/ssl/certs/truststore.p12
+RUN update-ca-certificates && \
+    keytool -import -noprompt -trustcacerts -alias my_cert -file /usr/local/share/ca-certificates/ca.crt -keystore $JAVA_HOME/lib/security/cacerts -storepass changeit
+
 
 ENV SPRING_PROFILES_ACTIVE=prod
 
 # 3. JAR 파일 실행
 ENTRYPOINT ["java", "-jar", "/app.jar"]
+CMD ["${JAVA_OPTS}"]
