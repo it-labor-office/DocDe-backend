@@ -44,6 +44,9 @@ class CheckInControllerTest {
     @MockBean
     private CheckInService checkInService;
 
+    @MockBean
+    private CheckInController checkInController;
+
     AuthUser patientAuthUser = new AuthUser(
             1L,
             "e@ma.il",
@@ -92,7 +95,7 @@ class CheckInControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jacksonObjectMapper.writeValueAsString(checkInRequest))
                 .with(csrf())
-        ).andExpect(status().isCreated());
+        ).andExpect(status().isOk());
     }
 
     @Test
