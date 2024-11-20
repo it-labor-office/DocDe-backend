@@ -1,6 +1,6 @@
 package com.docde.domain.medicalRecord.service;
 
-import com.docde.common.Apiresponse.ErrorStatus;
+import com.docde.common.response.ErrorStatus;
 import com.docde.common.enums.Gender;
 import com.docde.common.enums.UserRole;
 import com.docde.common.exceptions.ApiException;

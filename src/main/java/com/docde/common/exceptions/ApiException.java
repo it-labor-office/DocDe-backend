@@ -1,6 +1,6 @@
 package com.docde.common.exceptions;
 
-import com.docde.common.Apiresponse.BaseCode;
+import com.docde.common.response.BaseCode;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 

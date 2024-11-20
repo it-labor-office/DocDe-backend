@@ -1,7 +1,8 @@
-package com.docde.common.Apiresponse;
+package com.docde.common.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.http.ResponseEntity;
 
 @Getter
 @AllArgsConstructor
@@ -29,5 +30,9 @@ public class ApiResponse<T> {
 
     public static ApiResponse<String> onFailure(ErrorStatus errorStatus) {
         return new ApiResponse<>(errorStatus.getMessage(), errorStatus.getStatusCode(), null);
+    }
+
+    public ResponseEntity<ApiResponse<T>> toEntity() {
+        return ResponseEntity.status(statusCode).body(this);
     }
 }

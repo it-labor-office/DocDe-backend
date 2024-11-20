@@ -1,6 +1,6 @@
 package com.docde.config;
 
-import com.docde.common.Apiresponse.ErrorStatus;
+import com.docde.common.response.ErrorStatus;
 import com.docde.common.enums.TokenType;
 import com.docde.common.enums.UserRole;
 import com.docde.common.exceptions.ApiException;

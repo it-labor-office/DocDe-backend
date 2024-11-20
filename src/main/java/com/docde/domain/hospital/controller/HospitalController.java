@@ -1,13 +1,12 @@
 package com.docde.domain.hospital.controller;
 
-import com.docde.common.Apiresponse.ApiResponse;
 import com.docde.common.enums.UserRole;
+import com.docde.common.response.ApiResponse;
 import com.docde.domain.auth.entity.AuthUser;
 import com.docde.domain.hospital.dto.request.*;
 import com.docde.domain.hospital.dto.response.*;
 import com.docde.domain.hospital.service.HospitalService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -20,12 +19,6 @@ import org.springframework.web.bind.annotation.*;
 public class HospitalController {
     private final HospitalService hospitalService;
 
-//    @GetMapping //테스트용 코드
-//    public ApiResponse<Null> test(@AuthenticationPrincipal UserDetails userDetails) {
-//        hospitalService.ModifyingTest();
-//        return ApiResponse.onSuccess(null);
-//    }
-
     //병원 정보 생성
     @PostMapping
     //권한체크를 컨트롤러부분에서할수있습니다.
@@ -33,7 +26,7 @@ public class HospitalController {
     public ResponseEntity<ApiResponse<HospitalPostResponseDto>> postHospital(@RequestBody HospitalPostRequestDto requestDto,
                                                                              @AuthenticationPrincipal AuthUser authUser) {
         HospitalPostResponseDto responseDto = hospitalService.postHospital(requestDto, authUser);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.onCreated(responseDto));
+        return ApiResponse.onCreated(responseDto).toEntity();
     }
 
     @PostMapping("/{hospitalId}")
@@ -44,37 +37,37 @@ public class HospitalController {
             @RequestBody HospitalPostDoctorRequestDto requestDto
             , @AuthenticationPrincipal AuthUser authUser) {
         HospitalPostDoctorResponseDto responseDto = hospitalService.addDoctorToHospital(hospitalId, requestDto, authUser);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.onCreated(responseDto));
+        return ApiResponse.onCreated(responseDto).toEntity();
     }
 
     //병원 정보 읽어 오기
     @GetMapping("/{hospitalId}")
-    public ApiResponse<HospitalGetResponseDto> getHospital(@PathVariable Long hospitalId,
-                                                           @AuthenticationPrincipal AuthUser authUser) {
+    public ResponseEntity<ApiResponse<HospitalGetResponseDto>> getHospital(@PathVariable Long hospitalId,
+                                                                           @AuthenticationPrincipal AuthUser authUser) {
         HospitalGetResponseDto responseDto = hospitalService.getHospital(hospitalId, authUser);
-        return ApiResponse.onCreated(responseDto);
+        return ApiResponse.onSuccess(responseDto).toEntity();
     }
 
     //병원 정보 수정
     @PutMapping("/{hospitalId}")
     @Secured(UserRole.Authority.DOCTOR_PRESIDENT)
     @PreAuthorize("#authUser.hospitalId == #hospitalId and hasRole('ROLE_DOCTOR_PRESIDENT')")
-    public ApiResponse<HospitalUpdateResponseDto> putHospitalInfo(@RequestBody HospitalUpdateRequestDto requestDto,
-                                                                  @PathVariable Long hospitalId,
-                                                                  @AuthenticationPrincipal AuthUser authUser) {
+    public ResponseEntity<ApiResponse<HospitalUpdateResponseDto>> putHospitalInfo(@RequestBody HospitalUpdateRequestDto requestDto,
+                                                                                  @PathVariable Long hospitalId,
+                                                                                  @AuthenticationPrincipal AuthUser authUser) {
         HospitalUpdateResponseDto responseDto = hospitalService.putHospital(requestDto, hospitalId, authUser);
-        return ApiResponse.onSuccess(responseDto);
+        return ApiResponse.onSuccess(responseDto).toEntity();
     }
 
 
     @PatchMapping("/{hospitalId}")
     @Secured(UserRole.Authority.DOCTOR_PRESIDENT)
     @PreAuthorize("#authUser.hospitalId == #hospitalId and hasRole('ROLE_DOCTOR_PRESIDENT')")
-    public ApiResponse<HospitalUpdateResponseDto> patchHospitalInfo(@RequestBody HospitalUpdateRequestDto requestDto,
-                                                                    @PathVariable Long hospitalId,
-                                                                    @AuthenticationPrincipal AuthUser authUser) {
+    public ResponseEntity<ApiResponse<HospitalUpdateResponseDto>> patchHospitalInfo(@RequestBody HospitalUpdateRequestDto requestDto,
+                                                                                    @PathVariable Long hospitalId,
+                                                                                    @AuthenticationPrincipal AuthUser authUser) {
         HospitalUpdateResponseDto responseDto = hospitalService.patchHospital(requestDto, hospitalId, authUser);
-        return ApiResponse.onSuccess(responseDto);
+        return ApiResponse.onSuccess(responseDto).toEntity();
     }
 
     //병원 시간표 생성
@@ -89,7 +82,7 @@ public class HospitalController {
                 requestDto,
                 authUser,
                 hospitalId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.onCreated(responseDto));
+        return ApiResponse.onCreated(responseDto).toEntity();
     }
 
     //병원 시간표 수정
@@ -103,14 +96,14 @@ public class HospitalController {
                 requestDto,
                 authUser,
                 hospitalId);
-        return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.onCreated(responseDto));
+        return ApiResponse.onCreated(responseDto).toEntity();
     }
 
     @DeleteMapping("/{hospitalId}")
     @PreAuthorize("#hospitalId==#authUser.hospitalId and hasRole('ROLE_DOCTOR_PRESIDENT')")
-    public ApiResponse<HospitalDeleteResponseDto> deleteHospital(@AuthenticationPrincipal AuthUser authUser,
-                                                                 @PathVariable Long hospitalId) {
+    public ResponseEntity<ApiResponse<HospitalDeleteResponseDto>> deleteHospital(@AuthenticationPrincipal AuthUser authUser,
+                                                                                 @PathVariable Long hospitalId) {
         HospitalDeleteResponseDto responseDto = hospitalService.deleteHospital(authUser);
-        return ApiResponse.onSuccess(responseDto);
+        return ApiResponse.onSuccess(responseDto).toEntity();
     }
 }

@@ -1,9 +1,8 @@
 package com.docde.domain.review.service;
 
-import com.docde.common.Apiresponse.ErrorStatus;
+import com.docde.common.response.ErrorStatus;
 import com.docde.common.enums.UserRole;
 import com.docde.common.exceptions.ApiException;
-import com.docde.config.JwtUtil;
 import com.docde.domain.auth.entity.AuthUser;
 import com.docde.domain.medicalRecord.entity.MedicalRecord;
 import com.docde.domain.medicalRecord.repository.MedicalRecordRepository;
@@ -21,7 +20,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.lang.reflect.Field;
@@ -30,7 +28,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import static com.docde.domain.patient.entity.QPatient.patient;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -62,7 +59,7 @@ public class ReviewServiceTest {
     void setUp() {  // 테스트의 준비 작업 수행 역할
 
         // Mock User 생성
-                user = User.builder()
+        user = User.builder()
                 .email("test@example.com")
                 .password("password")
                 .userRole(UserRole.ROLE_PATIENT)
@@ -88,11 +85,11 @@ public class ReviewServiceTest {
                 .build();
 
         Patient patient = new Patient();
-        ReflectionTestUtils.setField(patient,"name","test");
+        ReflectionTestUtils.setField(patient, "name", "test");
 
         medicalRecord = new MedicalRecord();
-        ReflectionTestUtils.setField(medicalRecord,"patient",patient);
-        ReflectionTestUtils.setField(medicalRecord,"medicalRecordId",1L);
+        ReflectionTestUtils.setField(medicalRecord, "patient", patient);
+        ReflectionTestUtils.setField(medicalRecord, "medicalRecordId", 1L);
 
         review = new Review(1L, 5L, "contents", user, medicalRecord);
     }
@@ -127,7 +124,7 @@ public class ReviewServiceTest {
     @Test
     public void 리뷰_생성_시_유저를_찾을_수_없음() {
 
-        ReviewRequestDto requestDto = new ReviewRequestDto(medicalRecord.getMedicalRecordId(),user.getId(), 5L, "jmt");
+        ReviewRequestDto requestDto = new ReviewRequestDto(medicalRecord.getMedicalRecordId(), user.getId(), 5L, "jmt");
 
         // given
         given(userRepository.findById(authUser.getId())).willReturn(Optional.empty());
@@ -143,7 +140,7 @@ public class ReviewServiceTest {
     @Test
     void 리뷰_생성_시_진료기록_찾을_수_없음() {
 
-        ReviewRequestDto requestDto = new ReviewRequestDto(medicalRecord.getMedicalRecordId(),user.getId(), 5L, "jmt");
+        ReviewRequestDto requestDto = new ReviewRequestDto(medicalRecord.getMedicalRecordId(), user.getId(), 5L, "jmt");
 
         // given
         given(userRepository.findById(authUser.getId())).willReturn(Optional.of(user));
@@ -222,7 +219,7 @@ public class ReviewServiceTest {
 
         MedicalRecord medicalRecord2 = new MedicalRecord();
         ReflectionTestUtils.setField(medicalRecord2, "patient", patient2);
-        ReflectionTestUtils.setField(medicalRecord2,"medicalRecordId",2L);
+        ReflectionTestUtils.setField(medicalRecord2, "medicalRecordId", 2L);
 
 
         Review review2 = new Review(2L, 4L, "contents2", user, medicalRecord2);

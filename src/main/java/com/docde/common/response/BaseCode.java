@@ -1,4 +1,4 @@
-package com.docde.common.Apiresponse;
+package com.docde.common.response;
 
 public interface BaseCode {
     public ReasonDto getReasonHttpStatus();
