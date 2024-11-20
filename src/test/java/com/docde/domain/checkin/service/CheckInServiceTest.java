@@ -78,7 +78,7 @@ class CheckInServiceTest {
     private AuthUser mockPatientAuthUser = new AuthUser(2L, "asdf@asdf.asdf", UserRole.ROLE_PATIENT, null, 1L, null);
     private AuthUser mockDoctorAuthUser = new AuthUser(1L, "zxcv@zxcv.zxcv", UserRole.ROLE_DOCTOR, 1L, null, 1L);
 
-    private CheckInRequest mokCheckInRequest = new CheckInRequest();
+    private CheckInRequest mokCheckInRequest = new CheckInRequest(1L, null);
 
 
     @BeforeEach
@@ -158,7 +158,7 @@ class CheckInServiceTest {
         setField(mokCheckInRequest, "doctorId", 1L);
         setField(mokCheckInRequest, "status", null);
 
-        BDDMockito.given(patientRepository.findByUser_Id(mockPatientAuthUser.getId())).willReturn(Optional.of(mokPatient));
+        BDDMockito.given(patientRepository.findByUser_Id(1L)).willReturn(Optional.of(mokPatient));
         BDDMockito.given(hospitalRepository.findById(1L)).willReturn(Optional.of(mokHospital));
         BDDMockito.given(doctorRepository.findById(mokCheckInRequest.getDoctorId())).willReturn(Optional.of(mokDoctor));
         ValueOperations<String, Object> valueOperations = Mockito.mock(ValueOperations.class);
@@ -168,7 +168,7 @@ class CheckInServiceTest {
         BDDMockito.given(redisTemplate.opsForList()).willReturn(listOperations);
 
         // w
-        CheckInResponse checkInResponse = checkInService.saveCheckIn(mockPatientAuthUser, 1L, mokCheckInRequest);
+        CheckInResponse checkInResponse = checkInService.saveCheckIn(1L, 1L, 1L, mokCheckInRequest);
 
         // t
         Assertions.assertNotNull(checkInResponse);
@@ -184,9 +184,10 @@ class CheckInServiceTest {
         BDDMockito.given(valueOperations.get("number of hospital1")).willReturn(1L);
         ListOperations<String, Object> listOperations = Mockito.mock(ListOperations.class);
         BDDMockito.given(redisTemplate.opsForList()).willReturn(listOperations);
+        BDDMockito.given(doctorRepository.findById(1L)).willReturn(Optional.of(mokDoctor));
 
         // w
-        CheckInResponse checkInResponse = checkInService.saveCheckIn(mockPatientAuthUser, 1L, mokCheckInRequest);
+        CheckInResponse checkInResponse = checkInService.saveCheckIn(1L, 1L, 1L, mokCheckInRequest);
 
         // t
         Assertions.assertNotNull(checkInResponse);
@@ -200,7 +201,7 @@ class CheckInServiceTest {
 
         // w
         ApiException exception = assertThrows(ApiException.class, () -> {
-            checkInService.saveCheckIn(mockPatientAuthUser, 1L, mokCheckInRequest);
+            checkInService.saveCheckIn(1L, 1L, 1L, mokCheckInRequest);
         });
         // t
         Assertions.assertEquals("이미 진행중인 접수가 있습니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
@@ -227,7 +228,7 @@ class CheckInServiceTest {
 
         // w
         ApiException exception = assertThrows(ApiException.class, () -> {
-            checkInService.saveCheckIn(mockPatientAuthUser, 1L, mokCheckInRequest);
+            checkInService.saveCheckIn(1L, 1L, 1L, mokCheckInRequest);
         });
         // t
         Assertions.assertEquals("해당 병원에 소속된 의사가 아닙니다.", exception.getErrorCode().getReasonHttpStatus().getMessage());
