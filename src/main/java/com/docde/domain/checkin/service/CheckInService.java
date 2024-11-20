@@ -1,6 +1,7 @@
 package com.docde.domain.checkin.service;
 
 import com.docde.common.Apiresponse.ErrorStatus;
+import com.docde.common.aop.CurrentCount;
 import com.docde.common.aop.DistributedLock;
 import com.docde.common.exceptions.ApiException;
 import com.docde.domain.auth.entity.AuthUser;
@@ -16,6 +17,7 @@ import com.docde.domain.hospital.entity.Hospital;
 import com.docde.domain.hospital.repository.HospitalRepository;
 import com.docde.domain.patient.entity.Patient;
 import com.docde.domain.patient.repository.PatientRepository;
+import com.docde.domain.queue.service.QueueService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
@@ -38,8 +40,10 @@ public class CheckInService {
     // 접수하기
     @Transactional
     @DistributedLock(key = "saveCheckIn", waitTime = 10, leaseTime = 5)
+    @CurrentCount
     public CheckInResponse saveCheckIn(
-            AuthUser authUser,
+            Long patientId,
+            Long userId,
             Long hospitalId,
             CheckInRequest checkInRequest
     ) {
@@ -49,7 +53,7 @@ public class CheckInService {
                 .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_HOSPITAL));
 
         // 이미 진행중인 접수가 있으면 예외처리
-        if (checkInRepository.checkCheckInExist(authUser.getPatientId())) {
+        if (checkInRepository.checkCheckInExist(patientId)) {
             throw new ApiException(ErrorStatus._BAD_REQUEST_ALREADY_CHECKED_IN);
         }
 
@@ -63,7 +67,7 @@ public class CheckInService {
                 throw new ApiException(ErrorStatus._BAD_REQUEST_DOCTOR_NOT_BELONG_TO_HOSPITAL);
             }
 
-            Patient patient = patientRepository.findByUser_Id(authUser.getId())
+            Patient patient = patientRepository.findByUser_Id(userId)
                     .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
 
             Long num = getNum("number of hospital" + hospital.getId());
@@ -84,7 +88,7 @@ public class CheckInService {
 
             return checkInResponseFromCheckIn(checkIn);
         } else {
-            Patient patient = patientRepository.findByUser_Id(authUser.getPatientId())
+            Patient patient = patientRepository.findByUser_Id(patientId)
                     .orElseThrow(() -> new ApiException(ErrorStatus._NOT_FOUND_PATIENT));
 
             Long num = getNum("number of hospital" + hospital.getId());
@@ -270,10 +274,7 @@ public class CheckInService {
 
     private Long getNum(String key) {
         String value = String.valueOf(redisTemplate.opsForValue().get(key));
-        if (value == null) {
-            value = "0";
-        }
-        return Long.parseLong(value);
+        return value.equals("null") ? 0L : Long.parseLong(value);
     }
 
     private void setNum(String key, Long value) {
