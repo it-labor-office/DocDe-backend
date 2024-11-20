@@ -16,7 +16,6 @@ import com.docde.domain.medicalRecord.service.MedicalRecordService;
 import com.docde.domain.patient.entity.Patient;
 import com.docde.domain.user.entity.User;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.Jwt;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
@@ -310,7 +309,7 @@ public class MedicalRecordControllerTest {
                             .with(authentication(authToken)) // 인증 정보 추가
                             .contentType(MediaType.APPLICATION_JSON)
                             .with(csrf()))
-                    .andExpect(status().isOk());
+                    .andExpect(status().isNoContent());
         }
     }
 }

@@ -1,6 +1,6 @@
 package com.docde.domain.checkin.service;
 
-import com.docde.common.Apiresponse.ErrorStatus;
+import com.docde.common.response.ErrorStatus;
 import com.docde.common.aop.CurrentCount;
 import com.docde.common.aop.DistributedLock;
 import com.docde.common.exceptions.ApiException;

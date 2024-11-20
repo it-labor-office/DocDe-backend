@@ -1,6 +1,6 @@
 package com.docde.domain.auth.service;
 
-import com.docde.common.Apiresponse.ErrorStatus;
+import com.docde.common.response.ErrorStatus;
 import com.docde.common.enums.Gender;
 import com.docde.common.enums.TokenType;
 import com.docde.common.enums.UserRole;

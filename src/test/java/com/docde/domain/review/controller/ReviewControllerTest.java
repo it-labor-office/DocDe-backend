@@ -308,10 +308,7 @@ public class ReviewControllerTest {
             mockMvc.perform(delete("/reviews/{reviewId}", reviewId)
                             .with(authentication(authToken))
                             .with(csrf()))
-                    .andExpect(status().isOk())
-                    .andExpect(jsonPath("$.message").value("Ok"))
-                    .andExpect(jsonPath("$.statusCode").value(200))
-                    .andExpect(jsonPath("$.data").doesNotExist());  // data 필드는 null이므로 존재하지 않음을 확인
+                    .andExpect(status().isNoContent());  // data 필드는 null이므로 존재하지 않음을 확인
         }
     }
 }

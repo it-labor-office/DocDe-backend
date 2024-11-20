@@ -1,6 +1,6 @@
 package com.docde.domain.reservation.service;
 
-import com.docde.common.Apiresponse.ErrorStatus;
+import com.docde.common.response.ErrorStatus;
 import com.docde.common.aop.Lockable;
 import com.docde.common.enums.UserRole;
 import com.docde.common.exceptions.ApiException;
@@ -20,7 +20,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -58,7 +57,6 @@ public class ReservationPatientService {
     }
 
 
-
     private boolean HighTraffic() {
         long now = System.currentTimeMillis();
 
@@ -77,7 +75,6 @@ public class ReservationPatientService {
         // 초당 요청 속도가 특정 기준 이상일 경우 고트래픽으로 판단
         return requestsPerSecond > 2000.0;
     }
-
 
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
