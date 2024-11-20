@@ -6,7 +6,7 @@ import com.docde.domain.checkin.dto.CheckInRequest;
 import com.docde.domain.checkin.dto.CheckInResponse;
 import com.docde.domain.checkin.dto.CheckInResponseOfPatient;
 import com.docde.domain.checkin.service.CheckInService;
-import com.docde.domain.queue.service.QueueService;
+import com.docde.domain.checkin.queue.service.QueueService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
