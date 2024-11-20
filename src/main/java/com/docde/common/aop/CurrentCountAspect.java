@@ -7,7 +7,7 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
 
-import static com.docde.domain.queue.service.QueueService.CURRENT_COUNT_KEY;
+import static com.docde.domain.checkin.queue.service.QueueService.CURRENT_COUNT_KEY;
 
 @Aspect
 @Component

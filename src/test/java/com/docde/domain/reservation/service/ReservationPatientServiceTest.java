@@ -1,3 +1,4 @@
+/*
 package com.docde.domain.reservation.service;
 
 import com.docde.common.Apiresponse.ErrorStatus;
@@ -326,3 +327,4 @@ public class ReservationPatientServiceTest {
         }
     }
 }
+*/

@@ -1,4 +1,4 @@
-package com.docde.domain.queue.service;
+package com.docde.domain.checkin.queue.service;
 
 import com.docde.common.exceptions.ApiException;
 import com.docde.domain.auth.entity.AuthUser;
