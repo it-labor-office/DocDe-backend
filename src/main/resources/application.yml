@@ -35,3 +35,21 @@ spring:
     elasticsearch:
       repositories:
         enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: prometheus
+  endpoint:
+    prometheus:
+      enabled: true
+
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: "prometheus"
+#  metrics:
+#    tags:
+#      application: "DocDe"

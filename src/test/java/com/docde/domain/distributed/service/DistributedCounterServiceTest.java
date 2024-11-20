@@ -18,15 +18,12 @@ import com.docde.domain.user.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.util.ReflectionTestUtils;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.docde.domain.user.entity.QUser.user;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 
@@ -55,39 +52,6 @@ public class DistributedCounterServiceTest {
     private PatientRepository patientRepository;
 
     private static final LocalDateTime VALID_RESERVATION_TIME = LocalDateTime.now();
-
-
-    */
-/*@Test
-    void 카운터_저장() {
-        // given
-        DistributedCounter counter = new DistributedCounter(VALID_DOCTOR_ID, 0, VALID_RESERVATION_TIME);
-
-        // when
-        distributedCounterService.save(counter);
-
-        // then
-        verify(distributedCounterRepository, times(1)).save(counter);
-    }*//*
-
-
-
-
-*/
-/*    @Test
-    void 카운터가_존재하지_않을_경우_새로_생성() {
-        // given
-        given(distributedCounterRepository.findByDoctorIdAndReservationTime(VALID_DOCTOR_ID, VALID_RESERVATION_TIME))
-                .willReturn(Optional.empty());
-
-        // when
-        Long counterId = distributedCounterService.getCounterIdForDoctor(VALID_DOCTOR_ID, VALID_RESERVATION_TIME);
-
-        // then
-        verify(distributedCounterRepository, times(1)).save(any(DistributedCounter.class));
-        assertNotNull(counterId);
-    }*//*
-
 
 
     @Test
@@ -181,22 +145,5 @@ public class DistributedCounterServiceTest {
         long reservationCount = reservationRepository.count();
         assertEquals(threadCount, reservationCount, "동시성 테스트에서 모든 예약이 성공적으로 생성되었습니다.");
     }
-
-
-*/
-/*    @Test
-    void 예약_생성_카운터_증가_실패() {
-        // given
-        given(distributedCounterRepository.incrementCounter(VALID_COUNTER_ID)).willThrow(new IllegalArgumentException("카운트를 찾을 수 없습니다."));
-
-        // when & then
-        ApiException exception = assertThrows(ApiException.class, () -> {
-            distributedCounterService.createReservation(DOCTOR_ID, "예약 사유", LocalDate.now(), authUser);
-        });
-
-        assertEquals(ErrorStatus._COUNTER_INCREMENT_FAILED.getMessage(), exception.getMessage());
-    }*//*
-
-
 }
 */

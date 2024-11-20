@@ -55,6 +55,9 @@ public class AuthService {
         if (!phone.matches("^[0-9]{11}$")) throw new ApiException(ErrorStatus._INVALID_PHONE_FORM);
         if (!_isAuthenticatedEmail(email, code)) throw new ApiException(ErrorStatus._EMAIL_MUST_BE_AUTHENTICATED);
 
+        // 웹소켓 테스트용
+        redisTemplate.convertAndSend("test", "qwerasdfzxcv");
+
         String encodedPassword = passwordEncoder.encode(password);
         Patient patient = Patient.builder().name(name).address(address).phone(phone).gender(gender).build();
         User user = User.builder().email(email).password(encodedPassword).userRole(UserRole.ROLE_PATIENT).patient(patient).build();

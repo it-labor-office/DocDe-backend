@@ -20,21 +20,12 @@ public class QueueMetricsService {
     public void processQueueRequest(boolean success) {
         if (success) {
             successCounter.increment();
-            log.info("Queue request succeeded. Total success: {}", successCounter.count());
+            log.info("성공한 총 요청 큐: {}", successCounter.count());
 
         } else {
             failureCounter.increment();
-            log.info("Queue request failed. Total failure: {}", failureCounter.count());
+            log.info("실패한 총 요청 큐: {}", failureCounter.count());
 
         }
-    }
-
-    public double getSuccessCount() {
-        return successCounter.count();
-    }
-
-    // 실패 카운트 조회
-    public double getFailureCount() {
-        return failureCounter.count();
     }
 }

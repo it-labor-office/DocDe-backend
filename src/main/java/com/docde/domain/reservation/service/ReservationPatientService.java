@@ -19,6 +19,8 @@ import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.Optional;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -34,26 +36,26 @@ public class ReservationPatientService {
     private final Queue<Long> requestTimestamps = new ConcurrentLinkedQueue<>();
     private final MeterRegistry meterRegistry;
 
-/*    public Reservation createReservation(Long doctorId, LocalDateTime reservationTime, String reservationReason, AuthUser authUser) {
-
-
-        return createReservationWithLock(doctorId, reservationTime, reservationReason, authUser);
-    }*/
-
     public Reservation createReservation(Long doctorId, LocalDateTime reservationTime, String reservationReason, AuthUser authUser) {
 
-        // 높은 트래픽 시 비동기 큐에 예약 요청 추가
-        if (HighTraffic()) {
+        LocalTime startOfHighTraffic = LocalTime.of(8, 0);
+        LocalTime endOfHighTraffic = LocalTime.of(10, 0);
+        LocalTime reservationLocalTime = reservationTime.toLocalTime();
+
+        if ((reservationLocalTime.isAfter(startOfHighTraffic) || reservationLocalTime.equals(startOfHighTraffic)) &&
+                (reservationLocalTime.isBefore(endOfHighTraffic) || reservationLocalTime.equals(endOfHighTraffic))) {
+
             ReservationPatientRequest.CreateReservation request = new ReservationPatientRequest.CreateReservation(
                     reservationReason, doctorId, reservationTime, authUser.getPatientId());
-            log.info("Adding reservation request to queue: {}", request);
+            log.info("예약요청 큐가 들어갔는지: {}", request);
 
             redisQueueService.enqueueRequest(request);
             return null;  // 비동기 큐에 추가되었으므로 null 반환
         }
-        return null;
-    }
 
+        // 그 외 시간대는 캐싱+락으로 처리
+        return createReservationWithLock(doctorId, reservationTime, reservationReason, authUser);
+    }
 
 
 
@@ -73,8 +75,10 @@ public class ReservationPatientService {
         double requestsPerSecond = (double) requestTimestamps.size() / (elapsedTime / 1000.0);
 
         // 초당 요청 속도가 특정 기준 이상일 경우 고트래픽으로 판단
-        return requestsPerSecond > 800.0;
+        return requestsPerSecond > 2000.0;
     }
+
+
 
     @Transactional(isolation = Isolation.SERIALIZABLE)
     @Lockable
@@ -82,7 +86,6 @@ public class ReservationPatientService {
 
         String cacheKey = "doctor:" + doctorId + ", availability:" + reservationTime;
 
-        // 낮은 트래픽 시 캐싱과 락을 사용해 예약 처리
         String isAvailableString = (String) redisCacheService.getCachedData(cacheKey);
         Boolean Available = isAvailableString != null ? Boolean.parseBoolean(isAvailableString) : null;
 
