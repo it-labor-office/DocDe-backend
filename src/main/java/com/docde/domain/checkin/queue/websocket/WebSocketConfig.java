@@ -1,4 +1,4 @@
-package com.docde.domain.queue.websocket;
+package com.docde.domain.checkin.queue.websocket;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Configuration;
