@@ -158,7 +158,7 @@ class CheckInServiceTest {
         setField(mokCheckInRequest, "doctorId", 1L);
         setField(mokCheckInRequest, "status", null);
 
-        BDDMockito.given(patientRepository.findByUser_Id(mockPatientAuthUser.getId())).willReturn(Optional.of(mokPatient));
+        BDDMockito.given(patientRepository.findByUser_Id(1L)).willReturn(Optional.of(mokPatient));
         BDDMockito.given(hospitalRepository.findById(1L)).willReturn(Optional.of(mokHospital));
         BDDMockito.given(doctorRepository.findById(mokCheckInRequest.getDoctorId())).willReturn(Optional.of(mokDoctor));
         ValueOperations<String, Object> valueOperations = Mockito.mock(ValueOperations.class);
@@ -184,6 +184,7 @@ class CheckInServiceTest {
         BDDMockito.given(valueOperations.get("number of hospital1")).willReturn(1L);
         ListOperations<String, Object> listOperations = Mockito.mock(ListOperations.class);
         BDDMockito.given(redisTemplate.opsForList()).willReturn(listOperations);
+        BDDMockito.given(doctorRepository.findById(1L)).willReturn(Optional.of(mokDoctor));
 
         // w
         CheckInResponse checkInResponse = checkInService.saveCheckIn(1L, 1L, 1L, mokCheckInRequest);
