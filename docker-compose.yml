@@ -31,6 +31,7 @@ services:
       test: [ "CMD-SHELL", "mysqladmin ping -h localhost -u root -p${MYSQL_ROOT_PASSWORD} && sleep 5" ]
       interval: 5s
       retries: 10
+
   redis:
     image: redis:6.2
     ports:
@@ -124,6 +125,8 @@ services:
       - xpack.license.self_generated.type=${LICENSE}
       - http.max_content_length=1024mb
       - thread_pool.write.queue_size=2000
+#      - thread_pool.write.size=9
+    #    mem_limit: ${ES_MEM_LIMIT}
     ulimits:
       memlock:
         soft: -1
