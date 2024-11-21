@@ -1,6 +1,6 @@
 package com.docde.domain.reservation.service;
 
-import com.docde.common.Apiresponse.ErrorStatus;
+import com.docde.common.response.ErrorStatus;
 import com.docde.common.exceptions.ApiException;
 import com.docde.domain.doctor.entity.Doctor;
 import com.docde.domain.doctor.repository.DoctorRepository;

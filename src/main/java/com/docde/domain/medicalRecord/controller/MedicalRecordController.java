@@ -1,6 +1,6 @@
 package com.docde.domain.medicalRecord.controller;
 
-import com.docde.common.Apiresponse.ApiResponse;
+import com.docde.common.response.ApiResponse;
 import com.docde.domain.auth.entity.AuthUser;
 import com.docde.domain.medicalRecord.dto.request.DoctorMedicalRecordRequestDto;
 import com.docde.domain.medicalRecord.dto.response.DoctorMedicalRecordResponseDto;
@@ -8,7 +8,6 @@ import com.docde.domain.medicalRecord.dto.response.MedicalRecordResponseDto;
 import com.docde.domain.medicalRecord.dto.response.PatientMedicalRecordResponseDto;
 import com.docde.domain.medicalRecord.service.MedicalRecordService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -30,16 +29,13 @@ public class MedicalRecordController {
         // 진료 기록 생성
         MedicalRecordResponseDto responseDto = medicalRecordService.createMedicalRecord(requestDto, authUser);
 
-        ApiResponse<MedicalRecordResponseDto> apiResponse =
-                ApiResponse.createSuccess("진료 기록이 성공적으로 생성되었습니다.", 201, responseDto);
-
-        return ResponseEntity.status(HttpStatus.CREATED).body(apiResponse);
+        return ApiResponse.createSuccess("진료 기록이 성공적으로 생성되었습니다.", 201, responseDto).toEntity();
     }
 
 
     // 특정 진료기록 조회
     @GetMapping("/doctors/medical-records/{medicalRecordId}")
-    public ApiResponse<DoctorMedicalRecordResponseDto> getSpecificDoctorMedicalRecord(
+    public ResponseEntity<ApiResponse<DoctorMedicalRecordResponseDto>> getSpecificDoctorMedicalRecord(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long medicalRecordId,
             @RequestParam(required = false) String description,
@@ -48,33 +44,33 @@ public class MedicalRecordController {
 
         DoctorMedicalRecordResponseDto responseDto = medicalRecordService
                 .getSpecificDoctorMedicalRecord(authUser, medicalRecordId, description, treatmentPlan, doctorComment);
-        return ApiResponse.onSuccess(responseDto);
+        return ApiResponse.onSuccess(responseDto).toEntity();
     }
 
 
     // 의사가 의사용 진료기록 조회
     @GetMapping("/doctors/medical-records")
-    public ApiResponse<List<DoctorMedicalRecordResponseDto>> getDoctorMedicalRecord(
+    public ResponseEntity<ApiResponse<List<DoctorMedicalRecordResponseDto>>> getDoctorMedicalRecord(
             @AuthenticationPrincipal AuthUser authUser) {
 
         List<DoctorMedicalRecordResponseDto> responseDto = medicalRecordService.getDoctorMedicalRecord(authUser);
-        return ApiResponse.onSuccess(responseDto);
+        return ApiResponse.onSuccess(responseDto).toEntity();
     }
 
 
     // 환자가 자신의 진료기록 조회
     @GetMapping("/patients/medical-records")
-    public ApiResponse<List<PatientMedicalRecordResponseDto>> getPatientMedicalRecord(
+    public ResponseEntity<ApiResponse<List<PatientMedicalRecordResponseDto>>> getPatientMedicalRecord(
             @AuthenticationPrincipal AuthUser authUser) {
 
         List<PatientMedicalRecordResponseDto> records = medicalRecordService.getPatientMedicalRecord(authUser);
-        return ApiResponse.onSuccess(records);
+        return ApiResponse.onSuccess(records).toEntity();
     }
 
 
     // 진료기록 수정
     @PutMapping("/doctors/medical-records/{medicalRecordId}")
-    public ApiResponse<MedicalRecordResponseDto> updateMedicalRecord(
+    public ResponseEntity<ApiResponse<MedicalRecordResponseDto>> updateMedicalRecord(
             @PathVariable Long medicalRecordId,
             @RequestBody DoctorMedicalRecordRequestDto doctorRequestDto,
             @AuthenticationPrincipal AuthUser authUser) throws Exception {
@@ -85,18 +81,16 @@ public class MedicalRecordController {
                 authUser
         );
 
-        return ApiResponse.onSuccess(responseDto);
+        return ApiResponse.onSuccess(responseDto).toEntity();
     }
-
 
     // 진료기록 삭제
     @DeleteMapping("/medical-records/{medicalRecordId}")
-    public ApiResponse<Void> deleteMedicalRecord(
+    public ResponseEntity<ApiResponse<Object>> deleteMedicalRecord(
             @PathVariable Long medicalRecordId,
             @AuthenticationPrincipal AuthUser authUser) {
 
         medicalRecordService.deleteMedicalRecord(medicalRecordId, authUser);
-        return ApiResponse.onSuccess(null);
-
+        return ResponseEntity.noContent().build();
     }
 }

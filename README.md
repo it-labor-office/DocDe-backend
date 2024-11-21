@@ -1,86 +1,44 @@
-# README
 
-# ⭐ 프로젝트 개요
+# 📌 병원 예약 사이트 - BackEnd Application 📌
 
-## 병원예약 BackEnd-Application
+---
 
-## 🧑‍⚕️ 프로젝트 이름
 
-## 🏥의사결정(DocDe:Doctor Decision)
+##  🪕 프로젝트 이름 
+### 의사결정(DocDe:Doctor Decision)
 
-## 🪕 **프로젝트 소개**
-
+---
+## 📝 **프로젝트 소개**
 ### 온라인 병원 예약 시스템을 개발하여 환자가 손쉽게 진료 예약을 하고, 대기 시간을 최소화하며, 병원은 효율적으로 환자 데이터를 관리할 수 있도록 하는 프로젝트입니다.
 
 ---
 
-### ⭐ **주요 기술 스택**
-
-***Development***
-
-![https://img.shields.io/badge/IntelliJ_IDEA-000000.svg?style=for-the-badge&logo=intellij-idea&logoColor=white](https://img.shields.io/badge/IntelliJ_IDEA-000000.svg?style=for-the-badge&logo=intellij-idea&logoColor=white)
-
-[https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
-
-[https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
-
-[https://img.shields.io/badge/Spring-6DB33F?style=for-the-badge&logo=springboot&logoColor=white](https://img.shields.io/badge/Spring-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
-
-[https://img.shields.io/badge/Spring%20Security-6DB33F?style=for-the-badge&logo=spring&logoColor=white](https://img.shields.io/badge/Spring%20Security-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
-
-[https://img.shields.io/badge/Spring%20JPA-6DB33F?style=for-the-badge&logo=spring&logoColor=white](https://img.shields.io/badge/Spring%20JPA-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
-
-[https://img.shields.io/badge/Gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white](https://img.shields.io/badge/Gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white)
-
-[https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
-
-[https://img.shields.io/badge/MySQL-00000F?style=for-the-badge&logo=mysql&logoColor=white](https://img.shields.io/badge/MySQL-00000F?style=for-the-badge&logo=mysql&logoColor=white)
-
-[https://img.shields.io/badge/Elasticsearch-005571?style=for-the-badge&logo=elasticsearch&logoColor=white](https://img.shields.io/badge/Elasticsearch-005571?style=for-the-badge&logo=elasticsearch&logoColor=white)
-
-[https://img.shields.io/badge/Grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white](https://img.shields.io/badge/Grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white)
-
-[https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white](https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white)
-
-[https://img.shields.io/badge/Amazon%20AWS-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white](https://img.shields.io/badge/Amazon%20AWS-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white)
-
-[https://img.shields.io/badge/Amazon%20EC2-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white](https://img.shields.io/badge/Amazon%20EC2-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white)
-
-[https://img.shields.io/badge/Amazon%20RDS-527FFF?style=for-the-badge&logo=amazonaws&logoColor=white](https://img.shields.io/badge/Amazon%20RDS-527FFF?style=for-the-badge&logo=amazonaws&logoColor=white)
-
-[https://img.shields.io/badge/Amazon%20S3-569A31?style=for-the-badge&logo=amazonaws&logoColor=white](https://img.shields.io/badge/Amazon%20S3-569A31?style=for-the-badge&logo=amazonaws&logoColor=white)
-
-[https://img.shields.io/badge/Amazon%20IAM-FF4F8B?style=for-the-badge&logo=amazonaws&logoColor=white](https://img.shields.io/badge/Amazon%20IAM-FF4F8B?style=for-the-badge&logo=amazonaws&logoColor=white)
-
-***Communicatio***
-
-[https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white](https://img.shields.io/badge/Slack-4A154B?style=for-the-badge&logo=slack&logoColor=white)
-
-[https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)
-
----
-
-## 프로젝트 핵심 목표
+## 🚩프로젝트 핵심 목표
 
 - **대규모 트래픽 대응**
-    1. 병원 예약 시스템
+  - 병원 예약 시스템
         - Redis를 활용하여 특정 시간대일 경우에는 **비동기 큐**를 그외의 시간에는  **저트래픽에 캐싱과 분산락 트래픽** 처리
         - 시스템이 다양한 트래픽 상황에서도 **안정적이고 일관된 데이터 상태를 유지**하며, 동시성 문제를 효과적으로 해결
-    2. 병원 접수 시스템
+  - 병원 접수 시스템
         - 순간적인 대규모 트래픽(트래픽 스파이크)을 효율적으로 핸들링
-    3. 오토 스케일링
+  - 오토 스케일링
         - 부하에 따라 동적으로 서버를 늘려 대규모 트래픽 상황에 대응
+  
+
 - **성능 최적화**
-    - 대용량 데이터 검색시 엘라스틱 서치 도입으로 검색 성능을 10배 향상.
+    - 대용량 데이터 검색시 엘라스틱 서치 도입으로 검색 성능을 10배 향상
+  
+
 - **CI/CD 배포 파이프 라인 완성**
-    - Docker와 Github Actions를 이용한 CI/CD 파이프라인 구축으로 배포 자동화.
-    - AWS의 S3,IAM과 같은 서비스를 사용해 CI/CD 배포 라인 간소화.
+    - Docker와 Github Actions를 이용한 CI/CD 파이프라인 구축으로 배포 자동화
+    - AWS의 S3,IAM과 같은 서비스를 사용해 CI/CD 배포 라인 간소화
     - 필요한 포트,필요한 권한만을 부여해 보안 취약점 보완
     - EC2 AutoScaling의 인스턴스 새로고침을 이용한 Rolling방식의 무중단 배포 구현
 
 ---
 
-## KEY Summary
+
+## 🚀 KEY Summary
 
 ### 🍁 **성능 개선 : 병원 검색 성능, Elasticsearch 도입으로 10배 향상**
 
@@ -88,7 +46,7 @@
     - Elasticsearch 도입으로 기존 LIKE 조회보다 10배 성능 개선
     - 대용량 데이터 검색시 빠른 속도를 기대
 
-      ![img.png](img.png)[스크린샷 2024-11-18 오전 11.12.02.png](%25E1%2584%2589%25E1%2585%25B3%25E1%2584%258F%25E1%2585%25B3%25E1%2584%2585%25E1%2585%25B5%25E1%2586%25AB%25E1%2584%2589%25E1%2585%25A3%25E1%2586%25BA_2024-11-18_%25E1%2584%258B%25E1%2585%25A9%25E1%2584%258C%25E1%2585%25A5%25E1%2586%25AB_11.12.02.png)
+      ![img.png](img.png)
 
 2. **도입 배경**
     - 기존의 LIKE 검색에 인덱스를 적용하였는데, 성능 향상이 되지 않음
@@ -109,43 +67,77 @@
 ### 🍁 성능 개선 : 비동기 큐와 캐싱+락 도입으로 처리량 향상
 
 1. **한 줄 요약**
-    - 비동기 큐 도입 : 큐에 요청을 적재하고, **병렬워커와 배치**를 사용해 병렬적으로 처리하여 처리량과 안정성 개선
-    - 캐싱+락 도입 : 락으로 **중복 요청**이나 **동시성 문제**를 방지하고, 캐싱으로 DB 접근 횟수 줄여 보다 빠른 응답 제공하도록 개선
+    - 높은 트래픽인 경우 :비동기 큐를 사용해서 큐에 요청을 적재하고, **병렬워커와 배치**를 사용해 병렬적으로 처리하여 처리량과 안정성 개선
+    - 낮은 트래픽인 경우 : 락으로 **중복 요청**이나 **동시성 문제**를 방지하고, 캐싱으로 DB 접근 횟수 줄여 보다 빠른 응답 제공하도록 개선
+     
+    - |       | Throughput |      
+      |:------|-----------:|
+    - | 적용X   |   156.6sec |
+      | 비동기 큐 | 1467.6/sec | 
+    - | 캐싱+락  | 1975.5/sec | 
+     
 
-           <적용X>                <비동기 큐>                 <캐싱+락>
+2. **도입 배경**
 
-   ## 이부분은 표로 변경해주세요
+   - 특정 시간대에 예약이 몰릴것이라고 예상하여 병렬워커와 배치를 통한 요청을 병렬적으로 처리하여 처리량 개선과 시스템 과부하 방지
+   - 상대적으로 예약요청이 많지 않은시간대에서 캐싱된 데이터를 메모리에서 처리하여 빠른 응답을 제공하고, 락으로 중복 예약을 방지하고 데이터 일관성을 보장하기 위함
 
-- 상대적으로 예약요청이 많지 않은시간대에서 캐싱된 데이터를 메모리에서 처리하여 빠른 응답을 제공하고, 락으로 중복 예약을 방지하고 데이터 일관성을 보장하기 위함
+3. **기술적 선택지**
 
-1. **도입 배경**
-
-- 특정 시간대에 예약이 몰릴것이라고 예상하여 병렬워커와 배치를 통한 요청을 병렬적으로 처리하여 처리량 개선과 시스템 과부하 방지
-- 상대적으로 예약요청이 많지 않은시간대에서 캐싱된 데이터를 메모리에서 처리하여 빠른 응답을 제공하고, 락으로 중복 예약을 방지하고 데이터 일관성을 보장하기 위함
-
-**3. 기술적 선택지**
-
-1. 비동기 큐 대안- RabbitMQ/Kafka
-    - Redis는 단일 인스턴스에서도 초당 수십만 건의 요청 처리가 가능
-    - Redis는 가벼운 데이터 구조를 이용해 보다 쉽게 구현 가능
-2. 캐싱+락 대안 - Zookeeper
-    - Redis는DB에 접근하지 않고도 캐시에서 예약 가능 여부 확인 가능
-    - Redis는 메모리 기반이므로 캐싱된 데이터에 대해 매우 빠른 읽기/쓰기 성능 제공
+   - 비동기 큐 대안 : RabbitMQ/Kafka
+       - Redis는 단일 인스턴스에서도 초당 수십만 건의 요청 처리가 가능
+       - Redis는 가벼운 데이터 구조를 이용해 보다 쉽게 구현 가능
+   - 캐싱+락 대안 : Zookeeper
+       - Redis는DB에 접근하지 않고도 캐시에서 예약 가능 여부 확인 가능
+       - Redis는 메모리 기반이므로 캐싱된 데이터에 대해 매우 빠른 읽기/쓰기 성능 제공
 
 ---
 
-## 인프라 아키텍처 & 적용 기술
+## 🔅인프라 아키텍처
 
 ### 아키텍처 다이어그램
+![img_2.png](img_2.png)
 
-## 수정이 필요한부분입니다.
+---
+## ⛏️️ ️️**주요 기술 스택**
+
+### ***Language&Framework&Tool*** 
+
+![자바](https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=openjdk&logoColor=white)
+![그레이들](https://img.shields.io/badge/Gradle-02303A?style=for-the-badge&logo=gradle&logoColor=white)
+
+![Spring Framework](https://img.shields.io/badge/Spring%20Framework-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
+![스프링 시큐리티](https://img.shields.io/badge/Spring%20Security-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
+![스프링 JPA](https://img.shields.io/badge/Spring%20JPA-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
+
+### ***Server/Deployment***
+
+
+![AMAZON AWS](https://img.shields.io/badge/Amazon%20AWS-232F3E?style=for-the-badge&logo=amazon-aws&logoColor=white&logoWidth=25)
+![AMAZON EC2](https://img.shields.io/badge/Amazon%20EC2-FF9900?style=for-the-badge&logo=amazonaws&logoColor=white&logoWidth=25)
+![AMAZON RDS](https://img.shields.io/badge/Amazon%20RDS-527FFF?style=for-the-badge&logo=amazonaws&logoColor=white&logoWidth=25)
+![AMAZON S3](https://img.shields.io/badge/Amazon%20S3-569A31?style=for-the-badge&logo=amazonaws&logoColor=white&logoWidth=25)
+![AMAZON IAM](https://img.shields.io/badge/Amazon%20IAM-FF4F8B?style=for-the-badge&logo=amazonaws&logoColor=white&logoWidth=25)
+
+![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=githubactions&logoColor=white&logoWidth=25)
+![도커](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white&logoWidth=25)
+![그라파나](https://img.shields.io/badge/Grafana-F46800?style=for-the-badge&logo=grafana&logoColor=white&logoWidth=25)
+![프로메테우스](https://img.shields.io/badge/Prometheus-E6522C?style=for-the-badge&logo=prometheus&logoColor=white&logoWidth=25)
+
+
+
+### ***DataBase/Cache***
+
+![ELASTICSEARCH](https://img.shields.io/badge/Elasticsearch-005571?style=for-the-badge&logo=elasticsearch&logoColor=white&logoWidth=25)
+![REDIS](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white&logoWidth=25)
+![MYSQL](https://img.shields.io/badge/MySQL-00000F?style=for-the-badge&logo=mysql&logoColor=white&logoWidth=25)
 
 ---
 
 ## 📦 적용 기술 상세보기
 
 ### 💻언어 및 프레임 워크
-
 - Java17
 - Spring boot 3.3.4
 - Spring Security
@@ -242,7 +234,7 @@
         3. Gradle을 실행시켜 Test를 진행
     - CI-Dependency Submission
         1. 의존성 그래프를 생성
-        2. 깃허브에 의존성을 제출해 의존성의 보안 취약점을 자동으로 탐지
+        2. 깃허브에 의존성을 제출해 의존성의 보안 취약점을 자동으로 탐지`
 - Case:Main Branch
     - CD
         1. Gradle 캐시가 있다면 가져옴
@@ -257,7 +249,6 @@
            aws autoscaling 기능 중 인스턴스 새로고침
         10. instance-refresh-config.json에 정의된 내용으로 EC2 Autoscaling 기능 중 하나인
             인스턴스 새로고침을 시행해 무중단 배포 시작
-
 ### 📡무중단 배포
 
 - 배경: 기존의 CI/CD 파이프라인은 배포를 위해 가동중이던 서버를 전부 내리고 배포를 해야하는 즉 Downtime이 존재했음 그러다가 배포과정에서 문제가 생기면 오랫동안 서비스를 사용할 수 없는 시간이 생기게됨

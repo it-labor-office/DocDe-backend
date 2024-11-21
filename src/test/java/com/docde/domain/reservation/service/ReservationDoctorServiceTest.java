@@ -1,6 +1,6 @@
 package com.docde.domain.reservation.service;
 
-import com.docde.common.Apiresponse.ErrorStatus;
+import com.docde.common.response.ErrorStatus;
 import com.docde.common.enums.UserRole;
 import com.docde.common.exceptions.ApiException;
 import com.docde.domain.auth.entity.AuthUser;
