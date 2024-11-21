@@ -21,7 +21,7 @@ public class ReservationQueueConsumer {
     private final ReservationHandler reservationHandler;
     private final QueueMetricsService queueMetricsService;
     private final ObjectMapper objectMapper;
-    private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(32); // 병렬 워커
+    private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(16); // 병렬 워커
     private boolean isProcessorRunning = false; // 상태 플래그
 
     public synchronized void startQueueProcessor(RedisQueueService redisQueueService) {
