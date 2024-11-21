@@ -189,7 +189,7 @@
       파이프라인이 제대로 작동하지 않는다는 점은 큰 단점이므로 Jenkins의 사용법도 알아두는 것이 중요하다고 생각되었습니다.
 - Prometheus & Grafana
     - 적용 위치: 모니터링 서버
-    - 사용 이유: 개발 및 테스트 단계에서 Prometheus & Grafana를 실행해서 시스템 상태를 모니터링하며 고트래픽 환경에서 발생할 수 있는 문제를 파악(병
+    - 사용 이유: 개발 및 테스트 단계에서 Prometheus & Grafana를 실행해서 시스템 상태를 모니터링하며 고트래픽 환경에서 발생할 수 있는 문제를 파악
 - EC2 AutoScaling
     - 적용 위치: EC2 서버
     - 사용 이유: 특정상황에 트래픽이 급증하거나 갑자기 서버가 다운되는 경우에 동적으로 서버의 갯수를 늘이거나 줄일 필요가 있다고 생각됨
@@ -359,15 +359,15 @@ Case:Main Branch
 
     - 적용 전
 
-      ![image.png](image%202.png)
+    ![image (4)](https://github.com/user-attachments/assets/d192e95f-fbc8-4d52-a149-5cff5324d06c)
 
     - 비동기 큐 적용
 
-      ![image.png](image%203.png)
+    ![image (8)](https://github.com/user-attachments/assets/c5e9414b-4b12-4aeb-9b70-0158b79c5b89)
 
     - 캐싱 + 락 적용
 
-      ![image.png](image%204.png)
+    ![image (7)](https://github.com/user-attachments/assets/27846d8e-e688-4b97-81da-102c505c4d8d)
 
     ---
 
