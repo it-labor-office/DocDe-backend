@@ -113,7 +113,8 @@ CI/CD 배포 파이프 라인 완성
 
 ### 아키텍처 다이어그램
 
-![img_2.png](img_2.png)
+!![image](https://github.com/user-attachments/assets/05007e6b-cc69-479b-88e7-a9b3a770401c)
+
 
 ---
 
